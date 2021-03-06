@@ -144,21 +144,21 @@ mission MISSION_NAME
 		{
 			for (i=0; i<=4; ++i)
 			{
-				CreateAndAttackFromMarkerToMarker(m_pEnemyLC2, "LC_MOON_E", 3, i, 20);
-				CreateAndAttackFromMarkerToMarker(m_pEnemyLC2, "LC_FANG_E", 2, i, 20);
+				CreateAndAttackFromMarkerToMarker(m_pEnemyLC2, "L_E_MOON", 3, i, 20);
+				CreateAndAttackFromMarkerToMarker(m_pEnemyLC2, "L_E_FANG", 2, i, 20);
 			}
 		}
 		for(i=5; i<=6;++i)
 		{
-				CreateAndAttackFromMarkerToMarker(m_pEnemyUCS, "UCS_PANTHER_G", 2, i, 20);
-				CreateAndAttackFromMarkerToMarker(m_pEnemyUCS, "UCS_BAT_R", 2, i, 20);
-				CreateAndAttackFromMarkerToMarker(m_pEnemyUCS, "UCS_JAGUAR_R", 2, i, 20);							
+				CreateAndAttackFromMarkerToMarker(m_pEnemyUCS, "U_G_PANTHER", 2, i, 20);
+				CreateAndAttackFromMarkerToMarker(m_pEnemyUCS, "U_R_BAT", 2, i, 20);
+				CreateAndAttackFromMarkerToMarker(m_pEnemyUCS, "U_R_JAGUAR", 2, i, 20);							
 		}
 		for(i=7; i<=8;++i)
 		{
-				CreateAndAttackFromMarkerToMarker(m_pEnemyLC1, "LC_CRATER_RA", 1, i, 20);
-				CreateAndAttackFromMarkerToMarker(m_pEnemyLC1, "LC_FANG_ART", 1, i, 20);
-				CreateAndAttackFromMarkerToMarker(m_pEnemyLC1, "LC_FANG_E", 2, i, 20);
+				CreateAndAttackFromMarkerToMarker(m_pEnemyLC1, "L_R_CRATER", 1, i, 20);
+				CreateAndAttackFromMarkerToMarker(m_pEnemyLC1, "L_A_FANG", 1, i, 20);
+				CreateAndAttackFromMarkerToMarker(m_pEnemyLC1, "L_E_FANG", 2, i, 20);
 		}
     	GetStartingPoint(m_pPlayerED.GetIFFNum(), nX, nY);
       	m_pPlayerED.LookAt(nX, nY, 20,0,20);		
@@ -180,8 +180,8 @@ mission MISSION_NAME
 			{
 				while(n<2*GET_DIFFICULTY_LEVEL()+1+Time/120)
 				{
-						CreateAndAttackFromMarkerToMarker(m_pEnemyUCS, "UCS_BAT_R", 1, i, 20); ++n;
-						CreateAndAttackFromMarkerToMarker(m_pEnemyUCS, "UCS_HELLWIND_NB", 1, i, 20); ++n;
+						CreateAndAttackFromMarkerToMarker(m_pEnemyUCS, "U_R_BAT", 1, i, 20); ++n;
+						CreateAndAttackFromMarkerToMarker(m_pEnemyUCS, "U_N_HELLWIND", 1, i, 20); ++n;
 				}
 				
 			}
