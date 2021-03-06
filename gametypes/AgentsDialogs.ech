@@ -1,0 +1,247 @@
+
+enum comboAgents
+{
+    "translateGameMenuAgentsDisabled",
+    "translateGameMenuAgentsEnabled",
+		multi:
+    "translateGameMenuAgents"
+}
+
+
+
+
+#define START_BRIEFING_NOLST(Modal) \
+    
+int naDialogs[];
+int nCurrentAgent;
+
+function void PlayAgentsBriefings(int nAgent1, int nAgent2, int nPlayer)
+{
+    int nIndex, nHeadIndex, nBriefingCnt;
+    string strBriefing, strWave, strNum, strA1, strA2, strAnimMesh1, strAnimMesh2;
+	player pPlayer;
+
+	pPlayer = GetPlayer(nPlayer);
+
+	nBriefingCnt = naDialogs[(nAgent1-1)*12+nAgent2-1];
+	
+	strA1.Format("%02d",nAgent1);
+	strA2.Format("%02d",nAgent2);
+
+	//N_IN_VA_01_TALK
+	strAnimMesh1 = "N_IN_VA_";
+	strAnimMesh1.Append(strA1);
+	strAnimMesh1.Append("_TALK");
+
+	strAnimMesh2 = "N_IN_VA_";
+	strAnimMesh2.Append(strA2);
+	strAnimMesh2.Append("_TALK");
+
+    nHeadIndex = 0;
+    for (nIndex = 1; nIndex <= nBriefingCnt; ++nIndex)
+    {
+        
+		strNum.Format("_%d", nIndex);
+		strWave = "Agents\\Dialogs\\AgentsDialog_A";
+		strWave.Append(strA1);
+		strWave.Append("_A");
+		strWave.Append(strA2);
+        strWave.Append(strNum);
+		strWave.Append(".ogg");
+        
+		strBriefing = "translateAgentsDialog_A";
+		strBriefing.Append(strA1);
+		strBriefing.Append("_A");
+		strBriefing.Append(strA2);
+        strBriefing.Append(strNum);
+
+        if (nHeadIndex % 2)
+        {
+            pPlayer.AddBriefingDialog(strAnimMesh2, null, strBriefing, strWave);
+        }
+        else
+        {
+            pPlayer.AddBriefingDialog(strAnimMesh1, null, strBriefing, strWave);
+        }
+        ++nHeadIndex;
+    }
+	pPlayer.PlayBriefingDialog(false, 0, false);// ostatni false jest do modalnosci dialogw
+}
+
+
+
+
+
+
+
+#define N(i) naDialogs[(nCurrentAgent-1)*12+i-1]
+
+
+function void AddDialog(int a0,int a1,int a2,int a3,int a4,int a5,int a6,int a7,int a8,int a9,int a10,int a11,int a12)
+{
+	nCurrentAgent=a0; 
+	N(1)=a1;	N(2)=a2;
+	N(3)=a3;	N(4)=a4;
+	N(5)=a5;	N(6)=a6;
+	N(7)=a7;	N(8)=a8;
+	N(9)=a9;	N(10)=a10;
+	N(11)=a11;	N(12)=a12;
+}
+
+function void InitializeDialogsTable()
+{
+	int i;
+	
+	naDialogs.Create(12*12);
+//               1,2,3,4,5,6,7,8,9,10,11,12  
+	AddDialog( 1,0,0,0,3,0,0,0,2,2, 0, 3, 4);
+    AddDialog( 2,5,0,0,0,0,0,0,0,0, 3, 0, 0);
+	AddDialog( 3,4,0,0,0,5,0,0,0,0, 4, 0, 3);
+	AddDialog( 4,2,0,4,0,0,0,0,3,0, 0, 0, 2);
+	AddDialog( 5,0,0,0,0,0,0,0,0,0, 0, 5, 0);
+	AddDialog( 6,4,0,3,0,2,0,0,5,7, 0, 0, 0);
+	AddDialog( 7,0,0,0,0,0,0,0,0,0, 0, 0, 0);
+	AddDialog( 8,0,0,0,0,0,0,0,0,0, 0, 6, 0);
+	AddDialog( 9,5,0,0,0,0,6,0,5,0, 0, 0, 0);
+	AddDialog(10,3,2,0,0,0,0,0,0,0, 0, 4, 0);
+	AddDialog(11,0,0,5,4,2,0,0,0,0, 0, 0, 0);
+	AddDialog(12,0,3,3,3,5,0,0,0,0, 0, 0, 0);
+}
+
+function void CreateAgentsDialog()
+{
+
+	int i, nPlayer, nAgent1, nAgent2, nPlayers[]; 
+	int nPlayer1, nPlayer2;
+	player pPlayer;
+	string sAgent;
+
+//	TraceD("Create agents dialog: ");
+	nPlayers.Create(8);
+	
+	for(nAgent1 = 1; nAgent1<=12; nAgent1=nAgent1+1)
+	{
+		sAgent.Format("N_IN_VA_%02d",nAgent1);
+		//TraceD(nAgent1);TraceD(":");
+		if(IsAgentInWorld(sAgent))
+		{
+			TraceD("!");
+			nPlayer1 = GetAgentInWorldPlayerIFFNum(sAgent);
+			if(!nPlayers[nPlayer1])
+			{
+				for(nAgent2 = 1; nAgent2<=12; nAgent2=nAgent2+1)
+				{
+				//	TraceD(nAgent2);
+					sAgent.Format("N_IN_VA_%02d",nAgent2);
+					if(IsAgentInWorld(sAgent) && naDialogs[(nAgent1-1)*12+nAgent2-1] > 0)
+					{
+				//		TraceD("*");
+						nPlayer2 = GetAgentInWorldPlayerIFFNum(sAgent);
+						if(nPlayer2 == nPlayer1 )
+						{
+				//			TraceD("D");
+							//wywolac dialog pomiedzy nAgent1 i nAgent2;
+							PlayAgentsBriefings(nAgent1,nAgent2,nPlayer1);
+							//na koniec kasujemy ten dialog
+							naDialogs[(nAgent1-1)*12+nAgent2-1] = 0;
+							nPlayers[nPlayer1] = 1;
+						}
+
+					}
+				}
+			}
+		}
+		//TraceD(" ");
+	}
+//TraceD("\n");
+//int  IsAgentInWorld(string strAgentID)
+//int  IsAgentInWorld(unit uAgent)
+//unit GetAgentInWorld(string strAgentID)
+//unit GetAgentUnitInWorld(string strAgentID)
+//int  GetAgentInWorldPlayerIFFNum(string strAgentID)
+
+}
+
+int bFirstTime;
+
+function void InitializeAgents()
+{
+	SetTimer(1,10*60*30);//agenci
+	bFirstTime =  true;
+	if(!comboAgents) return;
+	InitializeDialogsTable();
+}
+
+function void AddAgents()
+{
+	string sAgent, sVehicle;
+	int nAgent;
+
+	nAgent = Rand(12)+1;
+
+	sAgent.Format("N_IN_VA_%02d",nAgent);
+
+	if(!IsAgentInHire(sAgent) && !IsAgentInWorld(sAgent))
+	{
+
+		if (nAgent==4 || nAgent==6 || nAgent==7)
+			sVehicle="";
+		else
+		{
+			sVehicle.Format("N_CH_VA_%02d",nAgent);
+		}
+		AddAgentToHire(sAgent,sVehicle);
+		
+	}
+	//TraceD("             Agent:");TraceD(sAgent); TraceD("     Vehicle:");TraceD(sVehicle); TraceD("     \n");
+}
+function void ClearAgents()
+{
+	string sAgent, sVehicle;
+	int nAgent;
+
+	for(nAgent = 1; nAgent<=12; nAgent=nAgent+1)
+	{
+		if(nAgent<10)
+			sAgent.Format("N_IN_VA_0%d",nAgent);
+		else
+			sAgent.Format("N_IN_VA_%d",nAgent);
+
+		if(IsAgentInHire(sAgent) &&!IsAgentInHireBidded(sAgent))
+		{
+			RemoveAgentFromHire(sAgent);
+		}
+	}
+}
+
+event Timer1()
+{
+	
+	SetWind(Rand(100),Rand(255));
+	if(!comboAgents) return;
+	if(bFirstTime) SetTimer(1,2*60*30);//agenci
+	ClearAgents();
+	if(Rand(3)>0 && !bFirstTime)
+	{
+		CreateAgentsDialog();
+	}
+	else
+	{
+		if(bFirstTime)
+		{
+			bFirstTime=false;
+			AddAgents();
+			AddAgents();
+		}
+		AddAgents();
+	}
+}
+/*
+#ifdef DESTROY_STRUCTURES
+command Combo3(int nMode) button comboAgents
+{
+    comboAgents = nMode;
+    return true;
+}
+#endif
+*/

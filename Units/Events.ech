@@ -1,0 +1,25 @@
+#ifndef EVENTS_ECH
+#define EVENTS_ECH
+
+event OnHit(unit uByUnit)
+{
+	if ((state == Nothing) && (GetHP() < 3*GetMaxHP()/4) && (!HaveCannonAndCanAttackInCurrentState() || IsOutOfAmmo()) &&
+        !((movementMode == eModeHoldPosition) || IsImmobileUnitOrCantMoveInCurrentState()) 
+#ifndef INFANTRY_ECH
+        && !IS_IN_ENTRENCHMENT_MODE()
+#endif
+        )
+	{
+        MoveAwayFromObject(uByUnit, G2A(5));
+        state Moving;
+	}
+}//|
+
+#ifndef INFANTRY_ECH
+event Timer()
+{
+    CheckArmedState();
+}//|
+#endif
+
+#endif

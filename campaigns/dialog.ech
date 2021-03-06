@@ -1,0 +1,44 @@
+
+#define ADD_BRIEFING(BriefingName, AnimMesh) \
+    AddBriefingDialog(AnimMesh, AnimMesh##_NAME, MISSION_BRIEFING_PREFIX # BriefingName, WAVE_MISSION_PREFIX # BriefingName WAVE_MISSION_SUFFIX);
+
+#define ADD_BRIEFINGS(BriefingName, AnimMesh1, AnimMesh2, Cnt) \
+    AddBriefings(#BriefingName, AnimMesh1, AnimMesh1##_NAME, AnimMesh2, AnimMesh2##_NAME, 1, Cnt);
+
+#define ADD_BRIEFINGS2(BriefingName, AnimMesh1, AnimMesh2, StartFromBriefing, Cnt) \
+    AddBriefings(#BriefingName, AnimMesh1, AnimMesh1##_NAME, AnimMesh2, AnimMesh2##_NAME, StartFromBriefing, Cnt);
+
+#define START_BRIEFING(Modal) \
+    PlayBriefingDialog(true, 0, Modal);
+
+#define START_BRIEFING_NOLST(Modal) \
+    PlayBriefingDialog(false, 0, Modal);
+
+function void AddBriefings(string strBriefingName, string strAnimMesh1, string strTalkerName1, string strAnimMesh2, string strTalkerName2, int nStartFromBriefing, int nBriefingCnt)
+{
+    int nIndex, nHeadIndex;
+    string strBriefing, strWave, strNum;
+
+    ASSERT(nStartFromBriefing >= 1);
+    nHeadIndex = 0;
+    for (nIndex = nStartFromBriefing; nIndex <= nBriefingCnt; ++nIndex)
+    {
+        strNum.Format("_%02d", nIndex);
+        strBriefing = MISSION_BRIEFING_PREFIX;
+        strBriefing.Append(strBriefingName);
+        strBriefing.Append(strNum);
+        strWave = WAVE_MISSION_PREFIX;
+        strWave.Append(strBriefingName);
+        strWave.Append(strNum);
+        strWave.Append(WAVE_MISSION_SUFFIX);
+        if (nHeadIndex % 2)
+        {
+            AddBriefingDialog(strAnimMesh2, strTalkerName2, strBriefing, strWave);
+        }
+        else
+        {
+            AddBriefingDialog(strAnimMesh1, strTalkerName1, strBriefing, strWave);
+        }
+        ++nHeadIndex;
+    }
+}

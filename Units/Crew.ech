@@ -1,0 +1,60 @@
+#ifndef CREW_ECH
+#define CREW_ECH
+
+////    Declarations    ////
+
+state WaitingToStopExitCrew;
+state ExitCrew;
+
+////    States    ////
+
+state WaitingToStopExitCrew
+{
+    if (IsMoving())
+    {
+        return WaitingToStopExitCrew, 5;
+    }
+    else
+    {
+        CallExitCrew();
+        return ExitCrew, 1;
+    }
+}//————————————————————————————————————————————————————————————————————————————————————————————————————|
+
+state ExitCrew
+{
+    if (IsExitCrew())
+    {
+        return ExitCrew, 5;
+    }
+    else
+    {
+        EndCommand(true);
+        return Nothing, 0;
+    }
+}//————————————————————————————————————————————————————————————————————————————————————————————————————|
+
+////    Commands    ////
+
+command ExitCrew() button TRL_EXITCREW item ITEM_EXITCREW priority PRIOR_EXITCREW
+{
+    if (!HaveCrew() || !IsLandObject())
+    {
+        return false;
+    }
+    CHECK_STOP_CURR_ACTION(eCommandExitCrew);
+    if (IsMoving())
+    {
+        CallStopMoving();
+        state WaitingToStopExitCrew;
+    }
+    else
+    {
+        CallExitCrew();
+        state ExitCrew;
+    }
+    SetStateDelay(0);
+    return true;
+}//————————————————————————————————————————————————————————————————————————————————————————————————————|
+
+#endif

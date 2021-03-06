@@ -1,0 +1,98 @@
+#ifndef TRANSLATES_ECH
+#define TRANSLATES_ECH
+
+////    Move.ech    ////
+
+#define TRL_STOP "translateCommandStop"
+
+#define TRL_LANDAIRMODE_0 "translateLandAirModeLand"
+#define TRL_LANDAIRMODE_1 "translateLandAirModeStart"
+#define TRL_LANDAIRMODE_X "translateLandAirModeStart"
+
+////    Attack.ech    ////
+
+#define TRL_MOVEMENTMODE_0 "translateMovementModeHoldArea"
+#define TRL_MOVEMENTMODE_1 "translateMovementModeHoldPosition"
+#define TRL_MOVEMENTMODE_X "translateMovementModeMode"
+
+#define TRL_ATTACKMODE_0 "translateAttackModeFireAtWill"
+#define TRL_ATTACKMODE_1 "translateAttackModeHoldFire"
+#define TRL_ATTACKMODE_X "translateAttackModeMode"
+
+#define TRL_ATTACK "translateCommandAttack"
+
+////    Accuracy.ech    ////
+
+#define TRL_ACCURACYMODE_0 "translateAccuracyModeNormal"
+#define TRL_ACCURACYMODE_1 "translateAccuracyModePrecise"
+#define TRL_ACCURACYMODE_X "translateAccuracyModeMode"
+
+////    Camouflage.ech    ////
+
+#define TRL_CAMOUFLAGEMODE_0 "translateCamouflageModeOff"
+#define TRL_CAMOUFLAGEMODE_1 "translateCamouflageModeOn"
+#define TRL_CAMOUFLAGEMODE_X "translateCamouflageModeMode"
+
+////    Entrenchment.ech    ////
+
+#define TRL_ENTRENCHMENTMODE_0 "translateEntrenchmentModeOff"
+#define TRL_ENTRENCHMENTMODE_1 "translateEntrenchmentModeOn"
+#define TRL_ENTRENCHMENTMODE_X "translateEntrenchmentModeMode"
+
+////    Lights.ech    ////
+
+#define TRL_LIGHTSMODE_0 "translateLightsModeAuto"
+#define TRL_LIGHTSMODE_1 "translateLightsModeOff"
+#define TRL_LIGHTSMODE_X "translateLightsModeMode"
+
+////    Infantry.ech   ////
+
+#define TRL_CRAWLMODE_0 "translateCrawlModeAuto"
+#define TRL_CRAWLMODE_1 "translateCrawlModeOff"
+#define TRL_CRAWLMODE_2 "translateCrawlModeOn"
+#define TRL_CRAWLMODE_X "translateCrawlModeMode"
+
+////    Crew.ech    ////
+
+#define TRL_EXITCREW "translateExitCrew"
+
+////    Crew.ech    ////
+
+#define TRL_EXITTRANSPORTEDCREW "translateExitTransportedCrew"
+#define TRL_PULSARINFANTRY "translatePulsarInfantrySquad"
+#define TRL_ROCKETINFANTRY "translateRocketInfantrySquad"
+////    Special.ech    ////
+
+#define TRL_ENERGYDISPERSEMODE_0 "translateEnergyDisperseModeOn"
+#define TRL_ENERGYDISPERSEMODE_1 "translateEnergyDisperseModeOff"
+#define TRL_ENERGYDISPERSEMODE_X "translateEnergyDisperseModeMode"
+
+#define TRL_RELEASEAGENTFROMHIRE "translateReleaseAgentFromHire"
+
+#define TRL_CLONEUNIT "translateCloneUnit"
+
+#define TRL_TRANSFORMUNIT "translateTransformUnitToFormat"
+
+#define TRL_SHOWINVENTORYDIALOG "translateShowInventoryDialog"
+
+////    Hero.ech    ////
+
+#define TRL_AUTOSELECTHEROWEAPONMODE_0 "translateAutoSelectHeroWeaponModeOff"
+#define TRL_AUTOSELECTHEROWEAPONMODE_1 "translateAutoSelectHeroWeaponModeOn"
+#define TRL_AUTOSELECTHEROWEAPONMODE_X "translateAutoSelectHeroWeaponModeMode"
+
+#define TRL_PUTMINEINPOINT "translatePutMineInPoint"
+
+#define TRL_PUTTIMEMINEINPOINT "translatePutTimeMineInPoint"
+
+////    Hacker.ec    ////
+
+#define TRL_CAPTUREMODE_0 "translateCaptureModeNone"
+#define TRL_CAPTUREMODE_1 "translateCaptureModeAuto"
+#define TRL_CAPTUREMODE_X "translateCaptureModeMode"
+
+////    LaserUnit.ec    ////
+
+#define TRL_LASERATTACK "translateLaserAttack"
+
+#endif

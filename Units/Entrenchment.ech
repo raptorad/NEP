@@ -1,0 +1,102 @@
+#ifndef ENTRENCHMENT_ECH
+#define ENTRENCHMENT_ECH
+
+////    Declarations    ////
+
+state WaitingToBeginEntrenchmentMode;
+state BeginningEntrenchmentMode;
+state EndingEntrenchmentMode;
+
+#undef IS_IN_ENTRENCHMENT_MODE
+#define IS_IN_ENTRENCHMENT_MODE() (entrenchmentMode == 1)
+
+enum entrenchmentMode
+{
+    TRL_ENTRENCHMENTMODE_0 item ITEM_ENTRENCHMENTMODE_0,
+    TRL_ENTRENCHMENTMODE_1 item ITEM_ENTRENCHMENTMODE_1,
+multi:
+    TRL_ENTRENCHMENTMODE_X item ITEM_ENTRENCHMENTMODE_X
+}//————————————————————————————————————————————————————————————————————————————————————————————————————|
+
+////    States    ////
+
+state WaitingToBeginEntrenchmentMode
+{
+    if (IsMoving())
+    {
+        return WaitingToBeginEntrenchmentMode, 5;
+    }
+    else
+    {
+        CallBeginEntrenchmentMode();
+        return BeginningEntrenchmentMode, 5;
+    }
+}//————————————————————————————————————————————————————————————————————————————————————————————————————|
+
+state BeginningEntrenchmentMode
+{
+    if (IsBeginningEntrenchmentMode())
+    {
+        return BeginningEntrenchmentMode, 5;
+    }
+    else
+    {
+        EndCommand(true);
+        return Nothing, 0;
+    }
+}//————————————————————————————————————————————————————————————————————————————————————————————————————|
+
+state EndingEntrenchmentMode
+{
+    if (IsEndingEntrenchmentMode())
+    {
+        return EndingEntrenchmentMode, 5;
+    }
+    else
+    {
+        EndCommand(true);
+        return Nothing, 0;
+    }
+}//————————————————————————————————————————————————————————————————————————————————————————————————————|
+
+
+////    Commands    ////
+
+command SetEntrenchmentMode(int nMode) button entrenchmentMode priority PRIOR_ENTRENCHMENTMODE
+{
+    if (!IsEntrenchmentModeUnit())
+    {
+        return false;
+    }
+    CHECK_STOP_CURR_ACTION(eCommandSetEntrenchmentMode);
+    if (nMode == -1)
+    {
+        entrenchmentMode = (entrenchmentMode + 1) % 2;
+    }
+    else
+    {
+        entrenchmentMode = nMode;
+    }
+    if (entrenchmentMode == 1)
+    {
+        if (IsMoving())
+        {
+            CallStopMoving();
+            state WaitingToBeginEntrenchmentMode;
+        }
+        else
+        {
+            CallBeginEntrenchmentMode();
+            state BeginningEntrenchmentMode;
+        }
+    }
+    else
+    {
+        CallEndEntrenchmentMode();
+        state EndingEntrenchmentMode;
+    }
+    SetStateDelay(0);
+    return true;
+}//————————————————————————————————————————————————————————————————————————————————————————————————————|
+
+#endif

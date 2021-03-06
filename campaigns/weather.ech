@@ -1,0 +1,90 @@
+int m_nPrevWindIntensity;
+int m_nWindCounterSec;
+int m_nRainLengthSec;
+int m_nSnowLengthSec;
+
+//dŸwiek wiatru zaczyna wyæ powy¿ej 30
+
+function void StartWeather()
+{
+    SetTimer(0, 30);
+
+    m_nWindCounterSec = 2*60;
+    SetWind(30, 100);
+    m_nPrevWindIntensity = 30;
+}
+
+function void StartRain(int nIntensity, int nLengthSec)
+{
+    m_nRainLengthSec = nLengthSec;
+    SetRain(nIntensity);
+}
+
+function void StartRain(int nIntensity)
+{
+    m_nRainLengthSec = 0;
+    SetRain(nIntensity);
+}
+
+function void StopRain()
+{
+    SetRain(0);
+}
+
+function void StartSnow(int nIntensity, int nLengthSec)
+{
+    m_nSnowLengthSec = nLengthSec;
+    SetSnow(nIntensity);
+}
+
+function void StartSnow(int nIntensity)
+{
+    m_nSnowLengthSec = 0;
+    SetSnow(nIntensity);
+}
+
+function void StopSnow()
+{
+    SetSnow(0);
+}
+
+//co 1s
+event Timer0()
+{
+    if (m_nWindCounterSec > 0)
+    {
+        --m_nWindCounterSec;
+        if (m_nWindCounterSec == 0)
+        {
+            if (m_nPrevWindIntensity < 30)
+            {
+                m_nWindCounterSec = 2*60;
+                //najmocniejsze wiatry z malym prawdopodobienstwem
+                m_nPrevWindIntensity = 10 + Rand(50) + sqrt(Rand(40)*Rand(40));
+                SetWind(m_nPrevWindIntensity, Rand(255));
+            }
+            else
+            {
+                m_nWindCounterSec = 3*60;
+                m_nPrevWindIntensity = 10 + Rand(20);
+                SetWind(m_nPrevWindIntensity, Rand(255));
+            }
+        }
+    }
+    if (m_nRainLengthSec > 0)
+    {
+        --m_nRainLengthSec;
+        if (m_nRainLengthSec == 0)
+        {
+            SetRain(0);
+        }
+    }
+    if (m_nSnowLengthSec > 0)
+    {
+        --m_nSnowLengthSec;
+        if (m_nSnowLengthSec == 0)
+        {
+            SetSnow(0);
+        }
+    }
+}

@@ -1,0 +1,268 @@
+#include "trace.ech"
+
+////    Declarations    ////
+
+consts
+{
+	eRaceUCS    = 1;
+	eRaceED     = 2;
+	eRaceLC     = 3;
+	eRaceAlien  = 4;
+}
+
+int    m_anMissionNumber[];
+string m_asMissionLevels[];
+string m_asMissionScripts[];
+string m_asMissionNames[];
+string m_asMissionDescriptions[];
+string m_asMissionMeshes[];
+int    m_asMissionMeshesViewParamsIndex[];
+
+int    m_aiMissionDone[];
+int    m_nCurrentMissionNumber;
+int    m_aiCurrChooseMissions[];
+state Initialize;
+state Nothing;
+
+
+////    Functions    ////
+
+//funkcje do implementacji w skrypcie kampanii
+//CreateGamePlayer - tworzy playera
+function void CreateGamePlayer();
+
+//RegisterMissions - rejestruje miscje
+function void RegisterMissions();
+
+//GetNextMissions - w arrNumbers zwraca nastepne misje do zaladowania
+//return: true - pokazywac dialog wyboru misji nawet jesli jest tylko jedna misja, 
+//        false - nie pokazywac wyboru misji gdy jedna misja
+function int GetNextMissions(int arrNextNumbers[]);
+
+// public functions
+
+function int FindMissionIndex(int nNumber);
+
+function void RegisterMission(int nNumber, string strLevel, string strScript, string strName, string strDescription, string strMesh, int nMeshViewParamsIndex)
+{
+    if (!m_anMissionNumber.Exist())
+    {
+        m_anMissionNumber.Create(0);
+        m_asMissionLevels.Create(0);
+        m_asMissionScripts.Create(0);
+        m_asMissionNames.Create(0);
+        m_asMissionDescriptions.Create(0);
+        m_asMissionMeshes.Create(0);
+        m_asMissionMeshesViewParamsIndex.Create(0);
+        m_aiMissionDone.Create(0);
+    }
+    m_anMissionNumber.Add(nNumber);
+    m_asMissionLevels.Add(strLevel);
+    m_asMissionScripts.Add(strScript);
+    m_asMissionNames.Add(strName);
+    m_asMissionDescriptions.Add(strDescription);
+    m_asMissionMeshes.Add(strMesh);
+    m_asMissionMeshesViewParamsIndex.Add(nMeshViewParamsIndex);
+    m_aiMissionDone.Add(false);
+}
+
+function int IsMissionDone(int nNumber)
+{
+    int nMissionIndex;
+
+    nMissionIndex = FindMissionIndex(nNumber);
+    if (nMissionIndex < 0)
+    {
+        __ASSERT_FALSE();
+        return false;
+    }
+    return m_aiMissionDone[nMissionIndex];
+}
+
+function int AreAllMissionsDone()
+{
+    int nMissionIndex;
+
+    for (nMissionIndex = 0; nMissionIndex < m_aiMissionDone.GetSize(); ++nMissionIndex)
+    {
+        if (!m_aiMissionDone[nMissionIndex])
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
+// private functions
+
+function int FindMissionIndex(int nNumber)
+{
+    int nIndex;
+
+    for (nIndex = 0; nIndex < m_anMissionNumber.GetSize(); ++nIndex)
+    {
+        if (m_anMissionNumber[nIndex] == nNumber)
+        {
+            return nIndex;
+        }
+    }
+    return -1;
+}
+
+function void StartMission(int nNumber)
+{
+    int nMissionIndex;
+
+    nMissionIndex = FindMissionIndex(nNumber);
+    if (nMissionIndex < 0)
+    {
+        __ASSERT_FALSE();
+        return;
+    }
+    m_nCurrentMissionNumber = nNumber;
+    SetLoadMissionsCount(1);
+    LoadMission(m_asMissionLevels[nMissionIndex], m_asMissionScripts[nMissionIndex], 0);
+    SetActiveWorld(0);
+}
+
+function void ChooseMissions(int arrNumbers[])
+{
+    int nIndex, nMissionIndex;
+
+    if (!arrNumbers.Exist() || (arrNumbers.GetSize() == 0))
+    {
+        __ASSERT_FALSE();
+        return;
+    }
+    if (!m_aiCurrChooseMissions.Exist())
+    {
+        m_aiCurrChooseMissions.Create(0);
+    }
+    m_aiCurrChooseMissions.RemoveAll();
+    ShowChooseMissionDialog();
+    for (nIndex = 0; nIndex < arrNumbers.GetSize(); ++nIndex)
+    {
+        nMissionIndex = FindMissionIndex(arrNumbers[nIndex]);
+        if (nMissionIndex < 0)
+        {
+            __ASSERT_FALSE();
+            continue;
+        }
+        AddMissionToChooseDialog(m_asMissionNames[nMissionIndex], m_asMissionDescriptions[nMissionIndex], m_asMissionMeshes[nMissionIndex], m_asMissionMeshesViewParamsIndex[nMissionIndex]);
+        m_aiCurrChooseMissions.Add(arrNumbers[nIndex]);
+    }
+}
+
+function void StartNextMission()
+{
+    int arrNextNumbers[];
+    int bShowChooseAlways;
+
+    arrNextNumbers.Create(0);
+    bShowChooseAlways = GetNextMissions(arrNextNumbers);
+    if (arrNextNumbers.GetSize() == 0)
+    {
+        if (AreAllMissionsDone())
+        {
+            SetFinishedCampaign();
+        }
+        EndGame();
+        return;
+    }
+    if ((arrNextNumbers.GetSize() == 1) && !bShowChooseAlways)
+    {
+        StartMission(arrNextNumbers[0]);
+        return;
+    }
+    ChooseMissions(arrNextNumbers);
+}
+
+
+////    Events    ////
+
+event EndingMission(int nWorldNum, int nResult)
+{
+}
+
+event EndMission(int nWorldNum, int nResult)
+{
+    int nMissionIndex;
+
+	if (!nResult)
+	{
+        EndGame();
+        return;
+    }
+    nMissionIndex = FindMissionIndex(m_nCurrentMissionNumber);
+    if (nMissionIndex >= 0)
+    {
+        m_aiMissionDone[nMissionIndex] = true;
+    }
+    else
+    {
+        __ASSERT_FALSE();
+    }
+    StartNextMission();
+}
+
+event ChooseMission(int nChooseIndex)
+{
+    if (!m_aiCurrChooseMissions.Exist() || (nChooseIndex < 0) || (nChooseIndex >= m_aiCurrChooseMissions.GetSize()))
+    {
+        __ASSERT_FALSE();
+        EndGame();
+        return;
+    }
+    StartMission(m_aiCurrChooseMissions[nChooseIndex]);
+}
+
+
+////    difficulty level    ////
+
+#ifndef NO_DIFFICULTY_LEVELS
+
+enum difficultyLevel
+{
+	"translateSelectCampaignDifficultyEasy",
+	"translateSelectCampaignDifficultyMedium",
+	"translateSelectCampaignDifficultyHard",
+multi:
+	""
+}
+
+command DifficultyLevel(int nLevel) button difficultyLevel
+{
+    difficultyLevel = nLevel;
+	return true;
+}
+
+event GetDifficultyLevel()
+{
+    return difficultyLevel;
+}
+
+#endif NO_DIFFICULTY_LEVELS
+
+command Initialize()
+{
+#ifndef NO_DIFFICULTY_LEVELS
+	difficultyLevel = 0;
+#endif NO_DIFFICULTY_LEVELS
+	return true;
+}
+
+
+////    States    ////
+
+state Initialize
+{
+	CreateGamePlayer();
+    RegisterMissions();
+    StartNextMission();	
+	return Nothing;
+}
+
+state Nothing
+{
+	return Nothing, 0;
+}

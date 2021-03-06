@@ -1,0 +1,71 @@
+#define TUTORIAL_HEAD   "HEAD_E_IN_MA_NORMAL"
+#define TUTORIAL_HEAD_NAME   "translateTIP"
+
+#define CIVIL_HEAD "N_CIVIL_1_TALK"
+#define CIVIL_HEAD_NAME "translateN_IN_SM_01_1"
+
+#define TIMUR_HEAD      "TIMUR_TALK"
+#define TIMUR_HEAD_NAME      "translateTIMUR"
+
+#define IGOR_HEAD       "E_HERO_01_TALK"
+#define IGOR_HEAD_NAME     "translateE_HERO_01"
+
+#define BAD_IGOR_HEAD       "A_HERO_01_TALK"
+#define BAD_IGOR_HEAD_NAME     "translateE_HERO_01"
+
+#define ED_SOLDIER_HEAD "HEAD_E_IN_MA_NORMAL"
+#define ED_SOLDIER_HEAD_NAME     "translateE_IN_MA_01_1"
+
+#define LC_GIRL_HEAD    "HEAD_L_IN_RG_NORMAL"
+#define LC_GIRL_HEAD_NAME    "translateL_IN_RG_01_1"
+
+#define IGOR_HEAD_SCREAM "E_HERO_01_SCREAM"
+#define IGOR_HEAD_SCREAM_NAME "translateL_IN_RG_01_1"
+
+
+#define ALEX_HEAD    "N_IN_VA_01_TALK"
+#define ALEX_HEAD_NAME    "translateN_IN_VA_01"
+
+#define QUEEN_HEAD    "N_IN_VA_06_TALK"
+#define QUEEN_HEAD_NAME    "translateN_IN_VA_06"
+
+#define PROFFESOR_HEAD    "N_IN_VA_09_TALK"
+#define PROFFESOR_HEAD_NAME    "translateN_IN_VA_09"
+
+#define SZATMAR_HEAD    "E_HERO_02_TALK" 
+#define SZATMAR_HEAD_NAME    "translateE_HERO_02" 
+
+#define ED_OFFICER_HEAD "ED_OFFICER_TALK"
+#define ED_OFFICER_HEAD_NAME "translateED_Officer"
+
+
+#define ED_COMMANDO_HEAD    "HEAD_E_IN_CO_NORMAL"
+#define ED_COMMANDO_HEAD_NAME    "translateE_IN_CO_03_1"
+
+
+#define TROFF_HEAD    "N_TROFF_TALK"
+#define TROFF_HEAD_NAME    "translateTROFF"
+
+#define BAD_TROFF_HEAD    "A_HERO_02_TALK"
+#define BAD_TROFF_HEAD_NAME    "translateA_HERO_02"
+
+#define A_HERO_03_HEAD    "A_HERO_02_TALK"
+#define A_HERO_03_HEAD_NAME    "translateROCHLIN"
+
+#define ARIA_HEAD       "L_HERO_01_TALK"
+#define ARIA_HEAD_NAME     "translateL_HERO_01"
+
+#define ROCHLIN_HEAD    "ROCHLIN_TALK"
+#define ROCHLIN_HEAD_NAME    "translateROCHLIN"
+
+
+#define NATASHA_HEAD "L_HERO_02_TALK"
+#define NATASHA_HEAD_NAME "translateL_HERO_02"
+
+#define LC_SOLDIER_HEAD "HEAD_L_IN_RG_NORMAL"
+#define LC_SOLDIER_HEAD_NAME "translateN_IN_SM_01_1"
+
+#define LC_OFFICER_HEAD "LC_OFFICER_TALK"
+#define LC_OFFICER_HEAD_NAME "translateLC_Officer"
+
+

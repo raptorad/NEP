@@ -1,0 +1,31 @@
+#ifndef LIGHTS_ECH
+#define LIGHTS_ECH
+
+////    Declarations    ////
+
+enum lightsMode
+{
+    TRL_LIGHTSMODE_0 item ITEM_LIGHTSMODE_0,
+    TRL_LIGHTSMODE_1 item ITEM_LIGHTSMODE_1,
+multi:
+    TRL_LIGHTSMODE_X item ITEM_LIGHTSMODE_X
+}//————————————————————————————————————————————————————————————————————————————————————————————————————|
+
+////    Commands    ////
+
+command SetLightsMode(int nMode) button lightsMode priority PRIOR_LIGHTSMODE
+{
+    if (nMode == -1)
+    {
+        lightsMode = (lightsMode + 1) % 2;
+    }
+    else
+    {
+        lightsMode = nMode;
+    }
+    SetLightsMode(lightsMode);
+    EndCommand(true);
+    return true;
+}//————————————————————————————————————————————————————————————————————————————————————————————————————|
+
+#endif

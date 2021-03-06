@@ -1,0 +1,62 @@
+#ifndef CAMOUFLAGE_ECH
+#define CAMOUFLAGE_ECH
+
+////    Declarations    ////
+
+enum camouflageMode
+{
+    TRL_CAMOUFLAGEMODE_0 item ITEM_CAMOUFLAGEMODE_0,
+    TRL_CAMOUFLAGEMODE_1 item ITEM_CAMOUFLAGEMODE_1,
+multi:
+    TRL_CAMOUFLAGEMODE_X item ITEM_CAMOUFLAGEMODE_X
+}//————————————————————————————————————————————————————————————————————————————————————————————————————|
+
+////    Functions    ////
+
+//funkcja deklarowana w Attack.ech, a jesli nie ma go includowanego to trzeba zdefiniowac pusta w *.ec
+function void OnSetCamouflageMode(int nMode);
+
+function void ResetCamouflageMode()
+{
+    if (camouflageMode != 0)
+    {
+        camouflageMode = 0;
+        SetCamouflageMode(0);
+        ChangedCommandState();
+        OnSetCamouflageMode(camouflageMode);
+    }
+}//————————————————————————————————————————————————————————————————————————————————————————————————————|
+
+////    Commands    ////
+
+command SetCamouflageMode(int nMode) button camouflageMode priority PRIOR_CAMOUFLAGEMODE
+{
+    int nCurrMode;
+
+    if (!IsCamouflageModeUnit())
+    {
+        return false;
+    }
+    nCurrMode = camouflageMode;
+    camouflageMode = 0;//zeby nie wywolalo sie camouflageMode ze StopCurrentAction
+    CHECK_STOP_CURR_ACTION(eCommandSetCamouflageMode);
+    if (IsMoving())
+    {
+        CallStopMoving();
+    }
+    if (nMode == -1)
+    {
+        camouflageMode = (nCurrMode + 1) % 2;
+    }
+    else
+    {
+        camouflageMode = nMode;
+    }
+    SetCamouflageMode(camouflageMode);
+    OnSetCamouflageMode(camouflageMode);
+    EndCommand(true);
+    state Nothing;
+    return true;
+}//————————————————————————————————————————————————————————————————————————————————————————————————————|
+
+#endif

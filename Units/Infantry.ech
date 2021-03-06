@@ -1,0 +1,730 @@
+#ifndef INFANTRY_ECH
+#define INFANTRY_ECH
+
+
+////    Declarations    ////
+
+state WaitingToBeginCrawlMode;
+state BeginningCrawlMode;
+state BeginningAutoCrawlMode;
+state WaitingToEndCrawlMode;
+state EndingCrawlMode;
+state WaitingToStopLandToAirMode;
+state SettingLandToAirMode;
+state WaitingToStopAirToLandMode;
+state SettingAirToLandMode;
+state WaitingToBeginCrawlAirToLandMode;
+state MovingToCrewInsideObject;
+state LandingToCrewInsideObject;
+
+int m_bSetCrawlModeAfterLand;
+unit m_uCrewInsideObject;
+int m_nFindPlaceToEnterCnt;
+int m_bMovingToInsideFlyingObject;
+int m_bInAutoCrawlMode;
+int m_nReturnToPreviusStateAfterCrawlMode;
+int m_nPreviusStateAfterCrawlMode;
+
+consts
+{
+    eCrawlModeAuto = 0;
+    eCrawlModeOff = 1;
+    eCrawlModeOn = 2;
+}//|
+
+enum crawlMode
+{
+    TRL_CRAWLMODE_0 item ITEM_CRAWLMODE_0,
+    TRL_CRAWLMODE_1 item ITEM_CRAWLMODE_1,
+    TRL_CRAWLMODE_2 item ITEM_CRAWLMODE_2,
+multi:
+    TRL_CRAWLMODE_X item ITEM_CRAWLMODE_X
+}//|
+
+////    Functions    ////
+
+
+/*
+	function void TransporterEscort()
+	{
+		int nIndex; int MinDistance; int nX; int nY;
+		unit uUnit; unit uResult;
+		MinDistance=-1;
+		for (nIndex=0; nIndex<1000; ++nIndex)
+		{
+		 uUnit = GetUnit( nIndex );
+		 if (uUnit.IsTransporter())
+		 {
+		    if(DistanceTo(uUnit)<MinDistance)
+		   {
+		      uResult=uUnit;
+ 		   	  MinDistance=DistanceTo(uResult);
+ 		   }
+		 }
+		}
+		nX=uResult.GetLocationX();
+		nY=uResult.GetLocationY();
+	
+		MoveToPoint(nX,nY);
+	}
+*/
+function void GoToFoundTransporter()
+{
+	int nIndex, nCount;
+	    int nX, nY;
+    unit uTarget, uResult;
+    
+
+	 nCount = GetFoundTargetsCount();
+	// if(!IsAttacking())
+//	 {
+		 for (nIndex = 0; nIndex < nCount; ++nIndex)
+		{
+	 		uTarget = GetFoundTarget(nIndex);
+			if (uTarget.IsTransporter())
+ 	 		{
+ 	 			  uResult = uTarget;
+ 	 		 	 break;
+ 	 		 }
+		}
+//	}
+	  if (!FindFreePlaceToMoveCrewInsideObject(uResult, nX, nY))
+    {
+        nX = GetLocationX();
+        nY = GetLocationY();
+    }
+    MoveToPoint(nX, nY);
+}
+
+function void MoveToCrewInsideObject(unit uUnit)
+{
+    int nX, nY;
+
+    if (!FindFreePlaceToMoveCrewInsideObject(uUnit, nX, nY))
+    {
+        nX = GetLocationX();
+        nY = GetLocationY();
+    }
+    MoveToPoint(nX, nY);
+}//|
+
+function void ResetCrewInsideObject()
+{
+    m_uCrewInsideObject = null;
+}//|
+
+function void StopAutoCrawlMode()
+{
+    if (m_bInAutoCrawlMode)
+    {
+        m_bInAutoCrawlMode = false;
+        CallEndCrawlMode(true);
+    }
+}//|
+
+//wywolywane z eventa
+function void CheckAutoCrawlMode()
+{
+    ASSERT(IsCrawlModeUnit());
+    if ((crawlMode != eCrawlModeAuto) || m_bInAutoCrawlMode || (landAirMode == eModeAir))
+    {
+        //juz jest w trybie crawl (zwyklym lub auto), lub jest w powietrzu
+        return;
+    }
+    if (((state == Nothing) || ((state == AttackingTarget) && m_bAutoTarget)) &&
+        WasAnyAllyHitInLastStepVisibility())
+    {
+        if (state == Nothing)
+        {
+            m_bInAutoCrawlMode = true;
+            CallBeginCrawlMode();
+        }
+        else
+        {
+            StopAttacking();
+            m_bInAutoCrawlMode = true;
+            CallBeginCrawlMode();
+            state BeginningAutoCrawlMode;
+        }
+    }
+}//|
+
+////    States    ////
+
+state WaitingToBeginCrawlMode
+{
+    TRACE1("WaitingToBeginCrawlMode");
+    if (IsMoving())
+    {
+        return WaitingToBeginCrawlMode, 5;
+    }
+    else
+    {
+        TRACE1("WaitingToBeginCrawlMode->BeginningCrawlMode");
+        CallBeginCrawlMode();
+        return BeginningCrawlMode, 5;
+    }
+}//|
+
+state BeginningCrawlMode
+{
+    TRACE1("BeginningCrawlMode");
+    if (IsBeginningCrawlMode())
+    {
+        return BeginningCrawlMode, 5;
+    }
+    else
+    {
+        if (m_nReturnToPreviusStateAfterCrawlMode)
+        {
+            TRACE2("BeginningCrawlMode->return to previous state", m_nPreviusStateAfterCrawlMode);
+            if (m_nReturnToPreviusStateAfterCrawlMode == 2)
+            {
+                //wysylamy go tam gdzie przedtem szedl
+                CallMoveToPoint(m_nMoveToX, m_nMoveToY);
+            }
+            m_nReturnToPreviusStateAfterCrawlMode = 0;
+            SetState(m_nPreviusStateAfterCrawlMode);
+            m_nPreviusStateAfterCrawlMode = Nothing;//na wszelki wypadek
+            return state, 0;
+        }
+        else
+        {
+            TRACE1("BeginningCrawlMode->Nothing");
+            EndCommand(true);
+            return Nothing, 0;
+        }
+    }
+}//|
+
+state BeginningAutoCrawlMode
+{
+    TRACE1("BeginningAutoCrawlMode");
+    if (IsBeginningCrawlMode())
+    {
+        return BeginningCrawlMode, 5;
+    }
+    else
+    {
+        return Nothing, 0;
+    }
+}//|
+
+state WaitingToEndCrawlMode
+{
+    TRACE1("WaitingToEndCrawlMode");
+    if (IsMoving())
+    {
+        return WaitingToEndCrawlMode, 5;
+    }
+    else
+    {
+        TRACE1("WaitingToEndCrawlMode->EndingCrawlMode");
+        CallEndCrawlMode(false);
+        return EndingCrawlMode, 5;
+    }
+}//|
+
+state EndingCrawlMode
+{
+    TRACE1("EndingCrawlMode");
+    if (IsEndingCrawlMode())
+    {
+        return EndingCrawlMode, 5;
+    }
+    else
+    {
+        if (m_nReturnToPreviusStateAfterCrawlMode)
+        {
+            TRACE2("EndingCrawlMode->return to previous state", m_nPreviusStateAfterCrawlMode);
+            if (m_nReturnToPreviusStateAfterCrawlMode == 2)
+            {
+                //wysylamy go tam gdzie przedtem szedl
+                CallMoveToPoint(m_nMoveToX, m_nMoveToY);
+            }
+            m_nReturnToPreviusStateAfterCrawlMode = 0;
+            SetState(m_nPreviusStateAfterCrawlMode);
+            m_nPreviusStateAfterCrawlMode = Nothing;//na wszelki wypadek
+            return state, 0;
+        }
+        else
+        {
+            TRACE1("EndingCrawlMode->Nothing");
+            EndCommand(true);
+            return Nothing, 0;
+        }
+    }
+}//|
+
+state WaitingToStopLandToAirMode
+{
+    if (IsMoving())
+    {
+        return WaitingToStopLandToAirMode, 5;
+    }
+    else
+    {
+        if (crawlMode == eCrawlModeOn)
+        {
+            m_bSetCrawlModeAfterLand = true;
+            crawlMode = eCrawlModeAuto;
+            ChangedCommandState();
+            CallSetCrawlToAirMode();
+            return SettingLandToAirMode, 5;
+        }
+        else if (m_bInAutoCrawlMode)
+        {
+            m_bInAutoCrawlMode = false;
+            ChangedCommandState();
+            CallSetCrawlToAirMode();
+            return SettingLandToAirMode, 5;
+        }
+        else
+        {
+            CallSetLandToAirMode();
+            return SettingLandToAirMode, 5;
+        }
+    }
+}//|
+
+state SettingLandToAirMode
+{
+    if (IsSettingLandToAirMode())
+    {
+        return SettingLandToAirMode, 5;
+    }
+    else
+    {
+        EndCommand(true);
+        return Nothing, 0;
+    }
+}//|
+
+state WaitingToStopAirToLandMode
+{
+    if (IsMoving())
+    {
+        return WaitingToStopAirToLandMode, 5;
+    }
+    else
+    {
+        CallSetAirToLandMode();
+        return SettingAirToLandMode, 5;
+    }
+}//|
+
+state SettingAirToLandMode
+{
+    if (IsSettingAirToLandMode())
+    {
+        return SettingAirToLandMode, 5;
+    }
+    else
+    {
+        if (!IsLandMove())
+        {
+            //z jakiegos powodu nie wyladowal
+            landAirMode = eModeAir;
+            ChangedCommandState();
+        }
+        if (m_bSetCrawlModeAfterLand && IsLandMove())
+        {
+            m_bSetCrawlModeAfterLand = false;
+            crawlMode = eCrawlModeOn;
+            ChangedCommandState();
+            if (m_bInAutoCrawlMode)
+            {
+                m_bInAutoCrawlMode = false;
+                EndCommand(true);
+                return Nothing, 0;
+            }
+            else
+            {
+                CallBeginCrawlMode();
+                return WaitingToBeginCrawlAirToLandMode, 5;
+            }
+        }
+        else
+        {
+            EndCommand(true);
+            return Nothing, 0;
+        }
+    }
+}//|
+
+state WaitingToBeginCrawlAirToLandMode
+{
+    if (IsBeginningCrawlMode())
+    {
+        return WaitingToBeginCrawlAirToLandMode, 5;
+    }
+    else
+    {
+        EndCommand(true);
+        return Nothing, 0;
+    }
+}//|
+
+state MovingToCrewInsideObject
+{
+    int nX, nY;
+
+    if (!CanMoveCrewInsideObject(m_uCrewInsideObject))
+    {
+        TRACE1("MovingToCrewInsideObject->!CanMoveInside->Nothing");
+        CallStopMoving();
+        m_uCrewInsideObject = null;
+        EndCommand(false);
+        return Nothing, 0;
+    }
+    if (IsMoving() || IsStartingMoving())
+    {
+        if (m_bMovingToInsideFlyingObject && !m_uCrewInsideObject.IsLandObject())
+        {
+            if (!m_uCrewInsideObject.IsHelicopterLanding())
+            {
+                if (!m_uCrewInsideObject.IsExecutingMoveAndLandToEnterTransportedCrewCommand())
+                {
+                    //on dostal inna komende, nie idziemy juz do niego
+                    TRACE1("MovingToCrewInsideObject->!m_uCrewInsideObject.IsExecuting->Nothing");
+                    CallStopMoving();
+                    m_uCrewInsideObject = null;
+                    EndCommand(false);
+                    return Nothing, 0;
+                }
+                //transporter leci do nas lub innego infantry ktory tez dostal rozkaz do niego wiec musimy update'owac punkt do ktorego idziemy
+                if (DistanceTo(m_uCrewInsideObject) > G2A(2))
+                {
+                    TRACE1("MovingToCrewInsideObject->dist>2->MoveTo");
+                    MoveToCrewInsideObject(m_uCrewInsideObject);
+                }
+                else
+                {
+                    //zatrzymujemy sie aby mial miejsce do wyladowania
+                    TRACE1("MovingToCrewInsideObject->dist<2->Stop");
+                    CallStopMoving();
+                }
+            }
+            else
+            {
+                if (DistanceTo(m_uCrewInsideObject) <= G2A(2))
+                {
+                    //zatrzymujemy sie aby mial miejsce do wyladowania
+                    TRACE1("MovingToCrewInsideObject->landing->dist<2->Stop");
+                    CallStopMoving();
+                }
+                else
+                {
+                    TRACE1("MovingToCrewInsideObject->landing->dist>2");
+                }
+            }
+        }
+        return MovingToCrewInsideObject, 10;
+    }
+    else
+    {
+        if (landAirMode == eModeAir)
+        {
+            TRACE1("MovingToCrewInsideObject->LandingToCrewInsideObject");
+            landAirMode = eModeLand;
+            ChangedCommandState();
+            CallSetAirToLandMode();
+            return LandingToCrewInsideObject, 0;
+        }
+        if (!m_uCrewInsideObject.IsLandObject() && IsObjectGoingToLand(m_uCrewInsideObject))
+        {
+            //czekamy az wyladuje
+            TRACE1("MovingToCrewInsideObject->!m_uCrewInsideObject.IsLandObject() && IsObjectGoingToLand");
+            return MovingToCrewInsideObject, 5;
+        }
+        else if (IsInGoodPlaceToMoveCrewInsideObject(m_uCrewInsideObject))
+        {
+            //crawl mode zostanie wykasowany w kodzie przy wejsciu jesli bedzie to potrzebne
+            TRACE1("MovingToCrewInsideObject->CallMoveCrewInsideObject");
+            CallMoveCrewInsideObject(m_uCrewInsideObject);
+            m_uCrewInsideObject = null;
+            return Nothing, 10;//nie ma juz stanu EnteringObject bo po wejsciu do srodka nie jest juz wykonywany skrypt
+        }
+        else if (m_nFindPlaceToEnterCnt < 3)
+        {
+            TRACE1("MovingToCrewInsideObject->++m_nFindPlaceToEnterCnt");
+            ++m_nFindPlaceToEnterCnt;
+            MoveToCrewInsideObject(m_uCrewInsideObject);
+            return MovingToCrewInsideObject, 0;
+        }
+        else
+        {
+            TRACE1("MovingToCrewInsideObject->m_nFindPlaceToEnterCnt>=3->Nothing");
+            EndCommand(false);
+            return Nothing, 0;
+        }
+    }
+}//|
+
+state LandingToCrewInsideObject
+{
+    if (IsSettingAirToLandMode())
+    {
+        return LandingToCrewInsideObject, 5;
+    }
+    else
+    {
+        if (!IsLandMove())
+        {
+            //z jakiegos powodu nie wyladowal
+            landAirMode = eModeAir;
+            ChangedCommandState();
+        }
+        return MovingToCrewInsideObject, 0;
+    }
+}//|
+
+////    Events    ////
+
+event Timer()
+{
+	//sprawdzanie czy mamy zrobic padnij gdy do kogos z naszych w poblizu strzelaja
+    ASSERT(IsCrawlModeUnit());//na razie event ustawiany tylko gdy mamy crawlMode
+    CheckAutoCrawlMode();
+}//|
+
+////    Commands    ////
+
+command SetCrawlMode(int nMode) button crawlMode priority PRIOR_CRAWLMODE
+{
+    int nCrawlMode;
+
+    if (!IsCrawlModeUnit())
+    {
+        return false;
+    }
+    //jesli to jest komenda przejsca w crawl a jestesmy w autoCrawl to nic nie trzeba robic
+    if (nMode == -1)
+    {
+        nCrawlMode = (crawlMode + 1) % 3;
+    }
+    else
+    {
+        nCrawlMode = nMode;
+    }
+    if ((nCrawlMode == eCrawlModeOn) && m_bInAutoCrawlMode)
+    {
+        crawlMode = nCrawlMode;
+        //juz jest w trybie crawl - kasujemy autoCrawl
+        m_bInAutoCrawlMode = false;
+        return false;
+    }
+    if ((nCrawlMode == eCrawlModeOff) && (crawlMode == eCrawlModeAuto) && !m_bInAutoCrawlMode)
+    {
+        crawlMode = nCrawlMode;
+        //nie byl w trybie crawl - nie trzeba nic robic
+        m_bInAutoCrawlMode = false;
+        return false;
+    }
+    else if (nCrawlMode == eCrawlModeAuto)
+    {
+        //zostajemy w takim stanie w jakim jestesmy
+        if (crawlMode == eCrawlModeAuto)
+        {
+            //m_bInAutoCrawlMode zostaje takie jakie jest
+        }
+        else if (crawlMode == eCrawlModeOn)
+        {
+            m_bInAutoCrawlMode = true;
+        }
+        else
+        {
+            ASSERT(crawlMode == eCrawlModeOff);
+            ASSERT(!m_bInAutoCrawlMode);
+        }
+        crawlMode = nCrawlMode;
+        return false;
+    }
+    if (IsCrawlModeCommandWithEndCommand())
+    {
+        CHECK_STOP_CURR_ACTION(eCommandSetCrawlMode);
+        m_nReturnToPreviusStateAfterCrawlMode = 0;
+        m_nPreviusStateAfterCrawlMode = Nothing;//na wszelki wypadek
+    }
+    else
+    {
+        //CHECK_STOP_CURR_ACTION:
+        //nie kasujemy m_uTarget itp
+        UpdateLandAirMode();
+        ResetCamouflageMode();
+        if (IsInAttackState())
+        {
+            CallStopAttack();
+        }
+        m_bInAutoCrawlMode = false;//jesli byl w autoCrawl to z niego wyjdzie
+        //zapamietujemy state
+        if ((m_nReturnToPreviusStateAfterCrawlMode == 0) ||
+            ((state != WaitingToBeginCrawlMode) && (state != BeginningCrawlMode) &&
+             (state != WaitingToEndCrawlMode) && (state != EndingCrawlMode)))
+        {
+            if (IsMoving())
+            {
+                if (state == Moving)
+                {
+                    //zostaje m_nMoveToX,Y takie jakie jest
+                }
+                else
+                {
+                    GetMoveTarget(m_nMoveToX, m_nMoveToY);
+                }
+                m_nReturnToPreviusStateAfterCrawlMode = 2;
+            }
+            else
+            {
+                m_nReturnToPreviusStateAfterCrawlMode = 1;
+            }
+            if (state != BeginningAutoCrawlMode)
+            {
+                m_nPreviusStateAfterCrawlMode = state;
+            }
+            else
+            {
+                m_nPreviusStateAfterCrawlMode = Nothing;
+            }
+        }
+        //else to jest nastepna komenda crawl gdy juz robimy jedna - zostaje zapamietany ten stan co poprzednio
+    }
+    if (nMode == -1)
+    {
+        crawlMode = (crawlMode + 1) % 3;
+    }
+    else
+    {
+        crawlMode = nMode;
+    }
+    if (crawlMode == eCrawlModeOn)
+    {
+        if (IsMoving())
+        {
+            CallStopMoving();
+            state WaitingToBeginCrawlMode;
+        }
+        else
+        {
+            CallBeginCrawlMode();
+            state BeginningCrawlMode;
+        }
+    }
+    else
+    {
+        ASSERT(crawlMode == eCrawlModeOff);
+        m_bInAutoCrawlMode = false;
+        m_bSetCrawlModeAfterLand = false;
+        if (IsMoving())
+        {
+            CallStopMoving();
+            state WaitingToEndCrawlMode;
+        }
+        else
+        {
+            CallEndCrawlMode(false);
+            state EndingCrawlMode;
+        }
+    }
+    SetStateDelay(0);
+    return true;
+}//|
+
+command SetLandAirMode(int nMode) button landAirMode priority PRIOR_LANDAIRMODE
+{
+    int nCurrMode;
+    if (!IsLandAndHelicopterModeUnit())
+    {
+        return false;
+    }
+    nCurrMode = landAirMode;//zapamietujemy stan bo moze byc zmieniony w UpdateLandAirMode
+    CHECK_STOP_CURR_ACTION(eCommandSetLandAirMode);
+    landAirMode = nCurrMode;
+    if (nMode == -1)
+    {
+        landAirMode = (landAirMode + 1) % 2;
+    }
+    else
+    {
+        landAirMode = nMode;
+    }
+    if (landAirMode == eModeAir)
+    {
+        if (IsMoving())
+        {
+            CallStopMoving();
+            state WaitingToStopLandToAirMode;
+        }
+        else
+        {
+            if (crawlMode == eCrawlModeOn)
+            {
+                m_bSetCrawlModeAfterLand = true;
+                crawlMode = eCrawlModeAuto;
+                ChangedCommandState();
+                CallSetCrawlToAirMode();
+                state SettingLandToAirMode;
+            }
+            else if (m_bInAutoCrawlMode)
+            {
+                m_bInAutoCrawlMode = false;
+                ChangedCommandState();
+                CallSetCrawlToAirMode();
+                state SettingLandToAirMode;
+            }
+            else
+            {
+                CallSetLandToAirMode();
+                state SettingLandToAirMode;
+            }
+        }
+    }
+    else
+    {
+        if (IsMoving())
+        {
+            CallStopMoving();
+            state WaitingToStopAirToLandMode;
+        }
+        else
+        {
+            CallSetAirToLandMode();
+            state SettingAirToLandMode;
+        }
+    }
+    SetStateDelay(0);
+    return true;
+}//|
+
+command MoveCrewInsideObject(unit uUnit) hidden
+{
+    unit uTarget;
+
+    if (!uUnit)
+    {
+        return false;
+    }
+    uTarget = uUnit;
+    if (!CanMoveCrewInsideObject(uTarget))
+    {
+        return false;
+    }
+    CHECK_STOP_CURR_ACTION(eCommandMoveCrewInsideObject);
+    m_bMovingToInsideFlyingObject = false;
+    if (uUnit.IsTransporter() && !uUnit.IsLandObject() && !uUnit.IsHelicopterLanding())
+    {
+        //wydajemy mu rozkaz lotu w naszym kierunku
+        uUnit.CommandEndRecord();//na wypadek gdyby bylo wlaczone nagrywanie
+        uUnit.CommandMoveAndLandToEnterTransportedCrew(GetUnitRef());
+        m_bMovingToInsideFlyingObject = true;
+    }
+    m_uCrewInsideObject = uTarget;
+    m_nFindPlaceToEnterCnt = 0;
+    MoveToCrewInsideObject(uTarget);
+    state MovingToCrewInsideObject;
+    SetStateDelay(0);
+    return true;
+}//|
+
+
+#endif

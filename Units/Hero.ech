@@ -1,0 +1,331 @@
+#ifndef HERO_ECH
+#define HERO_ECH
+
+state MovingToPutMinePlace;
+state LandingToPutMinePlace;
+state TurningToPutMinePlace;
+state PuttingMine;
+state MovingToPickUpMinePlace;
+state LandingToPickUpMinePlace;
+state TurningToPickUpMinePlace;
+state PickingUpMine;
+state ExplodeRemoteMineFromPoint;
+
+int m_nMineX, m_nMineY;
+int m_nFindMinePlaceCnt;
+
+////    Declarations    ////
+
+enum autoSelectHeroWeaponMode
+{
+    TRL_AUTOSELECTHEROWEAPONMODE_0 item ITEM_AUTOSELECTHEROWEAPONMODE_0,
+    TRL_AUTOSELECTHEROWEAPONMODE_1 item ITEM_AUTOSELECTHEROWEAPONMODE_1,
+multi:
+    TRL_AUTOSELECTHEROWEAPONMODE_X item ITEM_AUTOSELECTHEROWEAPONMODE_X
+}//————————————————————————————————————————————————————————————————————————————————————————————————————|
+
+////    States    ////
+
+state MovingToPutMinePlace
+{
+    if (IsMoving() || IsStartingMoving())
+    {
+        TRACE1("MovingToPutMinePlace");
+        return MovingToPutMinePlace, 5;
+    }
+    else
+    {
+        if (!CanPutMineInPoint(m_nMineX, m_nMineY))
+        {
+            TRACE1("MovingToPutMinePlace->Nothing");
+            EndCommand(true);
+            return Nothing, 0;
+        }
+        if (IsInGoodPlaceToPutMineInPoint(m_nMineX, m_nMineY))
+        {
+            if (landAirMode == eModeAir)
+            {
+                TRACE1("MovingToPutMinePlace->LandingToPutMinePlace");
+                landAirMode = eModeLand;
+                ChangedCommandState();
+                CallSetAirToLandMode();
+                return LandingToPutMinePlace, 0;
+            }
+            else
+            {
+                TRACE1("MovingToPutMinePlace->TurningToPutMinePlace");
+                CallTurnToAngle(AngleTo(m_nMineX, m_nMineY));
+                return TurningToPutMinePlace, 0;
+            }
+        }
+        else if (m_nFindMinePlaceCnt < 3)
+        {
+            ++m_nFindMinePlaceCnt;
+            TRACE1("MovingToPutMinePlace->++m_nFindMinePlaceCnt->MovingToPutMinePlace");
+            FindPlaceToPutMineInPoint(m_nMineX, m_nMineY, m_nMoveToX, m_nMoveToY);
+            MoveToPoint(m_nMoveToX, m_nMoveToY);
+            return MovingToPutMinePlace, 5;
+        }
+        else 
+        {
+            TRACE1("MovingToPutMinePlace->m_nFindMinePlaceCnt==3->Nothing");
+            EndCommand(false);
+            return Nothing, 0;
+        }
+    }
+}//————————————————————————————————————————————————————————————————————————————————————————————————————|
+
+state LandingToPutMinePlace
+{
+    if (IsSettingAirToLandMode())
+    {
+        TRACE1("LandingToPutMinePlace");
+        return LandingToPutMinePlace, 5;
+    }
+    else
+    {
+        TRACE1("LandingToPutMinePlace->MovingToPutMinePlace");
+        if (!IsLandMove())
+        {
+            //z jakiegos powodu nie wyladowal
+            landAirMode = eModeAir;
+            ChangedCommandState();
+        }
+        return MovingToPutMinePlace, 0;
+    }
+}//————————————————————————————————————————————————————————————————————————————————————————————————————|
+
+state TurningToPutMinePlace
+{
+    if (IsMoving() || IsStartingMoving())
+    {
+        TRACE1("TurningToPutMinePlace");
+        return TurningToPutMinePlace, 5;
+    }
+    else
+    {
+        CallPutMineInPoint(m_nMineX, m_nMineY);
+        return PuttingMine, 0;
+    }
+}//————————————————————————————————————————————————————————————————————————————————————————————————————|
+
+state PuttingMine
+{
+    if (IsPuttingMine())
+    {
+        TRACE1("PuttingMine");
+        return PuttingMine, 5;
+    }
+    else
+    {
+        EndCommand(true);
+        return Nothing;
+    }
+}//————————————————————————————————————————————————————————————————————————————————————————————————————|
+
+state MovingToPickUpMinePlace
+{
+    if (IsMoving() || IsStartingMoving())
+    {
+        TRACE1("MovingToPickUpMinePlace");
+        return MovingToPickUpMinePlace, 5;
+    }
+    else
+    {
+        if (!CanPickUpMineFromPoint(m_nMineX, m_nMineY))
+        {
+            TRACE1("MovingToPickUpMinePlace->Nothing");
+            EndCommand(true);
+            return Nothing, 0;
+        }
+        if (IsInGoodPlaceToPickUpMineFromPoint(m_nMineX, m_nMineY))
+        {
+            if (landAirMode == eModeAir)
+            {
+                TRACE1("MovingToPickUpMinePlace->LandingToPickUpMinePlace");
+                landAirMode = eModeLand;
+                ChangedCommandState();
+                CallSetAirToLandMode();
+                return LandingToPickUpMinePlace, 0;
+            }
+            else
+            {
+                TRACE1("MovingToPickUpMinePlace->TurningToPickUpMinePlace");
+                CallTurnToAngle(AngleTo(m_nMineX, m_nMineY));
+                return TurningToPickUpMinePlace, 0;
+            }
+        }
+        else if (m_nFindMinePlaceCnt < 3)
+        {
+            ++m_nFindMinePlaceCnt;
+            TRACE1("MovingToPickUpMinePlace->++m_nFindMinePlaceCnt->MovingToPickUpMinePlace");
+            FindPlaceToPickUpMineFromPoint(m_nMineX, m_nMineY, m_nMoveToX, m_nMoveToY);
+            MoveToPoint(m_nMoveToX, m_nMoveToY);
+            return MovingToPickUpMinePlace, 5;
+        }
+        else 
+        {
+            TRACE1("MovingToPickUpMinePlace->m_nFindMinePlaceCnt==3->Nothing");
+            EndCommand(false);
+            return Nothing, 0;
+        }
+    }
+}//————————————————————————————————————————————————————————————————————————————————————————————————————|
+
+state LandingToPickUpMinePlace
+{
+    if (IsSettingAirToLandMode())
+    {
+        TRACE1("LandingToPickUpMinePlace");
+        return LandingToPickUpMinePlace, 5;
+    }
+    else
+    {
+        TRACE1("LandingToPickUpMinePlace->MovingToPickUpMinePlace");
+        if (!IsLandMove())
+        {
+            //z jakiegos powodu nie wyladowal
+            landAirMode = eModeAir;
+            ChangedCommandState();
+        }
+        return MovingToPickUpMinePlace, 0;
+    }
+}//————————————————————————————————————————————————————————————————————————————————————————————————————|
+
+state TurningToPickUpMinePlace
+{
+    if (IsMoving() || IsStartingMoving())
+    {
+        TRACE1("TurningToPickUpMinePlace");
+        return TurningToPickUpMinePlace, 5;
+    }
+    else
+    {
+        TRACE1("TurningToPickUpMinePlace->PickingUpMine");
+        CallPickUpMineFromPoint(m_nMineX, m_nMineY);
+        return PickingUpMine, 0;
+    }
+}//————————————————————————————————————————————————————————————————————————————————————————————————————|
+
+state PickingUpMine
+{
+    if (IsPickingUpMine())
+    {
+        TRACE1("PickingUpMine");
+        return PickingUpMine, 5;
+    }
+    else
+    {
+        TRACE1("PickingUpMine->Nothing");
+        EndCommand(true);
+        return Nothing;
+    }
+}//————————————————————————————————————————————————————————————————————————————————————————————————————|
+
+state ExplodeRemoteMineFromPoint
+{
+    if (IsMoving() || IsStartingMoving())
+    {
+        TRACE1("ExplodeRemoteMineFromPoint");
+        return ExplodeRemoteMineFromPoint, 5;
+    }
+    else
+    {
+        TRACE1("ExplodeRemoteMineFromPoint->ExplodeRemoteMineFromPoint");
+        ExplodeRemoteMineFromPoint(m_nMineX, m_nMineY);
+        EndCommand(true);
+        return Nothing;
+    }
+}//————————————————————————————————————————————————————————————————————————————————————————————————————|
+
+////    Commands    ////
+
+command SetAutoSelectHeroWeaponMode(int nMode) button autoSelectHeroWeaponMode priority PRIOR_AUTOSELECTHEROWEAPONMODE
+{
+    if (nMode == -1)
+    {
+        autoSelectHeroWeaponMode = (autoSelectHeroWeaponMode + 1) % 2;
+    }
+    else
+    {
+        autoSelectHeroWeaponMode = nMode;
+    }
+    SetAutoSelectHeroWeaponMode(autoSelectHeroWeaponMode);
+    //nie ma EndCommand
+    return true;
+}//————————————————————————————————————————————————————————————————————————————————————————————————————|
+
+command PutMineInPoint(int nX, int nY, int nAlpha, int nMineID) button TRL_PUTMINEINPOINT item ITEM_PUTMINEINPOINT priority PRIOR_PUTMINEINPOINT
+{
+    if (!CanPutMineInPoint(nX, nY, nMineID))
+    {
+        return false;
+    }
+    //nMineID nie mozemy trzymac w tym obiekcie bo po zaladowaniu ID obiektu moglby byc juz walniety
+    CHECK_STOP_CURR_ACTION(eCommandPutMineInPoint);
+    SetPutMineID(nMineID);
+    m_nMineX = nX;
+    m_nMineY = nY;
+    FindPlaceToPutMineInPoint(nX, nY, m_nMoveToX, m_nMoveToY);
+    MoveToPoint(m_nMoveToX, m_nMoveToY);
+    m_nFindMinePlaceCnt = 0;
+    state MovingToPutMinePlace;
+    SetStateDelay(0);
+    return true;
+}//————————————————————————————————————————————————————————————————————————————————————————————————————|
+
+command PutTimeMineInPoint(int nX, int nY, int nAlpha, int nMineID) button TRL_PUTTIMEMINEINPOINT item ITEM_PUTTIMEMINEINPOINT priority PRIOR_PUTTIMEMINEINPOINT
+{
+    if (!CanPutMineInPoint(nX, nY, nMineID))
+    {
+        return false;
+    }
+    //nMineID nie mozemy trzymac w tym obiekcie bo po zaladowaniu ID obiektu moglby byc juz walniety
+    CHECK_STOP_CURR_ACTION(eCommandPutTimeMineInPoint);
+    SetPutMineID(nMineID);
+    m_nMineX = nX;
+    m_nMineY = nY;
+    FindPlaceToPutMineInPoint(nX, nY, m_nMoveToX, m_nMoveToY);
+    MoveToPoint(m_nMoveToX, m_nMoveToY);
+    m_nFindMinePlaceCnt = 0;
+    state MovingToPutMinePlace;
+    SetStateDelay(0);
+    return true;
+}//————————————————————————————————————————————————————————————————————————————————————————————————————|
+
+command PickUpMineFromPoint(int nX, int nY) hidden
+{
+    if (!CanPickUpMineFromPoint(nX, nY))
+    {
+        return false;
+    }
+    CHECK_STOP_CURR_ACTION(eCommandPickUpMineFromPoint);
+    m_nMineX = nX;
+    m_nMineY = nY;
+    FindPlaceToPickUpMineFromPoint(nX, nY, m_nMoveToX, m_nMoveToY);
+    MoveToPoint(m_nMoveToX, m_nMoveToY);
+    m_nFindMinePlaceCnt = 0;
+    state MovingToPickUpMinePlace;
+    SetStateDelay(0);
+    return true;
+}//————————————————————————————————————————————————————————————————————————————————————————————————————|
+
+command ExplodeRemoteMineFromPoint(int nX, int nY) hidden
+{
+    if (!CanExplodeRemoteMineFromPoint(nX, nY))
+    {
+        return false;
+    }
+    CHECK_STOP_CURR_ACTION(eCommandExplodeRemoteMineFromPoint);
+    m_nMineX = nX;
+    m_nMineY = nY;
+    if (IsMoving())
+    {
+        CallStopMoving();
+    }
+    state ExplodeRemoteMineFromPoint;
+    SetStateDelay(0);
+    return true;
+}//————————————————————————————————————————————————————————————————————————————————————————————————————|
+
+#endif

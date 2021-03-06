@@ -1,0 +1,368 @@
+// +ogolne wyswietlanie goali na starcie  i w goalach
+// +zrobic peace - wylaczyc aja chooseai controlAttack chooseenemy
+
+
+
+// +uncle sam ustawianie kasy, dodawanie kasy, wylaczenie harvesterow i rafinerii.
+// hero - sprawdzanie, wyswietlanie
+
+
+mission MISSION_NAME
+{
+
+#include "..\Campaigns\common.ech"
+#include "AgentsDialogs.ech"
+
+state Initialize;
+state Start;
+
+state Nothing;
+
+consts
+{
+	eRaceUCS = 1;
+	eRaceED = 2;
+	eRaceLC = 3;
+	eRaceAlien = 4;
+	eEnemy = 0;
+	eNeutral = 1;
+}
+
+enum comboAlliedVictory
+{
+    "translateGameMenuAlliedVictoryNo",
+    "translateGameMenuAlliedVictoryYes",
+		multi:
+    "translateGameMenuAlliedVictory"
+}
+
+enum comboStartingUnits
+{
+    "translateGameMenuStartingUnitsDefault",
+    "translateGameMenuStartingUnitsBuilderOnly",
+multi:
+    "translateGameMenuStartingUnits"
+}
+
+
+
+
+
+
+
+
+
+function void InitPlayerUCS(player pPlayer, int bDynamicConn, int nX, int nY)
+{
+	pPlayer.AddResource(0, 5000);
+	pPlayer.AddResource(1, 5000);
+
+	pPlayer.AddObjectTemplate("U_CH_AR_08_1#U_IE_SG_01_1");
+	pPlayer.AddObjectTemplate("U_CH_AS_09_1#U_IE_SG_01_1");
+
+
+
+	pPlayer.CreateObject("U_IN_TE_01_1", nX, nY, 0, 0);
+	pPlayer.CreateObject("U_IN_TE_01_1", nX, nY+1, 0, 0);
+	pPlayer.CreateObject("U_IN_TE_01_1", nX, nY-1, 0, 0);
+	pPlayer.CreateObject("U_CH_AR_08_1", nX+1, nY, 0, 0);
+	pPlayer.CreateObject("U_CH_AR_08_1", nX-1, nY, 0, 0);
+
+}
+
+function void InitPlayerED(player pPlayer, int bDynamicConn, int nX, int nY)
+{
+	pPlayer.AddResource(1, 5000);
+	pPlayer.AddResource(2, 5000);
+	pPlayer.CreateObject("E_IN_MA_01_1", nX, nY-1, 0, 0);
+	pPlayer.CreateObject("E_IN_MA_01_1", nX, nY+1, 0, 0);
+
+}
+
+function void InitPlayerLC(player pPlayer, int bDynamicConn, int nX, int nY)
+{
+	pPlayer.AddResource(0, 9000);
+	pPlayer.AddResource(2, 9000);
+
+
+
+
+	pPlayer.CreateObject("L_IN_RG_01_1", nX, nY, 0, 0);
+	pPlayer.CreateObject("L_IN_RG_01_1", nX-1, nY, 0, 0);
+	pPlayer.CreateObject("L_IN_RG_01_1", nX+1, nY, 0, 0);
+}
+
+function void InitPlayerAlien(player pPlayer, int bDynamicConn, int nX, int nY)
+{
+	pPlayer.CreateObject("A_CH_NU_01_1", nX-1, nY, 0, 0);
+	pPlayer.CreateObject("A_CH_NU_01_1", nX+1, nY, 0, 0);
+	pPlayer.CreateObject("A_CH_NU_01_1", nX, nY-1, 0, 0);
+	pPlayer.CreateObject("A_CH_NU_10_1", nX-2, nY, 0, 0);
+	
+}
+
+
+
+function void InitPlayer(player pPlayer, int bDynamicConn, int nNo)
+{
+    int nX, nY;
+    int nLimit;
+
+    GetStartingPoint(pPlayer.GetIFFNum(), nX, nY);
+    
+    pPlayer.LookAt(nX, nY, 6,0,20);
+	
+    /*
+    //zwiekszenie poczatkowego maksymalnego limitu gdy na starcie sa unity
+    if (comboStartingUnits == 0)
+    {
+        nLimit = pPlayer.GetCurrUnitLimitSize();
+        pPlayer.SetPlayerMaxUnitLimitSize(nLimit);
+    }
+    */
+
+	if(pPlayer.GetRace()==eRaceUCS) //UCS
+	{
+        InitPlayerUCS(pPlayer, bDynamicConn, nX, nY);
+
+	}
+	if(pPlayer.GetRace()==eRaceED) //ED
+	{
+        InitPlayerED(pPlayer, bDynamicConn, nX, nY);
+
+	}
+	if(pPlayer.GetRace()==eRaceLC) //LC
+	{
+        InitPlayerLC(pPlayer, bDynamicConn, nX, nY);
+
+	}
+	if(pPlayer.GetRace()==eRaceAlien)
+	{
+        InitPlayerAlien(pPlayer, bDynamicConn, nX, nY);
+
+	}
+	pPlayer.SetMaxAgentsInPlayerCount(3);
+}
+
+
+
+
+int nAgentsCounter;
+//int bCheckVictory;
+
+
+
+int bAllowVictory;
+
+int aHaveBuildings[];
+//================================================================================================
+state Initialize
+{
+    int nPlayer;
+    player pPlayer;
+
+	//bCheckVictory=false;
+
+	SetWind(30,100);//strenght[0-100],Direction[0-255]
+	SetTimer(0,3*30);//sprawdzanie victory
+	InitializeAgents();
+    
+	aHaveBuildings.Create(17);
+
+
+	for (nPlayer = 1; nPlayer <= 8; ++nPlayer)
+    {
+        pPlayer = GetPlayer(nPlayer);
+        if ((pPlayer != null) && pPlayer.IsAlive() && HaveStartingPoint(nPlayer))
+        {
+            InitPlayer(pPlayer, false, nPlayer);
+			aHaveBuildings[nPlayer]=0;
+			if(comboAlliedVictory) pPlayer.SetSendENResults(false);
+			else pPlayer.SetSendENResults(true);
+            //if(comboAlliedVictory) pPlayer.SetAIControlOptions(eAIControlAINeutralAI, false);
+            //else pPlayer.SetAIControlOptions(eAIControlAINeutralAI, true);
+        }
+    }
+	bAllowVictory = false;
+	RegisterGoal(0, MISSION_GOAL);
+	EnableGoal(0, true, false); 
+
+	SetInterfaceOptions(
+
+            eShowStatisticsOnExitSkirmish |
+			0
+			);
+		
+	
+
+	return Start;
+}
+
+//==================================================================================================
+state Start
+{
+
+	SetConsoleText(MISSION_GOAL, 10*30);
+	
+
+}
+//==================================================================================================
+
+
+state Nothing
+{
+	
+    return Nothing,30;
+}
+//==================================================================================================
+int bDontCheckVictory;
+
+event Timer0()
+{
+#ifndef NO_VICTORYDEFEAT
+
+	player pPlayer, pPlayer2;
+	int nPlayer, nPlayer2, bLiveEnemy;
+    int bKilled;
+
+	if(bDontCheckVictory) return;
+
+
+    //victory?
+	if(bAllowVictory)
+	{
+		for (nPlayer = 1; nPlayer <= 8; ++nPlayer)
+		{
+			pPlayer = GetPlayer(nPlayer);
+			if ((pPlayer != null) && pPlayer.IsAlive())
+			{
+				bLiveEnemy = false;
+				for (nPlayer2 = 1; nPlayer2 <= 8; ++nPlayer2)
+				{
+					pPlayer2 = GetPlayer(nPlayer2);
+					if ((nPlayer2 != nPlayer) && (pPlayer2 != null) && pPlayer2.IsAlive())
+					{
+						if ((comboAlliedVictory == 0) || !pPlayer.IsAlly(pPlayer2))
+						{
+							bLiveEnemy = true;
+						}
+					}
+				}
+				if (!bLiveEnemy)
+				{
+					bDontCheckVictory = true;
+					pPlayer.GameVictory(true, true);//bAddAgentsReputationOnVictory, bShowStatistic
+				}
+			}
+		}
+	}
+
+#endif
+}
+
+event KilledNetworkPlayer(int nIFFNum)
+{
+	bAllowVictory = true;
+}
+
+event RemovedUnit(unit uKilled, unit uAttacker, int nNotifyType)
+{
+
+}
+
+event RemovedBuilding(unit uKilled, unit uAttacker, int nNotifyType)
+{
+
+}
+
+
+event NewDynamicConnectionPlayer(int nIFFNum)
+{
+	player pPlayer;
+	pPlayer = GetPlayer(nIFFNum);
+    InitPlayer(pPlayer, true, nIFFNum);
+	pPlayer.RegisterGoal(0, MISSION_GOAL);
+	pPlayer.EnableGoal(0, true, false); 
+	pPlayer.SetConsoleText(MISSION_GOAL, 10*30);
+	aHaveBuildings[nIFFNum]=0;
+	bDontCheckVictory = false;
+	if(comboAlliedVictory) pPlayer.SetSendENResults(false);
+	else pPlayer.SetSendENResults(true);
+    //if(comboAlliedVictory) pPlayer.SetAIControlOptions(eAIControlAINeutralAI, false);
+    //else pPlayer.SetAIControlOptions(eAIControlAINeutralAI, true);
+#ifdef PEACE
+	if(nPeaceTimer<1)
+	{
+		pPlayer.RegisterGoal(1, MISSION_GOAL2);
+		pPlayer.SetGoalState(0,goalAchieved,false);
+		pPlayer.EnableGoal(1, true, true); 
+		pPlayer.SetConsoleText(MISSION_GOAL2, 10*30);
+		SetAliances(eEnemy);
+	}
+	else
+	{
+		SetAliances(eNeutral);
+	}
+#endif
+}
+
+event RemoveUnits()
+{
+    if (comboStartingUnits) 
+    {
+        return true;
+    }
+    return false;
+}
+
+event NotUseAgents()
+{
+    return !comboAgents;
+}
+
+event UseExtraSkirmishPlayers()
+{
+    return true;
+}
+
+event SpecialLevelFlags()
+{
+    return 0x01;
+}
+
+event AIPlayerFlags()
+{
+    return 0x0F;
+}
+
+command Initialize()
+{
+	comboAlliedVictory=1;
+    comboStartingUnits=1;
+    comboAgents=1;
+    return true;
+}
+
+command Uninitialize()
+{
+    return true;
+}
+    
+command Combo1(int nMode) button comboStartingUnits 
+{
+    comboStartingUnits = nMode;
+	return true;
+}
+
+command Combo2(int nMode) button comboAlliedVictory
+{
+    comboAlliedVictory = nMode;
+    return true;
+}
+
+
+
+
+
+}
+

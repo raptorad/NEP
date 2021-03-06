@@ -1,0 +1,59 @@
+
+consts
+{
+	signMoveTo  = 20;
+	signAttack  = 21;
+	signSpecial = 22;
+
+	eCrystal = 0;
+	eMetal = 1;
+	eWater = 2;
+
+    eInterfaceEnabled = 0;
+	eInterfaceDisabled = 1;
+	 
+	eLandAirModeLand  = 0;
+	eLandAirModeStart = 1;
+
+	eMovementModeHoldArea     = 0;
+	eMovementModeHoldPosition = 1;
+
+	eAttackModeFireAtWill = 0;
+	eAttackModeHoldFire   = 1;
+
+	eAccuracyModeNormal  = 0;
+	eAccuracyModePrecise = 1;
+
+	eCamouflageModeOff = 0;
+	eCamouflageModeOn  = 1;
+
+	eEntrenchmentModeOff = 0;
+	eEntrenchmentModeOn  = 1;
+
+	eLightsModeAuto = 0;
+	eLightsModeOff  = 1;
+
+	eCrawlModeOff = 0;
+	eCrawlModeOn  = 1;
+
+	eEnergyDisperseModeOn  = 0;
+	eEnergyDisperseModeOff = 1;
+
+	eAutoSelectHeroWeaponModeOff = 0;
+	eAutoSelectHeroWeaponModeOn  = 1;
+
+	eCaptureModeNone = 0;
+	eCaptureModeAuto = 1;
+
+	eBufferEHero1 = 1;
+	eBufferEHero2 = 2;
+	eBufferLHero1 = 3;
+	eBufferLHero2 = 4;
+	eBufferAHero1 = 5;
+	eBufferAHero2 = 6;
+
+	eFadeTime = 60;
+	
+	eNoRideAttack=1;
+	
+}

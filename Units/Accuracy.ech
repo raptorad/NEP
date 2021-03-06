@@ -1,0 +1,35 @@
+#ifndef ACCURACY_ECH
+#define ACCURACY_ECH
+
+////    Declarations    ////
+
+enum accuracyMode
+{
+    TRL_ACCURACYMODE_0 item ITEM_ACCURACYMODE_0,
+    TRL_ACCURACYMODE_1 item ITEM_ACCURACYMODE_1,
+multi:
+    TRL_ACCURACYMODE_X item ITEM_ACCURACYMODE_X
+}//————————————————————————————————————————————————————————————————————————————————————————————————————|
+
+////    Commands    ////
+
+command SetAccuracyMode(int nMode) button accuracyMode priority PRIOR_ACCURACYMODE
+{
+    if (!IsAccuracyModeUnit())
+    {
+        return false;
+    }
+    if (nMode == -1)
+    {
+        accuracyMode = (accuracyMode + 1) % 2;
+    }
+    else
+    {
+        accuracyMode = nMode;
+    }
+    SetAccuracyMode(accuracyMode);
+    EndCommand(true);
+    return true;
+}//————————————————————————————————————————————————————————————————————————————————————————————————————|
+
+#endif

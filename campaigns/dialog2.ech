@@ -1,0 +1,44 @@
+int m_nStateAfterBriefing;
+int m_nStateAfterBriefingDelay;
+int m_bDisabledInterfaceInBriefing;
+
+state WaitToEndBriefingAndSetState;
+
+function void WaitToEndBriefing(int nStateAfterBriefing, int nDelay, int bDisableInterface)
+{
+    if (nStateAfterBriefing != WaitToEndBriefingAndSetState)
+    {
+        m_nStateAfterBriefing = nStateAfterBriefing;
+    }
+    m_nStateAfterBriefingDelay = nDelay;
+    m_bDisabledInterfaceInBriefing = bDisableInterface;
+    if (bDisableInterface)
+    {
+        EnableInterface(false);
+    }
+    state WaitToEndBriefingAndSetState;
+}
+
+function void WaitToEndBriefing(int nStateAfterBriefing, int nDelay)
+{
+    WaitToEndBriefing(nStateAfterBriefing, nDelay, false);
+}
+
+state WaitToEndBriefingAndSetState
+{
+}
+
+event EndPlayBriefing(int nIFFNum, int nBriefingScriptNum, int bFromEscapeClick)
+{
+    if (state == WaitToEndBriefingAndSetState)
+    {
+        if (m_bDisabledInterfaceInBriefing)
+        {
+            EnableInterface(true);
+        }
+        SetState(m_nStateAfterBriefing, m_nStateAfterBriefingDelay);
+    }
+#ifdef CUSTOM_ENDPLAYBRIEFING
+    CUSTOM_ENDPLAYBRIEFING(nIFFNum, nBriefingScriptNum, bFromEscapeClick);
+#endif CUSTOM_ENDPLAYBRIEFING
+}

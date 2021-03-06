@@ -1,0 +1,1335 @@
+/*
+	Armor, Cannon, AntiEquipment, sa wymyslane automatycznie przez AI
+
+	Cannon:	przeciwko unitowi ktorego najdluzej zabija (tylko na unity, nie LaserUnit)
+	Armour:	przeciwko unitowi z ktorym ma najgorsze porownanie czasu zabijania
+	AntiEquipment:
+		eShield -> Cannon::eAntiShield						nUpdateLevel
+		eJammer -> Equipment::eAntiJammer					nUpdateLevel
+		eShadow	-> Equipment::eAntiShadow					nUpdateLevel
+		eRadar	-> Equipment::eShadow						nUpdateLevel
+		eSpecialWeapon|eMissile -> Cannon::eAntiMissile		kolejny
+		eEnergyDisperse	-> Missile::eNoEnergyDisperse		kolejny
+		eAntiShadow	-> eShadow								nUpdateLevel+1
+
+	W wariantach researchy musz byc unity, technologie i budynki
+	cannony na budynki i unity SpecialWeapon
+	pozostale researche rowniez moga wystapic
+*/
+
+consts
+{
+	eRaceUCS	= 1;
+	eRaceED		= 2;
+	eRaceLC		= 3;
+	eRaceAlien	= 4;
+}
+
+consts
+{
+	eLevelEasy		= 0;
+	eLevelMedium	= 1;
+	eLevelHard		= 2;
+	eLevelExpert	=3;
+	eLevelHardcore =4;
+}
+int i;
+int time;
+int s_nGameLevel;
+
+function void ADD_RESEARCH(int nVariantType, string strResearchName, int nMinGameLevel)
+{
+	if (s_nGameLevel >= nMinGameLevel)
+	{
+		AddNewAIVariantResearch(nVariantType, strResearchName);
+	}
+}
+
+function void SET_AI_STATE_PERCENT(int nVariantType, int nResearchVariant, int nResearchCannon, int nResearchArmour, int nResearchEngine)
+{
+	SetAIVariantStatePercent(nVariantType, eAIStateResearchVariant,	nResearchVariant); //lacznie powinno byc 100
+	SetAIVariantStatePercent(nVariantType, eAIStateResearchCannon,	nResearchCannon);
+	SetAIVariantStatePercent(nVariantType, eAIStateResearchArmour,	nResearchArmour);
+	SetAIVariantStatePercent(nVariantType, eAIStateResearchEngine,	nResearchEngine);
+}
+
+
+//------------------------------------ SetAIVariantResearches ----------------------------------------|
+
+function void SetAIVariantResearches(int nGameLevel)
+{
+	/*
+	proporcje czasu ile razy AIPlayer ma przechodzic do danego stanu
+	najpierw stany daza do wyrownania,
+	tzn. jesli np. eAIStateBuildBasePrior=40 i eAIStateDefence=10, wywola sie 4 razy eAIStateBuildBase
+	dopiero pozniej zacznie wywolywac sie eAIStateDefence, co 4 stany eAIStateBuildBase
+	
+	SET_AI_STATE_PERCENT(nVariantType, nResVariant, nResCannon, nResArmour, nResEngine)
+	//powinno (nResVariant + nResCannon + ...) = 100
+	*/
+
+	if (GetRace()==eRaceUCS)
+	{
+		AddResearch("UCS_AIR_TECH1");
+		//procenty wykonywania stanow AIPlayera
+		if (nGameLevel==eLevelEasy)
+		{
+			SET_AI_STATE_PERCENT(eAIResearchVariantUniversal,	24, 7, 4, 0);
+			SET_AI_STATE_PERCENT(eAIResearchVariantAir,			25, 5, 0, 0);
+			SET_AI_STATE_PERCENT(eAIResearchVariantDefense,		28, 4, 3, 0);
+		}
+		else if (nGameLevel==eLevelMedium)
+		{
+			SET_AI_STATE_PERCENT(eAIResearchVariantUniversal,	15, 7, 5, 0);
+			SET_AI_STATE_PERCENT(eAIResearchVariantAir,			35, 5, 4, 0);
+			SET_AI_STATE_PERCENT(eAIResearchVariantDefense,		15, 12, 5, 0);
+		}
+		else //if (nGameLevel==eLevelHard)
+		{
+			SET_AI_STATE_PERCENT(eAIResearchVariantUniversal,	10, 9, 5, 0);
+			SET_AI_STATE_PERCENT(eAIResearchVariantAir,			45, 5, 4, 0);
+			SET_AI_STATE_PERCENT(eAIResearchVariantDefense,		10, 9, 5, 0);
+		}
+		//eAIResearchVariantUniversal
+
+		ADD_RESEARCH(eAIResearchVariantUniversal, "UCS_LAND_TECH1", eLevelEasy);	//Kazuar //
+		ADD_RESEARCH(eAIResearchVariantUniversal, "UCS_PLASMA_GUN1", eLevelEasy);	//Plasma Granat Launcher
+		ADD_RESEARCH(eAIResearchVariantUniversal, "UCS_SHIELD", eLevelEasy);	//Mirror Shield generator
+		ADD_RESEARCH(eAIResearchVariantUniversal, "UCS_LAND_TECH2", eLevelEasy);	//Jaguar
+		ADD_RESEARCH(eAIResearchVariantUniversal, "UCS_GRANADE_LAUNCHER", eLevelEasy);	//High Explosive Device mkII
+		ADD_RESEARCH(eAIResearchVariantUniversal, "UCS_LAND_ARMOUR1", eLevelEasy);	//Silver One mkII
+		ADD_RESEARCH(eAIResearchVariantUniversal, "UCS_ROCKET_LAUNCHER", eLevelEasy);	//Repair Device
+		ADD_RESEARCH(eAIResearchVariantUniversal, "UCS_ANTI_SHIELD", eLevelEasy);	//Advanced Mirror Shield Generator
+		ADD_RESEARCH(eAIResearchVariantUniversal, "UCS_AIR_TECH1", eLevelEasy);	//Scarab
+		ADD_RESEARCH(eAIResearchVariantUniversal, "UCS_DEFENSE_TECH1", eLevelEasy);	//
+		ADD_RESEARCH(eAIResearchVariantUniversal, "UCS_RADAR", eLevelEasy);	//Communication array
+		ADD_RESEARCH(eAIResearchVariantUniversal, "UCS_LAND_TECH3", eLevelEasy);	//Lion
+		ADD_RESEARCH(eAIResearchVariantUniversal, "UCS_LAND_TECH4", eLevelEasy);	//Scorpion
+		ADD_RESEARCH(eAIResearchVariantUniversal, "UCS_SHIELD2", eLevelEasy);	//Mirror Shield generator mkII
+		ADD_RESEARCH(eAIResearchVariantUniversal, "UCS_LAND_ARMOUR2", eLevelEasy);	//Silver One mkIII
+		ADD_RESEARCH(eAIResearchVariantUniversal, "SHADOW", eLevelEasy);	//Shadow Generator
+		ADD_RESEARCH(eAIResearchVariantUniversal, "UCS_AIR_TECH2", eLevelEasy);	//Condor
+		ADD_RESEARCH(eAIResearchVariantUniversal, "UCS_DEFENSE_TECH2", eLevelEasy);	//Hacker mkII
+		ADD_RESEARCH(eAIResearchVariantUniversal, "UCS_ANTI_SHIELD2", eLevelEasy);	//Advanced Mirror Shield Generator mkII
+		ADD_RESEARCH(eAIResearchVariantUniversal, "UCS_DRONE", eLevelEasy);	//Long Distance Teleportation
+		ADD_RESEARCH(eAIResearchVariantUniversal, "UCS_AIR_TECH3", eLevelEasy);	//Beetle
+		ADD_RESEARCH(eAIResearchVariantUniversal, "UCS_BOMB_LAUNCHER", eLevelEasy);	//Shuriken Granade Launcher
+		ADD_RESEARCH(eAIResearchVariantUniversal, "UCS_SDI", eLevelEasy);	//SDI
+		ADD_RESEARCH(eAIResearchVariantUniversal, "UCS_ROENTGEN_EMMITER", eLevelEasy);	//Internal Repair Robot mkII
+		ADD_RESEARCH(eAIResearchVariantUniversal, "UCS_SENSORS", eLevelEasy);	//Infra-red Search Device
+		ADD_RESEARCH(eAIResearchVariantUniversal, "UCS_DEFENSE_TECH3", eLevelEasy);	//Hacker mkIII
+		ADD_RESEARCH(eAIResearchVariantUniversal, "UCS_PLASMA_CANNON", eLevelEasy);	//Bomb Teleport Facility
+		ADD_RESEARCH(eAIResearchVariantUniversal, "UCS_SHIELD3", eLevelEasy);	//Mirror Shield generator mkIII //
+		ADD_RESEARCH(eAIResearchVariantUniversal, "UCS_ANTI_SHIELD3", eLevelEasy);	//Advanced Mirror Shield Generator mkIII //
+		ADD_RESEARCH(eAIResearchVariantUniversal, "UCS_DEFENSE_TECH4", eLevelEasy);	//Internal Repair Robot mkIII
+		ADD_RESEARCH(eAIResearchVariantUniversal, "UCS_DRONE2", eLevelEasy);	//Unit Teleport Facility
+		ADD_RESEARCH(eAIResearchVariantUniversal, "UCS_BOMB", eLevelEasy);	//High Explosive Device mkIII
+		ADD_RESEARCH(eAIResearchVariantUniversal, "UCS_AIR_TECH4", eLevelEasy);	//Beetle
+
+		//eAIResearchVariantAir
+
+		ADD_RESEARCH(eAIResearchVariantAir, "UCS_LAND_TECH1", eLevelEasy);	//Kazuar
+		ADD_RESEARCH(eAIResearchVariantAir, "UCS_PLASMA_GUN1", eLevelEasy);	//Plasma Granat Launcher
+		ADD_RESEARCH(eAIResearchVariantAir, "UCS_SHIELD", eLevelEasy);	//Mirror Shield generator
+		ADD_RESEARCH(eAIResearchVariantAir, "UCS_AIR_TECH1", eLevelEasy);	//Scarab
+		ADD_RESEARCH(eAIResearchVariantAir, "UCS_LAND_TECH2", eLevelEasy);	//Jaguar
+		ADD_RESEARCH(eAIResearchVariantAir, "UCS_GRANADE_LAUNCHER", eLevelEasy);	//High Explosive Device mkII
+		ADD_RESEARCH(eAIResearchVariantAir, "UCS_AIR_ARMOUR1", eLevelEasy);	//Silver One mkII
+		ADD_RESEARCH(eAIResearchVariantAir, "UCS_AIR_TECH2", eLevelEasy);	//Condor
+		ADD_RESEARCH(eAIResearchVariantAir, "UCS_AIR_TECH3", eLevelEasy);	//Beetle
+		ADD_RESEARCH(eAIResearchVariantAir, "UCS_BOMB_LAUNCHER", eLevelEasy);	//Shuriken Granade Launcher
+		ADD_RESEARCH(eAIResearchVariantAir, "UCS_ROCKET_LAUNCHER", eLevelEasy);	//Repair Device
+		ADD_RESEARCH(eAIResearchVariantAir, "UCS_ANTI_SHIELD", eLevelEasy);	//Advanced Mirror Shield Generator
+		ADD_RESEARCH(eAIResearchVariantAir, "UCS_RADAR", eLevelEasy);	//Communication array
+		ADD_RESEARCH(eAIResearchVariantAir, "UCS_LAND_TECH3", eLevelEasy);	//Lion
+		ADD_RESEARCH(eAIResearchVariantAir, "UCS_DEFENSE_TECH1", eLevelEasy);
+		ADD_RESEARCH(eAIResearchVariantAir, "UCS_LAND_TECH4", eLevelEasy);	//Scorpion
+		ADD_RESEARCH(eAIResearchVariantAir, "UCS_SHIELD2", eLevelEasy);	//Mirror Shield generator mkII
+		ADD_RESEARCH(eAIResearchVariantAir, "UCS_AIR_ARMOUR2", eLevelEasy);	//Silver One mkIII
+		ADD_RESEARCH(eAIResearchVariantAir, "SHADOW", eLevelEasy);	//Shadow Generator
+		ADD_RESEARCH(eAIResearchVariantAir, "UCS_DEFENSE_TECH2", eLevelEasy);	//Hacker mkII
+		ADD_RESEARCH(eAIResearchVariantAir, "UCS_ANTI_SHIELD2", eLevelEasy);	//Advanced Mirror Shield Generator mkII
+		ADD_RESEARCH(eAIResearchVariantAir, "UCS_DRONE", eLevelEasy);	//Long Distance Teleportation
+		ADD_RESEARCH(eAIResearchVariantAir, "UCS_DRONE2", eLevelEasy);	//Unit Teleport Facility
+		ADD_RESEARCH(eAIResearchVariantAir, "UCS_PLASMA_CANNON", eLevelEasy);	//Bomb Teleport Facility
+		ADD_RESEARCH(eAIResearchVariantAir, "UCS_SDI", eLevelEasy);	//SDI
+		ADD_RESEARCH(eAIResearchVariantAir, "UCS_SENSORS", eLevelEasy);	//Infra-red Search Device
+		ADD_RESEARCH(eAIResearchVariantAir, "UCS_ROENTGEN_EMMITER", eLevelEasy);	//High Explosive Device mkIII
+		ADD_RESEARCH(eAIResearchVariantAir, "UCS_DEFENSE_TECH3", eLevelEasy);	//Hacker mkIII
+		ADD_RESEARCH(eAIResearchVariantAir, "UCS_SHIELD3", eLevelEasy);	//Mirror Shield generator mkIII
+		ADD_RESEARCH(eAIResearchVariantAir, "UCS_ANTI_SHIELD3", eLevelEasy);	//Advanced Mirror Shield Generator mkIII
+		ADD_RESEARCH(eAIResearchVariantAir, "UCS_AIR_TECH4", eLevelEasy);	//Internal Repair Robot mkII
+		ADD_RESEARCH(eAIResearchVariantAir, "UCS_DEFENSE_TECH4", eLevelEasy);	//Internal Repair Robot mkIII
+
+		//eAIResearchVariantDefense
+		ADD_RESEARCH(eAIResearchVariantDefense, "UCS_DEFENSE_TECH1", eLevelEasy);
+		ADD_RESEARCH(eAIResearchVariantDefense, "UCS_LAND_TECH1", eLevelEasy);	//Kazuar
+		ADD_RESEARCH(eAIResearchVariantDefense, "UCS_SHIELD", eLevelEasy);	//Mirror Shield generator
+		ADD_RESEARCH(eAIResearchVariantDefense, "UCS_LAND_TECH2", eLevelEasy);	//Jaguar
+		ADD_RESEARCH(eAIResearchVariantDefense, "UCS_PLASMA_GUN1", eLevelEasy);	//Rocket Launcher
+		ADD_RESEARCH(eAIResearchVariantDefense, "UCS_ROCKET_LAUNCHER", eLevelEasy);	//Repair Device
+		ADD_RESEARCH(eAIResearchVariantDefense, "UCS_ANTI_SHIELD1", eLevelEasy);	//Advanced Mirror Shield Generator
+		ADD_RESEARCH(eAIResearchVariantDefense, "UCS_AIR_TECH1", eLevelEasy);	//Scarab
+		ADD_RESEARCH(eAIResearchVariantDefense, "UCS_PLASMA_GUN2", eLevelEasy);	//Rocket Launcher mkII
+		ADD_RESEARCH(eAIResearchVariantDefense, "UCS_RADAR", eLevelEasy);	//Communication array
+		ADD_RESEARCH(eAIResearchVariantDefense, "UCS_PLASMA_GUN3", eLevelEasy);	//Rocket Launcher mkIII
+		ADD_RESEARCH(eAIResearchVariantDefense, "UCS_GRANADE_LAUNCHER", eLevelEasy);	//High Explosive Device mkII
+		ADD_RESEARCH(eAIResearchVariantDefense, "UCS_LAND_TECH3", eLevelEasy);	//Lion
+		ADD_RESEARCH(eAIResearchVariantDefense, "UCS_SHIELD2", eLevelEasy);	//Mirror Shield generator mkII
+		ADD_RESEARCH(eAIResearchVariantDefense, "UCS_DEFENSE_TECH2", eLevelEasy);	//Silver One mkIII
+		ADD_RESEARCH(eAIResearchVariantDefense, "UCS_SDI", eLevelEasy);	//SDI
+		ADD_RESEARCH(eAIResearchVariantDefense, "UCS_DEFENSE_TECH3", eLevelEasy);	//Hacker
+		ADD_RESEARCH(eAIResearchVariantDefense, "UCS_ANTI_SHIELD2", eLevelEasy);	//Advanced Mirror Shield Generator mkII
+		ADD_RESEARCH(eAIResearchVariantDefense, "UCS_SHIELD3", eLevelEasy);	//Mirror Shield generator mkIII
+		ADD_RESEARCH(eAIResearchVariantDefense, "UCS_ANTI_SHIELD_3", eLevelEasy);	//Advanced Mirror Shield Generator mkIII
+		ADD_RESEARCH(eAIResearchVariantDefense, "UCS_LAND_TECH4", eLevelEasy);	//Scorpion
+		ADD_RESEARCH(eAIResearchVariantDefense, "UCS_AIR_TECH2", eLevelEasy);	//Beetle
+		ADD_RESEARCH(eAIResearchVariantDefense, "UCS_DRONE", eLevelEasy);	//Long Distance Teleportation
+		ADD_RESEARCH(eAIResearchVariantDefense, "SHADOW", eLevelEasy);	//Shadow Generator
+		ADD_RESEARCH(eAIResearchVariantDefense, "UCS_AIR_TECH3", eLevelEasy);	//Condor
+		ADD_RESEARCH(eAIResearchVariantDefense, "UCS_BOMB_LAUNCHER", eLevelEasy);	//Shuriken Granade Launcher
+		ADD_RESEARCH(eAIResearchVariantDefense, "UCS_SENSORS", eLevelEasy);	//Infra-red Search Device
+		ADD_RESEARCH(eAIResearchVariantDefense, "UCS_DEFENSE_TECH4", eLevelEasy);	//Hacker mkII
+		ADD_RESEARCH(eAIResearchVariantDefense, "UCS_PLASMA_CANNON", eLevelEasy);	//Bomb Teleport Facility
+		ADD_RESEARCH(eAIResearchVariantDefense, "UCS_DRONE2", eLevelEasy);	//Unit Teleport Facility
+		ADD_RESEARCH(eAIResearchVariantDefense, "UCS_ROENTGEN_EMMITER", eLevelEasy);	//High Explosive Device mkIII
+		ADD_RESEARCH(eAIResearchVariantDefense, "UCS_AIR_TECH4", eLevelEasy);	//Condor
+	
+		if(nGameLevel>=eLevelExpert)
+		{
+			AddResearch("UCS_LAND_ARMOUR1");
+			AddResearch("UCS_AIR_ARMOUR1");
+			AddResearch("UCS_BUILDINGS_ARMOUR1");
+			AddResearch("UCS_PULSE_GUN");
+			AddResearch("UCS_PULSE_BULLET");
+			AddResearch("UCS_ROENTGEN_EMMITER");
+			AddResearch("UCS_ROENTGEN_GENERATOR");
+			AddResearch("UCS_PLASMA_GUN");
+			AddResearch("UCS_PLASMA_GENERATOR1");
+			AddResearch("UCS_PLASMA_CANNON");
+			AddResearch("UCS_ROCKET_LAUNCHER");
+			AddResearch("UCS_ROCKET");
+			AddResearch("UCS_GRANADE_LAUNCHER");
+			AddResearch("UCS_GRANADE");
+			AddResearch("UCS_BOMB_LAUNCHER");
+			AddResearch("UCS_BOMB");
+			AddResearch("UCS_SHIELD");
+			AddResearch("UCS_ANTI_SHIELD");
+			AddResearch("UCS_AMIS_LAUNCHER");
+			AddResearch("UCS_DRONE");
+			AddResearch("UCS_SDI");
+			AddResearch("UCS_RADAR");
+			AddResearch("UCS_SENSORS");
+			AddResearch("SHADOW");
+			AddResearch("UCS_TELEPORT1");
+
+		}		
+		if(nGameLevel==eLevelHardcore)
+		{
+
+			AddResearch("UCS_LAND_ARMOUR2");
+			AddResearch("UCS_LAND_ARMOUR3");
+			AddResearch("UCS_AIR_ARMOUR2");
+			AddResearch("UCS_AIR_ARMOUR3");
+			AddResearch("UCS_BUILDINGS_ARMOUR2");
+			AddResearch("UCS_BUILDINGS_ARMOUR3");
+			AddResearch("UCS_PULSE_GUN2");
+			AddResearch("UCS_PULSE_GUN3");
+			AddResearch("UCS_PULSE_BULLET2");
+			AddResearch("UCS_PULSE_BULLET3");
+			AddResearch("UCS_ROENTGEN_EMMITER2");
+			AddResearch("UCS_ROENTGEN_EMMITER3");
+			AddResearch("UCS_ROENTGEN_GENERATOR2");
+			AddResearch("UCS_ROENTGEN_GENERATOR3");
+			AddResearch("UCS_PLASMA_GUN2");
+			AddResearch("UCS_PLASMA_GUN3");
+			AddResearch("UCS_PLASMA_GENERATOR2");
+			AddResearch("UCS_PLASMA_GENERATOR3");
+			AddResearch("UCS_ROCKET_LAUNCHER2");
+			AddResearch("UCS_ROCKET_LAUNCHER3");
+			AddResearch("UCS_ROCKET2");
+			AddResearch("UCS_ROCKET3");
+			AddResearch("UCS_GRANADE_LAUNCHER");
+			AddResearch("UCS_GRANADE_LAUNCHER2");
+			AddResearch("UCS_GRANADE_LAUNCHER3");
+			AddResearch("UCS_GRANADE2");
+			AddResearch("UCS_GRANADE3");
+			AddResearch("UCS_BOMB_LAUNCHER");
+			AddResearch("UCS_BOMB_LAUNCHER2");
+			AddResearch("UCS_BOMB_LAUNCHER3");
+			AddResearch("UCS_BOMB2");
+			AddResearch("UCS_BOMB3");
+			AddResearch("UCS_SHIELD2");
+			AddResearch("UCS_SHIELD3");
+			AddResearch("UCS_ANTI_SHIELD2");
+			AddResearch("UCS_ANTI_SHIELD3");
+			AddResearch("UCS_AMIS_LAUNCHER2");
+			AddResearch("UCS_AMIS_LAUNCHER3");
+			AddResearch("UCS_DRONE2");
+			AddResearch("UCS_SENSORS2");
+			AddResearch("UCS_SENSORS3");
+			AddResearch("SHADOW2");
+			AddResearch("SHADOW3");
+			AddResearch("UCS_TELEPORT2");
+			AddResearch("UCS_TELEPORT3");
+		}
+	}
+
+	else if (GetRace()==eRaceED)
+	{
+		AddResearch("ED_AIR_TECH1");
+		//procenty wykonywania stanow AIPlayera
+		if (nGameLevel==eLevelEasy)
+		{
+			SET_AI_STATE_PERCENT(eAIResearchVariantUniversal,	20, 7, 0, 8);
+			SET_AI_STATE_PERCENT(eAIResearchVariantAir,			20, 5, 0, 5);
+			SET_AI_STATE_PERCENT(eAIResearchVariantDefense,		25, 4, 0, 6);
+		}
+		else if (nGameLevel==eLevelMedium)
+		{
+			SET_AI_STATE_PERCENT(eAIResearchVariantUniversal,	15, 7, 5, 3);
+			SET_AI_STATE_PERCENT(eAIResearchVariantAir,			30, 5, 4, 1);
+			SET_AI_STATE_PERCENT(eAIResearchVariantDefense,		15, 12, 5, 1);
+		}
+		else //if (nGameLevel==eLevelHard)
+		{
+			SET_AI_STATE_PERCENT(eAIResearchVariantUniversal,	10, 9, 5, 0);
+			SET_AI_STATE_PERCENT(eAIResearchVariantAir,			45, 5, 4, 0);
+			SET_AI_STATE_PERCENT(eAIResearchVariantDefense,		10, 9, 5, 0);
+		}
+
+		//eAIResearchVariantUniversal
+
+		ADD_RESEARCH(eAIResearchVariantUniversal, "ED_LAND_TECH1", eLevelEasy);	//Kazuar //
+		ADD_RESEARCH(eAIResearchVariantUniversal, "ED_AIR_TECH1", eLevelEasy);	//Scarab
+		ADD_RESEARCH(eAIResearchVariantUniversal, "ED_LASER_GUN1", eLevelEasy);	//Plasma Granat Launcher
+		ADD_RESEARCH(eAIResearchVariantUniversal, "ED_SHIELD", eLevelEasy);	//Mirror Shield generator
+		ADD_RESEARCH(eAIResearchVariantUniversal, "ED_LAND_TECH2", eLevelEasy);	//Jaguar
+		ADD_RESEARCH(eAIResearchVariantUniversal, "ED_DEFENSE_TECH1", eLevelEasy);	
+		ADD_RESEARCH(eAIResearchVariantUniversal, "ED_MOBILE_RAFINERY2", eLevelEasy);	//
+		ADD_RESEARCH(eAIResearchVariantUniversal, "ED_PPANC_CANNON", eLevelEasy);	//High Explosive Device mkII
+		ADD_RESEARCH(eAIResearchVariantUniversal, "ED_LAND_ARMOUR1", eLevelEasy);	//Silver One mkII
+		ADD_RESEARCH(eAIResearchVariantUniversal, "ED_ROCKET_LAUNCHER", eLevelEasy);	//Repair Device
+		ADD_RESEARCH(eAIResearchVariantUniversal, "ED_AIR_TECH2", eLevelEasy);	//Condor
+		ADD_RESEARCH(eAIResearchVariantUniversal, "ED_MOBILE_RAFINERY3", eLevelEasy);		
+		ADD_RESEARCH(eAIResearchVariantUniversal, "ED_SHIELD_SUCKER", eLevelEasy);	//Advanced Mirror Shield Generator
+		ADD_RESEARCH(eAIResearchVariantUniversal, "ED_RADAR", eLevelEasy);	//Communication array
+		ADD_RESEARCH(eAIResearchVariantUniversal, "ED_LAND_TECH3", eLevelEasy);	//Lion
+		ADD_RESEARCH(eAIResearchVariantUniversal, "ED_LAND_TECH4", eLevelEasy);	//Scorpion
+		ADD_RESEARCH(eAIResearchVariantUniversal, "ED_MOBILE_RAFINERY4", eLevelEasy);		
+		ADD_RESEARCH(eAIResearchVariantUniversal, "ED_SHIELD2", eLevelEasy);	//Mirror Shield generator mkII
+		ADD_RESEARCH(eAIResearchVariantUniversal, "ED_LAND_ARMOUR2", eLevelEasy);	//Silver One mkIII
+		ADD_RESEARCH(eAIResearchVariantUniversal, "ED_ARMOUR_UP", eLevelEasy);	//ED_ARMOUR_UP Generator
+		ADD_RESEARCH(eAIResearchVariantUniversal, "ED_DEFENSE_TECH2", eLevelEasy);	//Hacker mkII
+		ADD_RESEARCH(eAIResearchVariantUniversal, "ED_SHIELD_SUCKER2", eLevelEasy);	//Advanced Mirror Shield Generator mkII
+		ADD_RESEARCH(eAIResearchVariantUniversal, "ED_DRONE", eLevelEasy);	//Long Distance Teleportation
+		ADD_RESEARCH(eAIResearchVariantUniversal, "ED_AIR_TECH3", eLevelEasy);	//Beetle
+		ADD_RESEARCH(eAIResearchVariantUniversal, "ED_BOMB_LAUNCHER", eLevelEasy);	//Shuriken Granade Launcher
+		ADD_RESEARCH(eAIResearchVariantUniversal, "ED_SDI", eLevelEasy);	//SDI
+		ADD_RESEARCH(eAIResearchVariantUniversal, "ED_JON_GUN", eLevelEasy);	//Internal Repair Robot mkII
+		ADD_RESEARCH(eAIResearchVariantUniversal, "ED_SENSORS", eLevelEasy);	//Infra-red Search Device
+		ADD_RESEARCH(eAIResearchVariantUniversal, "ED_DEFENSE_TECH3", eLevelEasy);	//Hacker mkIII
+		ADD_RESEARCH(eAIResearchVariantUniversal, "ED_BALISTIC_ROCKET", eLevelEasy);	//Bomb Teleport Facility
+		ADD_RESEARCH(eAIResearchVariantUniversal, "ED_SHIELD3", eLevelEasy);	//Mirror Shield generator mkIII //
+		ADD_RESEARCH(eAIResearchVariantUniversal, "ED_SHIELD_SUCKER3", eLevelEasy);	//Advanced Mirror Shield Generator mkIII //
+		ADD_RESEARCH(eAIResearchVariantUniversal, "ED_DEFENSE_TECH4", eLevelEasy);	//Internal Repair Robot mkIII
+		ADD_RESEARCH(eAIResearchVariantUniversal, "ED_DRONE2", eLevelEasy);	//Unit Teleport Facility
+		ADD_RESEARCH(eAIResearchVariantUniversal, "ED_BOMB", eLevelEasy);	//High Explosive Device mkIII
+
+		//eAIResearchVariantAir
+		ADD_RESEARCH(eAIResearchVariantAir, "ED_DEFENSE_TECH1", eLevelEasy);	
+		ADD_RESEARCH(eAIResearchVariantAir, "ED_MOBILE_RAFINERY2", eLevelEasy);	//		
+		ADD_RESEARCH(eAIResearchVariantAir, "ED_LAND_TECH1", eLevelEasy);	//Kazuar
+		ADD_RESEARCH(eAIResearchVariantAir, "ED_LASER_GUN1", eLevelEasy);	//Plasma Granat Launcher
+		ADD_RESEARCH(eAIResearchVariantAir, "ED_SHIELD", eLevelEasy);	//Mirror Shield generator
+		ADD_RESEARCH(eAIResearchVariantAir, "ED_AIR_TECH1", eLevelEasy);	//Scarab
+		ADD_RESEARCH(eAIResearchVariantAir, "ED_LAND_TECH2", eLevelEasy);	//Jaguar
+		ADD_RESEARCH(eAIResearchVariantAir, "ED_MOBILE_RAFINERY3", eLevelEasy);	//	
+		ADD_RESEARCH(eAIResearchVariantAir, "ED_PPANC_CANNON", eLevelEasy);	//High Explosive Device mkII
+		ADD_RESEARCH(eAIResearchVariantAir, "ED_AIR_ARMOUR1", eLevelEasy);	//Silver One mkII
+		ADD_RESEARCH(eAIResearchVariantAir, "ED_AIR_TECH2", eLevelEasy);	//Condor
+		ADD_RESEARCH(eAIResearchVariantAir, "ED_MOBILE_RAFINERY4", eLevelEasy);	//			
+		ADD_RESEARCH(eAIResearchVariantAir, "ED_AIR_TECH3", eLevelEasy);	//Beetle
+		ADD_RESEARCH(eAIResearchVariantAir, "ED_BOMB_LAUNCHER", eLevelEasy);	//Shuriken Granade Launcher
+		ADD_RESEARCH(eAIResearchVariantAir, "ED_ROCKET_LAUNCHER", eLevelEasy);	//Repair Device
+		ADD_RESEARCH(eAIResearchVariantAir, "ED_SHIELD_SUCKER", eLevelEasy);	//Advanced Mirror Shield Generator
+		ADD_RESEARCH(eAIResearchVariantAir, "ED_RADAR", eLevelEasy);	//Communication array
+		ADD_RESEARCH(eAIResearchVariantAir, "ED_LAND_TECH3", eLevelEasy);	//Lion
+		ADD_RESEARCH(eAIResearchVariantAir, "ED_LAND_TECH4", eLevelEasy);	//Scorpion
+		ADD_RESEARCH(eAIResearchVariantAir, "ED_SHIELD2", eLevelEasy);	//Mirror Shield generator mkII
+		ADD_RESEARCH(eAIResearchVariantAir, "ED_AIR_ARMOUR2", eLevelEasy);	//Silver One mkIII
+		ADD_RESEARCH(eAIResearchVariantAir, "ED_ARMOUR_UP", eLevelEasy);	//ED_ARMOUR_UP Generator
+		ADD_RESEARCH(eAIResearchVariantAir, "ED_DEFENSE_TECH2", eLevelEasy);	//Hacker mkII
+		ADD_RESEARCH(eAIResearchVariantAir, "ED_SHIELD_SUCKER2", eLevelEasy);	//Advanced Mirror Shield Generator mkII
+		ADD_RESEARCH(eAIResearchVariantAir, "ED_DRONE", eLevelEasy);	//Long Distance Teleportation
+		ADD_RESEARCH(eAIResearchVariantAir, "ED_DRONE2", eLevelEasy);	//Unit Teleport Facility
+		ADD_RESEARCH(eAIResearchVariantAir, "ED_BALISTIC_ROCKET", eLevelEasy);	//Bomb Teleport Facility
+		ADD_RESEARCH(eAIResearchVariantAir, "ED_SDI", eLevelEasy);	//SDI
+		ADD_RESEARCH(eAIResearchVariantAir, "ED_SENSORS", eLevelEasy);	//Infra-red Search Device
+		ADD_RESEARCH(eAIResearchVariantAir, "ED_AIR_TECH4", eLevelEasy);	//Internal Repair Robot mkII
+		ADD_RESEARCH(eAIResearchVariantAir, "ED_JON_GUN", eLevelEasy);	//High Explosive Device mkIII
+		ADD_RESEARCH(eAIResearchVariantAir, "ED_DEFENSE_TECH3", eLevelEasy);	//Hacker mkIII
+		ADD_RESEARCH(eAIResearchVariantAir, "ED_SHIELD3", eLevelEasy);	//Mirror Shield generator mkIII
+		ADD_RESEARCH(eAIResearchVariantAir, "ED_SHIELD_SUCKER3", eLevelEasy);	//Advanced Mirror Shield Generator mkIII
+		ADD_RESEARCH(eAIResearchVariantAir, "ED_DEFENSE_TECH4", eLevelEasy);	//Internal Repair Robot mkIII
+
+		//eAIResearchVariantDefense
+		ADD_RESEARCH(eAIResearchVariantDefense, "ED_DEFENSE_TECH1", eLevelEasy);
+		ADD_RESEARCH(eAIResearchVariantDefense, "ED_MOBILE_RAFINERY2", eLevelEasy);	//
+		ADD_RESEARCH(eAIResearchVariantDefense, "ED_LAND_TECH1", eLevelEasy);	//Kazuar
+		ADD_RESEARCH(eAIResearchVariantDefense, "ED_SHIELD", eLevelEasy);	//Mirror Shield generator
+		ADD_RESEARCH(eAIResearchVariantDefense, "ED_LAND_TECH2", eLevelEasy);	//Jaguar
+		ADD_RESEARCH(eAIResearchVariantDefense, "ED_MOBILE_RAFINERY3", eLevelEasy);	//
+		ADD_RESEARCH(eAIResearchVariantDefense, "ED_LASER_GUN1", eLevelEasy);	//Rocket Launcher
+		ADD_RESEARCH(eAIResearchVariantDefense, "ED_ROCKET_LAUNCHER", eLevelEasy);	//Repair Device
+		ADD_RESEARCH(eAIResearchVariantDefense, "ED_SHIELD_SUCKER1", eLevelEasy);	//Advanced Mirror Shield Generator
+		ADD_RESEARCH(eAIResearchVariantDefense, "ED_AIR_TECH1", eLevelEasy);	//Scarab
+		ADD_RESEARCH(eAIResearchVariantDefense, "ED_MOBILE_RAFINERY4", eLevelEasy);	//
+		ADD_RESEARCH(eAIResearchVariantDefense, "ED_LASER_GUN2", eLevelEasy);	//Rocket Launcher mkII
+		ADD_RESEARCH(eAIResearchVariantDefense, "ED_RADAR", eLevelEasy);	//Communication array
+		ADD_RESEARCH(eAIResearchVariantDefense, "ED_LASER_GUN3", eLevelEasy);	//Rocket Launcher mkIII
+		ADD_RESEARCH(eAIResearchVariantDefense, "ED_PPANC_CANNON", eLevelEasy);	//High Explosive Device mkII
+		ADD_RESEARCH(eAIResearchVariantDefense, "ED_LAND_TECH3", eLevelEasy);	//Lion
+		ADD_RESEARCH(eAIResearchVariantDefense, "ED_SHIELD2", eLevelEasy);	//Mirror Shield generator mkII
+		ADD_RESEARCH(eAIResearchVariantDefense, "ED_DEFENSE_TECH2", eLevelEasy);	//Silver One mkIII
+		ADD_RESEARCH(eAIResearchVariantDefense, "ED_SDI", eLevelEasy);	//SDI
+		ADD_RESEARCH(eAIResearchVariantDefense, "ED_DEFENSE_TECH3", eLevelEasy);	//Hacker
+		ADD_RESEARCH(eAIResearchVariantDefense, "ED_SHIELD_SUCKER2", eLevelEasy);	//Advanced Mirror Shield Generator mkII
+		ADD_RESEARCH(eAIResearchVariantDefense, "ED_SHIELD3", eLevelEasy);	//Mirror Shield generator mkIII
+		ADD_RESEARCH(eAIResearchVariantDefense, "ED_SHIELD_SUCKER_3", eLevelEasy);	//Advanced Mirror Shield Generator mkIII
+		ADD_RESEARCH(eAIResearchVariantDefense, "ED_LAND_TECH4", eLevelEasy);	//Scorpion
+		ADD_RESEARCH(eAIResearchVariantDefense, "ED_AIR_TECH2", eLevelEasy);	//Beetle
+		ADD_RESEARCH(eAIResearchVariantDefense, "ED_DRONE", eLevelEasy);	//Long Distance Teleportation
+		ADD_RESEARCH(eAIResearchVariantDefense, "ED_ARMOUR_UP", eLevelEasy);	//ED_ARMOUR_UP Generator
+		ADD_RESEARCH(eAIResearchVariantDefense, "ED_AIR_TECH3", eLevelEasy);	//Condor
+		ADD_RESEARCH(eAIResearchVariantDefense, "ED_BOMB_LAUNCHER", eLevelEasy);	//Shuriken Granade Launcher
+		ADD_RESEARCH(eAIResearchVariantDefense, "ED_SENSORS", eLevelEasy);	//Infra-red Search Device
+		ADD_RESEARCH(eAIResearchVariantDefense, "ED_DEFENSE_TECH4", eLevelEasy);	//Hacker mkII
+		ADD_RESEARCH(eAIResearchVariantDefense, "ED_BALISTIC_ROCKET", eLevelEasy);	//Bomb Teleport Facility
+		ADD_RESEARCH(eAIResearchVariantDefense, "ED_DRONE2", eLevelEasy);	//Unit Teleport Facility
+		ADD_RESEARCH(eAIResearchVariantDefense, "ED_JON_GUN", eLevelEasy);	//High Explosive Device mkIII
+		if (nGameLevel==eLevelHardcore)
+		{
+			AddResearch("ED_LAND_ARMOUR1");
+			AddResearch("ED_LAND_ARMOUR2");
+			AddResearch("ED_LAND_ARMOUR3");
+			AddResearch("ED_AIR_ARMOUR1");
+			AddResearch("ED_AIR_ARMOUR2");
+			AddResearch("ED_AIR_ARMOUR3");
+			AddResearch("ED_BUILDINGS_ARMOUR1");
+			AddResearch("ED_BUILDINGS_ARMOUR2");
+			AddResearch("ED_BUILDINGS_ARMOUR3");
+			AddResearch("ED_PULSE_GUN");
+			AddResearch("ED_PULSE_GUN2");
+			AddResearch("ED_PULSE_GUN3");
+			AddResearch("ED_PULSE_BULLET");
+			AddResearch("ED_PULSE_BULLET2");
+			AddResearch("ED_PULSE_BULLET3");
+			AddResearch("ED_PPANC_CANNON");
+			AddResearch("ED_PPANC_CANNON2");
+			AddResearch("ED_PPANC_CANNON3");
+			AddResearch("ED_PPANC_AMMO");
+			AddResearch("ED_PPANC_AMMO2");
+			AddResearch("ED_PPANC_AMMO3");
+			AddResearch("ED_ARTYLERY_CANNON");
+			AddResearch("ED_LASER_GUN");
+			AddResearch("ED_LASER_GUN2");
+			AddResearch("ED_LASER_GUN3");
+			AddResearch("ED_LASER_GENERATOR");
+			AddResearch("ED_LASER_GENERATOR2");
+			AddResearch("ED_LASER_GENERATOR3");
+			AddResearch("ED_JON_GUN");
+			AddResearch("ED_JON_GUN2");
+			AddResearch("ED_JON_GUN3");
+			AddResearch("ED_JON_GENERATOR");
+			AddResearch("ED_JON_GENERATOR2");
+			AddResearch("ED_JON_GENERATOR3");
+			AddResearch("ED_ROCKET_LAUNCHER");
+			AddResearch("ED_ROCKET_LAUNCHER2");
+			AddResearch("ED_ROCKET_LAUNCHER3");
+			AddResearch("ED_ROCKET");
+			AddResearch("ED_ROCKET2");
+			AddResearch("ED_ROCKET3");
+			AddResearch("ED_BALISTIC_ROCKET");
+			AddResearch("ED_BOMB_LAUNCHER");
+			AddResearch("ED_BOMB_LAUNCHER2");
+			AddResearch("ED_BOMB_LAUNCHER3");
+			AddResearch("ED_BOMB");
+			AddResearch("ED_BOMB2");
+			AddResearch("ED_BOMB3");
+			AddResearch("ED_NUCLEAR_WARHEAD");
+			AddResearch("ED_SHIELD");
+			AddResearch("ED_SHIELD2");
+			AddResearch("ED_SHIELD3");
+			AddResearch("ED_SHIELD_SUCKER");
+			AddResearch("ED_SHIELD_SUCKER2");
+			AddResearch("ED_SHIELD_SUCKER3");
+			AddResearch("ED_AMIS_LAUNCHER");
+			AddResearch("ED_AMIS_LAUNCHER2");
+			AddResearch("ED_AMIS_LAUNCHER3");
+			AddResearch("ED_DRONE");
+			AddResearch("ED_DRONE2");
+			AddResearch("ED_SDI");
+			AddResearch("ED_RADAR");
+			AddResearch("ED_SENSORS");
+			AddResearch("ED_SENSORS2");
+			AddResearch("ED_SENSORS3");
+			AddResearch("ED_ARMOUR_UP");
+			AddResearch("ED_ARMOUR_UP2");
+			AddResearch("ED_ARMOUR_UP3");
+			AddResearch("ED_MOBILE_RAFINERY2");
+			AddResearch("ED_MOBILE_RAFINERY3");
+			AddResearch("ED_MOBILE_RAFINERY4");
+		}
+
+	}
+
+	else if (GetRace()==eRaceLC)
+	{
+		AddResearch("LC_AIR_TECH1");
+		//procenty wykonywania stanow AIPlayera
+		if (nGameLevel==eLevelEasy)
+		{
+			SET_AI_STATE_PERCENT(eAIResearchVariantUniversal,	24, 7, 4, 0);
+			SET_AI_STATE_PERCENT(eAIResearchVariantAir,			28, 5, 0, 0);
+			SET_AI_STATE_PERCENT(eAIResearchVariantDefense,		25, 4,3, 0);
+		}
+		else if (nGameLevel==eLevelMedium)
+		{
+			SET_AI_STATE_PERCENT(eAIResearchVariantUniversal,	20, 7, 5, 0);
+			SET_AI_STATE_PERCENT(eAIResearchVariantAir,			25, 5, 4, 0);
+			SET_AI_STATE_PERCENT(eAIResearchVariantDefense,		20, 12, 5, 0);
+		}
+		else //if (nGameLevel==eLevelHard)
+		{
+			SET_AI_STATE_PERCENT(eAIResearchVariantUniversal,	10, 9, 5, 0);
+			SET_AI_STATE_PERCENT(eAIResearchVariantAir,			45, 5, 4, 0);
+			SET_AI_STATE_PERCENT(eAIResearchVariantDefense,		10, 9, 5, 0);
+		}
+
+		//eAIResearchVariantUniversal
+
+		ADD_RESEARCH(eAIResearchVariantUniversal, "LC_ELECTRIC_CANNON1", eLevelEasy);	//Plasma Granat Launcher
+		ADD_RESEARCH(eAIResearchVariantUniversal, "LC_LAND_TECH1", eLevelEasy);	//Kazuar //
+		ADD_RESEARCH(eAIResearchVariantUniversal, "LC_SHIELD", eLevelEasy);	//Mirror Shield generator
+		ADD_RESEARCH(eAIResearchVariantUniversal, "LC_MAGNETIC_CANNON", eLevelEasy);	//High Explosive Device mkII
+		ADD_RESEARCH(eAIResearchVariantUniversal, "LC_LAND_TECH2", eLevelEasy);	//Jaguar
+		ADD_RESEARCH(eAIResearchVariantUniversal, "LC_MINE_UPGRADE", eLevelEasy);
+		ADD_RESEARCH(eAIResearchVariantUniversal, "LC_LAND_ARMOUR1", eLevelEasy);	//Silver One mkII
+		ADD_RESEARCH(eAIResearchVariantUniversal, "LC_ROCKET_LAUNCHER", eLevelEasy);	//Repair Device
+		ADD_RESEARCH(eAIResearchVariantUniversal, "LC_SHIELD_REGENERATOR", eLevelEasy);	//Advanced Mirror Shield Generator
+		ADD_RESEARCH(eAIResearchVariantUniversal, "LC_AIR_TECH1", eLevelEasy);	//Scarab
+		ADD_RESEARCH(eAIResearchVariantUniversal, "LC_MINE_UPGRADE2", eLevelEasy);
+		ADD_RESEARCH(eAIResearchVariantUniversal, "LC_RADAR", eLevelEasy);	//Communication array
+		ADD_RESEARCH(eAIResearchVariantUniversal, "LC_LAND_TECH3", eLevelEasy);	//Lion
+		ADD_RESEARCH(eAIResearchVariantUniversal, "LC_LAND_TECH4", eLevelEasy);	//Scorpion
+		ADD_RESEARCH(eAIResearchVariantUniversal, "LC_DEFENSE_TECH1", eLevelEasy);
+		ADD_RESEARCH(eAIResearchVariantUniversal, "LC_MINE_UPGRADE3", eLevelEasy);
+		ADD_RESEARCH(eAIResearchVariantUniversal, "LC_SHIELD2", eLevelEasy);	//Mirror Shield generator mkII
+		ADD_RESEARCH(eAIResearchVariantUniversal, "LC_LAND_ARMOUR2", eLevelEasy);	//Silver One mkIII
+		ADD_RESEARCH(eAIResearchVariantUniversal, "LC_DISPERSER", eLevelEasy);	//Shadow Generator
+		ADD_RESEARCH(eAIResearchVariantUniversal, "LC_AIR_TECH2", eLevelEasy);	//Condor
+		ADD_RESEARCH(eAIResearchVariantUniversal, "LC_DEFENSE_TECH2", eLevelEasy);	//Hacker mkII
+		ADD_RESEARCH(eAIResearchVariantUniversal, "LC_SHIELD_REGENERATOR2", eLevelEasy);	//Advanced Mirror Shield Generator mkII
+		ADD_RESEARCH(eAIResearchVariantUniversal, "LC_DRONE", eLevelEasy);	//Long Distance Teleportation
+		ADD_RESEARCH(eAIResearchVariantUniversal, "LC_AIR_TECH3", eLevelEasy);	//Beetle
+		ADD_RESEARCH(eAIResearchVariantUniversal, "LC_BOMB_LAUNCHER", eLevelEasy);	//Shuriken Granade Launcher
+		ADD_RESEARCH(eAIResearchVariantUniversal, "LC_SDI", eLevelEasy);	//SDI
+		ADD_RESEARCH(eAIResearchVariantUniversal, "LC_SONIC_CANNON", eLevelEasy);	//Internal Repair Robot mkII
+		ADD_RESEARCH(eAIResearchVariantUniversal, "LC_SENSORS", eLevelEasy);	//Infra-red Search Device
+		ADD_RESEARCH(eAIResearchVariantUniversal, "LC_DEFENSE_TECH3", eLevelEasy);	//Hacker mkIII
+		ADD_RESEARCH(eAIResearchVariantUniversal, "LC_STORM_GENERATOR", eLevelEasy);	//Bomb Teleport Facility
+		ADD_RESEARCH(eAIResearchVariantUniversal, "LC_SHIELD3", eLevelEasy);	//Mirror Shield generator mkIII //
+		ADD_RESEARCH(eAIResearchVariantUniversal, "LC_SHIELD_REGENERATOR3", eLevelEasy);	//Advanced Mirror Shield Generator mkIII //
+		ADD_RESEARCH(eAIResearchVariantUniversal, "LC_DRONE2", eLevelEasy);	//Unit Teleport Facility
+		ADD_RESEARCH(eAIResearchVariantUniversal, "LC_BOMB", eLevelEasy);	//High Explosive Device mkIII
+		ADD_RESEARCH(eAIResearchVariantUniversal, "LC_AIR_TECH4", eLevelEasy);
+		ADD_RESEARCH(eAIResearchVariantUniversal, "LC_DEFENSE_TECH4", eLevelEasy);	//Internal Repair Robot mkIII
+
+		//eAIResearchVariantAir
+		ADD_RESEARCH(eAIResearchVariantAir, "LC_MINE_UPGRADE", eLevelEasy);
+		ADD_RESEARCH(eAIResearchVariantAir, "LC_ELECTRIC_CANNON1", eLevelEasy);	//Plasma Granat Launcher
+		ADD_RESEARCH(eAIResearchVariantAir, "LC_LAND_TECH1", eLevelEasy);	//Kazuar
+		ADD_RESEARCH(eAIResearchVariantAir, "LC_AIR_TECH1", eLevelEasy);	//Scarab
+		ADD_RESEARCH(eAIResearchVariantAir, "LC_SHIELD", eLevelEasy);	//Mirror Shield generator
+		ADD_RESEARCH(eAIResearchVariantAir, "LC_LAND_TECH2", eLevelEasy);	//Jaguar
+		ADD_RESEARCH(eAIResearchVariantAir, "LC_MAGNETIC_CANNON", eLevelEasy);	//High Explosive Device mkII
+		ADD_RESEARCH(eAIResearchVariantAir, "LC_AIR_ARMOUR1", eLevelEasy);	//Silver One mkII
+		ADD_RESEARCH(eAIResearchVariantAir, "LC_MINE_UPGRADE2", eLevelEasy);
+		ADD_RESEARCH(eAIResearchVariantAir, "LC_AIR_TECH2", eLevelEasy);	//Condor
+		ADD_RESEARCH(eAIResearchVariantAir, "LC_AIR_TECH3", eLevelEasy);	//Beetle
+		ADD_RESEARCH(eAIResearchVariantAir, "LC_BOMB_LAUNCHER", eLevelEasy);	//Shuriken Granade Launcher
+		ADD_RESEARCH(eAIResearchVariantAir, "LC_ROCKET_LAUNCHER", eLevelEasy);	//Repair Device
+		ADD_RESEARCH(eAIResearchVariantAir, "LC_SHIELD_REGENERATOR", eLevelEasy);	//Advanced Mirror Shield Generator
+		ADD_RESEARCH(eAIResearchVariantAir, "LC_MINE_UPGRADE3", eLevelEasy);
+		ADD_RESEARCH(eAIResearchVariantAir, "LC_RADAR", eLevelEasy);	//Communication array
+		ADD_RESEARCH(eAIResearchVariantAir, "LC_LAND_TECH3", eLevelEasy);	//Lion
+		ADD_RESEARCH(eAIResearchVariantAir, "LC_LAND_TECH4", eLevelEasy);	//Scorpion
+		ADD_RESEARCH(eAIResearchVariantAir, "LC_DEFENSE_TECH1", eLevelEasy);
+		ADD_RESEARCH(eAIResearchVariantAir, "LC_SHIELD2", eLevelEasy);	//Mirror Shield generator mkII
+		ADD_RESEARCH(eAIResearchVariantAir, "LC_AIR_ARMOUR2", eLevelEasy);	//Silver One mkIII
+		ADD_RESEARCH(eAIResearchVariantAir, "LC_DISPERSER", eLevelEasy);	//Shadow Generator
+		ADD_RESEARCH(eAIResearchVariantAir, "LC_DEFENSE_TECH2", eLevelEasy);	//Hacker mkII
+		ADD_RESEARCH(eAIResearchVariantAir, "LC_SHIELD_REGENERATOR2", eLevelEasy);	//Advanced Mirror Shield Generator mkII
+		ADD_RESEARCH(eAIResearchVariantAir, "LC_DRONE", eLevelEasy);	//Long Distance Teleportation
+		ADD_RESEARCH(eAIResearchVariantAir, "LC_DRONE2", eLevelEasy);	//Unit Teleport Facility
+		ADD_RESEARCH(eAIResearchVariantAir, "LC_STORM_GENERATOR", eLevelEasy);	//Bomb Teleport Facility
+		ADD_RESEARCH(eAIResearchVariantAir, "LC_SDI", eLevelEasy);	//SDI
+		ADD_RESEARCH(eAIResearchVariantAir, "LC_SENSORS", eLevelEasy);	//Infra-red Search Device
+		ADD_RESEARCH(eAIResearchVariantAir, "LC_AIR_TECH4", eLevelEasy);	//Internal Repair Robot mkII
+		ADD_RESEARCH(eAIResearchVariantAir, "LC_SONIC_CANNON", eLevelEasy);	//High Explosive Device mkIII
+		ADD_RESEARCH(eAIResearchVariantAir, "LC_DEFENSE_TECH3", eLevelEasy);	//Hacker mkIII
+		ADD_RESEARCH(eAIResearchVariantAir, "LC_SHIELD3", eLevelEasy);	//Mirror Shield generator mkIII
+		ADD_RESEARCH(eAIResearchVariantAir, "LC_SHIELD_REGENERATOR3", eLevelEasy);	//Advanced Mirror Shield Generator mkIII
+		ADD_RESEARCH(eAIResearchVariantAir, "LC_DEFENSE_TECH4", eLevelEasy);	//Internal Repair Robot mkIII
+
+		//eAIResearchVariantDefense
+
+		ADD_RESEARCH(eAIResearchVariantDefense, "LC_AIR_TECH1", eLevelEasy);	//Scarab
+		ADD_RESEARCH(eAIResearchVariantDefense, "LC_ELECTRIC_CANNON1", eLevelEasy);	//Rocket Launcher
+		ADD_RESEARCH(eAIResearchVariantDefense, "LC_LAND_TECH1", eLevelEasy);	//Kazuar
+		ADD_RESEARCH(eAIResearchVariantDefense, "LC_SHIELD", eLevelEasy);	//Mirror Shield generator
+		ADD_RESEARCH(eAIResearchVariantDefense, "LC_MAGNETIC_CANNON", eLevelEasy);	//High Explosive Device mkII
+		ADD_RESEARCH(eAIResearchVariantDefense, "LC_LAND_TECH2", eLevelEasy);	//Jaguar
+		ADD_RESEARCH(eAIResearchVariantDefense, "LC_MINE_UPGRADE", eLevelEasy);
+		ADD_RESEARCH(eAIResearchVariantDefense, "LC_AIR_TECH2", eLevelEasy);	//Beetle
+		ADD_RESEARCH(eAIResearchVariantDefense, "LC_ROCKET_LAUNCHER", eLevelEasy);	//Repair Device
+		ADD_RESEARCH(eAIResearchVariantDefense, "LC_SHIELD_REGENERATOR1", eLevelEasy);	//Advanced Mirror Shield Generator
+		ADD_RESEARCH(eAIResearchVariantDefense, "LC_RADAR", eLevelEasy);	//Communication array
+		ADD_RESEARCH(eAIResearchVariantDefense, "LC_DEFENSE_TECH1", eLevelEasy);
+		ADD_RESEARCH(eAIResearchVariantDefense, "LC_LAND_TECH3", eLevelEasy);	//Lion
+		ADD_RESEARCH(eAIResearchVariantDefense, "LC_SHIELD2", eLevelEasy);	//Mirror Shield generator mkII
+		ADD_RESEARCH(eAIResearchVariantDefense, "LC_DEFENSE_TECH2", eLevelEasy);	//Silver One mkIII
+		ADD_RESEARCH(eAIResearchVariantDefense, "LC_SDI", eLevelEasy);	//SDI
+		ADD_RESEARCH(eAIResearchVariantDefense, "LC_DEFENSE_TECH3", eLevelEasy);	//Hacker
+		ADD_RESEARCH(eAIResearchVariantDefense, "LC_SHIELD_REGENERATOR2", eLevelEasy);	//Advanced Mirror Shield Generator mkII
+		ADD_RESEARCH(eAIResearchVariantDefense, "LC_MINE_UPGRADE2", eLevelEasy);
+		ADD_RESEARCH(eAIResearchVariantDefense, "LC_SHIELD3", eLevelMedium);	//Mirror Shield generator mkIII
+		ADD_RESEARCH(eAIResearchVariantDefense, "LC_SHIELD_REGENERATOR_3", eLevelEasy);	//Advanced Mirror Shield Generator mkIII
+		ADD_RESEARCH(eAIResearchVariantDefense, "LC_LAND_TECH4", eLevelEasy);	//Scorpion
+		ADD_RESEARCH(eAIResearchVariantDefense, "LC_DRONE", eLevelEasy);	//Long Distance Teleportation
+		ADD_RESEARCH(eAIResearchVariantDefense, "LC_DISPERSER", eLevelEasy);	//Shadow Generator
+		ADD_RESEARCH(eAIResearchVariantDefense, "LC_MINE_UPGRADE3", eLevelEasy);
+		ADD_RESEARCH(eAIResearchVariantDefense, "LC_AIR_TECH3", eLevelEasy);	//Condor
+		ADD_RESEARCH(eAIResearchVariantDefense, "LC_BOMB_LAUNCHER", eLevelEasy);	//Shuriken Granade Launcher
+		ADD_RESEARCH(eAIResearchVariantDefense, "LC_SENSORS", eLevelEasy);	//Infra-red Search Device
+		ADD_RESEARCH(eAIResearchVariantDefense, "LC_DEFENSE_TECH4", eLevelEasy);	//Hacker mkII
+		ADD_RESEARCH(eAIResearchVariantDefense, "LC_STORM_GENERATOR", eLevelEasy);	//Bomb Teleport Facility
+		ADD_RESEARCH(eAIResearchVariantDefense, "LC_DRONE2", eLevelEasy);	//Unit Teleport Facility
+		ADD_RESEARCH(eAIResearchVariantDefense, "LC_SONIC_CANNON", eLevelEasy);	//High Explosive Device mkIII
+
+		if(nGameLevel==eLevelHardcore)
+		{
+			AddResearch("LC_LAND_ARMOUR1");
+			AddResearch("LC_LAND_ARMOUR2");
+			AddResearch("LC_LAND_ARMOUR3");
+			AddResearch("LC_AIR_ARMOUR1");
+			AddResearch("LC_AIR_ARMOUR2");
+			AddResearch("LC_AIR_ARMOUR3");
+			AddResearch("LC_BUILDINGS_ARMOUR1");
+			AddResearch("LC_BUILDINGS_ARMOUR2");
+			AddResearch("LC_BUILDINGS_ARMOUR3");
+			AddResearch("LC_PULSE_GUN");
+			AddResearch("LC_PULSE_GUN2");
+			AddResearch("LC_PULSE_GUN3");
+			AddResearch("LC_PULSE_BULLET");
+			AddResearch("LC_PULSE_BULLET2");
+			AddResearch("LC_PULSE_BULLET3");
+			AddResearch("LC_MAGNETIC_CANNON");
+			AddResearch("LC_MAGNETIC_CANNON2");
+			AddResearch("LC_MAGNETIC_CANNON3");
+			AddResearch("LC_MAGNETIC_AMMO");
+			AddResearch("LC_MAGNETIC_AMMO2");
+			AddResearch("LC_MAGNETIC_AMMO3");
+			AddResearch("LC_ALTYLERY_CANNON");
+			AddResearch("LC_ELECTRIC_CANNON");
+			AddResearch("LC_ELECTRIC_CANNON2");
+			AddResearch("LC_ELECTRIC_CANNON3");
+			AddResearch("LC_ELECTRIC_GENERATOR");
+			AddResearch("LC_ELECTRIC_GENERATOR2");
+			AddResearch("LC_ELECTRIC_GENERATOR3");
+			AddResearch("LC_STORM_GENERATOR");
+			AddResearch("LC_SONIC_CANNON");
+			AddResearch("LC_SONIC_CANNON2");
+			AddResearch("LC_SONIC_CANNON3");
+			AddResearch("LC_SONIC_GENERATOR");
+			AddResearch("LC_SONIC_GENERATOR2");
+			AddResearch("LC_SONIC_GENERATOR3");
+			AddResearch("LC_ROCKET_LAUNCHER");
+			AddResearch("LC_ROCKET_LAUNCHER2");
+			AddResearch("LC_ROCKET_LAUNCHER3");
+			AddResearch("LC_ROCKET");
+			AddResearch("LC_ROCKET2");
+			AddResearch("LC_ROCKET3");
+			AddResearch("LC_BOMB_LAUNCHER");
+			AddResearch("LC_BOMB_LAUNCHER2");
+			AddResearch("LC_BOMB_LAUNCHER3");
+			AddResearch("LC_BOMB");
+			AddResearch("LC_BOMB2");
+			AddResearch("LC_BOMB3");
+			AddResearch("LC_NEMEZIS_CANNON");
+			AddResearch("LC_SHIELD");
+			AddResearch("LC_SHIELD2");
+			AddResearch("LC_SHIELD3");
+			AddResearch("LC_SHIELD_REGENERATOR");
+			AddResearch("LC_SHIELD_REGENERATOR2");
+			AddResearch("LC_SHIELD_REGENERATOR3");
+			AddResearch("LC_AMIS_LAUNCHER");
+			AddResearch("LC_AMIS_LAUNCHER2");
+			AddResearch("LC_AMIS_LAUNCHER3");
+			AddResearch("LC_DRONE");
+			AddResearch("LC_DRONE2");
+			AddResearch("LC_SDI");
+			AddResearch("LC_RADAR");
+			AddResearch("LC_SENSORS");
+			AddResearch("LC_SENSORS2");
+			AddResearch("LC_SENSORS3");
+			AddResearch("LC_DISPERSER");
+			AddResearch("LC_DISPERSER2");
+			AddResearch("LC_DISPERSER3");
+			AddResearch("LC_MINE_UPGRADE");
+			AddResearch("LC_MINE_UPGRADE2");
+			AddResearch("LC_MINE_UPGRADE3");
+			}
+		}
+
+	else if (GetRace()==eRaceAlien)
+	{
+		//Alien nie ma researchy
+		SET_AI_STATE_PERCENT(eAIResearchVariantUniversal,	0, 0, 0, 0);
+		SET_AI_STATE_PERCENT(eAIResearchVariantAir,			0, 0, 0, 0);
+		SET_AI_STATE_PERCENT(eAIResearchVariantDefense,		0, 0, 0, 0);
+	}
+
+}
+
+function void LockUnit()
+{
+	
+	if (GetRace()==eRaceED)
+	{
+		EnableUnit("ED_STORM",false);
+		EnableUnit("ED_AMURSK",false);
+		EnableUnit("ED_INTERCEPTOR",false);
+		EnableUnit("ED_BOMBER",false);
+		EnableUnit("ED_HAN",false);
+		EnableUnit("ED_BTTI",false);
+		EnableUnit("ED_BTTV",false);
+		EnableUnit("ED_BTTVA",false);
+		EnableUnit("ED_PAMIR",false);
+		EnableUnit("KAUKAZ",false);
+		EnableUnit("ED_HT30",false);
+		EnableUnit("ED_MBA",false);
+	
+		if (GetNumberOfUnitsWithChasis("ED_BTTV_AAR",0)+GetNumberOfUnitsWithChasis("ED_BTTV_4XL",0)<=2*(GetNumberOfUnitsWithChasis("KAUKAZ_2XPC",0)+GetNumberOfUnitsWithChasis("KAUKAZ_2XL",0)+GetNumberOfUnitsWithChasis("KAUKAZ_J",0)))
+		{
+			EnableUnit("KAUKAZ_2XPC",false);
+			EnableUnit("KAUKAZ_2XL",false);
+			EnableUnit("KAUKAZ_J",false);
+		}
+		else
+		{
+			EnableUnit("KAUKAZ_2XPC",true);
+			EnableUnit("KAUKAZ_2XL",true);
+			EnableUnit("KAUKAZ_J",true);
+		}
+
+		if (GetNumberOfUnitsWithChasis("ED_BTTV_AAR",0)+GetNumberOfUnitsWithChasis("ED_BTTV_4XL",0)<=3*(GetNumberOfUnitsWithChasis("ED_HT30_4XL",0)+GetNumberOfUnitsWithChasis("ED_HT30_2XHRA",0)+GetNumberOfUnitsWithChasis("ED_HT30_2XJ",0)))
+		{
+			EnableUnit("ED_HT30_2XHRA",false);
+			EnableUnit("ED_HT30_4XL",false);
+			EnableUnit("ED_HT30_2XJ",false);
+		}
+		else
+		{
+			EnableUnit("ED_HT30_2XHRA",true);
+			EnableUnit("ED_HT30_4XL",true);
+			EnableUnit("ED_HT30_2XJ",true);
+		}
+		
+		
+		if (GetNumberOfUnitsWithChasis("ED_INTERCEPTOR_AAR",0)
+		+GetNumberOfUnitsWithChasis("ED_STORM_R",0)
+		+GetNumberOfUnitsWithChasis("ED_STORM_I",0)
+		+GetNumberOfUnitsWithChasis("ED_INTERCEPTOR_HRA",0)
+		<=4*(GetNumberOfUnitsWithChasis("ED_BOMBER_CBOMB",0)+GetNumberOfUnitsWithChasis("ED_BOMBER_HBOMB",0)))
+		{
+			EnableUnit("ED_BOMBER_CBOMB",false);
+			EnableUnit("ED_BOMBER_HBOMB",false);
+		}
+		else
+		{
+			EnableUnit("ED_BOMBER_CBOMB",true);
+			EnableUnit("ED_BOMBER_HBOMB",true);
+		}
+		if (GetNumberOfUnitsWithChasis("ED_BOMBER_CBOMB",0)+GetNumberOfUnitsWithChasis("ED_BOMBER_HBOMB",0)<=4*GetNumberOfUnitsWithChasis("ED_DESTROYER_RIDER",0))
+		{
+			EnableUnit("ED_DESTROYER_RIDER",false);
+		}
+		else
+		{	
+			EnableUnit("ED_DESTROYER_RIDER",true);
+		}		
+		
+		if (GetNumberOfUnitsWithChasis("ED_DESTROYER_RIDER",0)>=2*GetNumberOfUnitsWithChasis("ED_DESTROYER_PROTECTOR",0))
+		{
+			EnableUnit("ED_DESTROYER_PROTECTOR",true);
+			if (GetNumberOfUnitsWithChasis("ED_DESTROYER_PROTECTOR",0)>=GetNumberOfUnitsWithChasis("ED_CRUISER_ASSALUT",0)+GetNumberOfUnitsWithChasis("ED_CRUISER_RANGER",0)+GetNumberOfUnitsWithChasis("ED_CRUISER_DEWASTATOR",0))
+			{
+				EnableUnit("ED_CRUISER_ASSALUT",true);
+				EnableUnit("ED_CRUISER_RANGER",true);
+				EnableUnit("ED_CRUISER_DEWASTATOR",true);
+			}
+			else
+			{
+				EnableUnit("ED_CRUISER_ASSALUT",false);
+				EnableUnit("ED_CRUISER_RANGER",false);
+				EnableUnit("ED_CRUISER_DEWASTATOR",false);
+			}
+		}
+		else
+		{
+			EnableUnit("ED_DESTROYER_PROTECTOR",false);
+			
+			EnableUnit("ED_CRUISER_ASSALUT",false);
+			EnableUnit("ED_CRUISER_RANGER",false);
+			EnableUnit("ED_CRUISER_DEWASTATOR",false);
+		}
+
+	}
+	
+	if (GetRace()==eRaceUCS)
+	{
+		EnableUnit("UCS_GARGOIL",false);
+		EnableUnit("UCS_BAT",false);
+		EnableUnit("UCS_HELLWIND",false);
+		EnableUnit("UCS_CONDOR",false);
+		EnableUnit("UCS_RAPTOR",false);
+		EnableUnit("UCS_SPIDER",false);
+		EnableUnit("UCS_TIGER",false);
+		EnableUnit("UCS_PANTHER",false);
+		EnableUnit("UCS_JAGUAR",false);
+		EnableUnit("UCS_TARANTULA",false);
+		
+		if (GetNumberOfUnits()<50)
+		{
+			EnableBuilding("UCS_SMALL_ONE",false);
+			EnableBuilding("UCS_BIG_ONE",false);
+			EnableBuilding("UCS_BIG_ONE_C3",false);
+			EnableBuilding("UCS_FORTRESS",false);
+			EnableBuilding("UCS_ARTILERY_NEST",false);
+		}
+		else
+		{
+			EnableBuilding("UCS_SMALL_ONE",true);
+			EnableBuilding("UCS_BIG_ONE",true);
+			EnableBuilding("UCS_BIG_ONE_C3",true);
+			EnableBuilding("UCS_FORTRESS",true);
+			EnableBuilding("UCS_ARTILERY_NEST",true);		
+		}
+		if (GetNumberOfUnitsWithChasis("UCS_HAWK_AAR",0)
+		+GetNumberOfUnitsWithChasis("UCS_HAWK_AAP",0)
+		+GetNumberOfUnitsWithChasis("UCS_BAT_R",0)
+		+GetNumberOfUnitsWithChasis("UCS_BAT_P",0)
+		+GetNumberOfUnitsWithChasis("UCS_GARGOIL_R",0)
+		+GetNumberOfUnitsWithChasis("UCS_GARGOIL_P",0)
+		<=4*(GetNumberOfUnitsWithChasis("UCS_HELLWIND_NB",0)+GetNumberOfUnitsWithChasis("UCS_HELLWIND_PB",0)))
+		{
+			EnableUnit("UCS_HELLWIND_NB",false);
+			EnableUnit("UCS_HELLWIND_PB",false);
+		}
+		else
+		{
+			EnableUnit("UCS_HELLWIND_NB",true);
+			EnableUnit("UCS_HELLWIND_PB",true);
+		}
+		if (GetNumberOfUnitsWithChasis("UCS_HELLWIND_NB",0)+GetNumberOfUnitsWithChasis("UCS_HELLWIND_PB",0)<=4*GetNumberOfUnitsWithChasis("UCS_DESTROYER_RIDER",0))
+		{
+			EnableUnit("UCS_DESTROYER_RIDER",false);
+		}
+		else
+		{	
+			EnableUnit("UCS_DESTROYER_RIDER",true);
+		}		
+		
+		if (GetNumberOfUnitsWithChasis("UCS_DESTROYER_RIDER",0)>=2*GetNumberOfUnitsWithChasis("UCS_DESTROYER_PROTECTOR",0))
+		{
+			EnableUnit("UCS_DESTROYER_PROTECTOR",true);
+			if (GetNumberOfUnitsWithChasis("UCS_DESTROYER_PROTECTOR",0)>=GetNumberOfUnitsWithChasis("UCS_CRUISER_ASSALUT",0)+GetNumberOfUnitsWithChasis("UCS_CRUISER_RANGER",0)+GetNumberOfUnitsWithChasis("UCS_CRUISER_DEWASTATOR",0))
+			{
+				EnableUnit("UCS_CRUISER_ASSALUT",true);
+				EnableUnit("UCS_CRUISER_RANGER",true);
+				EnableUnit("UCS_CRUISER_DEWASTATOR",true);
+			}
+			else
+			{
+				EnableUnit("UCS_CRUISER_ASSALUT",false);
+				EnableUnit("UCS_CRUISER_RANGER",false);
+				EnableUnit("UCS_CRUISER_DEWASTATOR",false);
+			}
+		}
+		else
+		{
+			EnableUnit("UCS_DESTROYER_PROTECTOR",false);
+			
+			EnableUnit("UCS_CRUISER_ASSALUT",false);
+			EnableUnit("UCS_CRUISER_RANGER",false);
+			EnableUnit("UCS_CRUISER_DEWASTATOR",false);
+		}
+	}
+	
+	if(GetRace()==eRaceLC)
+	{
+		EnableUnit("LC_METEOR",false);
+		EnableUnit("LC_MERKURY",false);
+		EnableUnit("LC_SFIGHTER",false);
+		EnableUnit("LC_THUNDER",false);
+		EnableUnit("LC_MOON",false);
+		EnableUnit("LC_FANG",false);
+		EnableUnit("LC_FATGIRL",false);
+		EnableUnit("LC_CRATER",false);
+		EnableUnit("LC_CRUSCHER",false);
+		EnableUnit("LC_CRION",false);
+		
+		if (GetNumberOfUnitsWithChasis("LC_FATGIRL_2AAR",0)+GetNumberOfUnitsWithChasis("LC_MOON_AAR",0)<=2*(GetNumberOfUnitsWithChasis("LC_CRATER_MG",0)+GetNumberOfUnitsWithChasis("LC_CRATER_E",0)+GetNumberOfUnitsWithChasis("LC_CRATER_RA",0)))
+		{
+			EnableUnit("LC_CRATER_MG",false);
+			EnableUnit("LC_CRATER_E",false);
+			EnableUnit("LC_CRATER_RA",false);
+		}
+		else
+		{
+			EnableUnit("LC_CRATER_MG",true);
+			EnableUnit("LC_CRATER_E",true);
+			EnableUnit("LC_CRATER_RA",true);
+		}
+
+		if (GetNumberOfUnitsWithChasis("LC_FATGIRL_2AAR",0)+GetNumberOfUnitsWithChasis("LC_MOON_AAR",0)<=
+		3*(GetNumberOfUnitsWithChasis("LC_CRUSCHER_2XHRA",0)+GetNumberOfUnitsWithChasis("LC_CRUSCHER_2XE",0)+GetNumberOfUnitsWithChasis("LC_CRUSCHER_2XS",0)+GetNumberOfUnitsWithChasis("LC_CRUSCHER_2XMG_2XR",0)))
+		{
+			EnableUnit("LC_CRUSCHER_2XHRA",false);
+			EnableUnit("LC_CRUSCHER_2XE",false);
+			EnableUnit("LC_CRUSCHER_2XS",false);
+			EnableUnit("LC_CRUSCHER_2XMG_2XR",false);
+		}
+		else
+		{
+			EnableUnit("LC_CRUSCHER_2XHRA",true);
+			EnableUnit("LC_CRUSCHER_2XE",true);
+			EnableUnit("LC_CRUSCHER_2XS",true);
+			EnableUnit("LC_CRUSCHER_2XMG_2XR",true);
+		}
+		if (GetNumberOfUnits()<50)
+		{
+			EnableBuilding("LC_LASER_FENCE",false);
+			EnableBuilding("LC_TWIN_TOWER",false);
+			EnableBuilding("LC_HEAVY_TOWER_C3",false);
+			EnableBuilding("LC_BASTION",false);
+			EnableBuilding("LC_ARTILERY_NEST",false);
+			EnableBuilding("LC_SDI_CENTER",false);			
+			EnableBuilding("LC_SUNLIGHT_CANNON",false);
+		}
+		else
+		{
+			EnableBuilding("LC_LASER_FENCE",true);
+			EnableBuilding("LC_TWIN_TOWER",true);
+			EnableBuilding("LC_HEAVY_TOWER_C3",true);
+			EnableBuilding("LC_BASTION",true);
+			EnableBuilding("LC_ARTILERY_NEST",true);
+			EnableBuilding("LC_SDI_CENTER",true);			
+			EnableBuilding("LC_SUNLIGHT_CANNON",true);		
+		}
+		if (GetNumberOfUnitsWithChasis("LC_SFIGHTER_2XAAR",0)
+			+GetNumberOfUnitsWithChasis("LC_SFIGHTER_2XE",0)
+			+GetNumberOfUnitsWithChasis("LC_SFIGHTER_2XR",0)
+			+GetNumberOfUnitsWithChasis("LC_METEOR_AAR",0) 
+			+GetNumberOfUnitsWithChasis("LC_METEOR_R",0)
+			+GetNumberOfUnitsWithChasis("LC_METEOR_E",0)		
+			<=4*GetNumberOfUnitsWithChasis("LC_THUNDER_BOMB",0))
+		{
+			EnableUnit("LC_THUNDER_BOMB",false);
+		}
+		else
+		{
+			EnableUnit("LC_THUNDER_BOMB",true);
+		}
+		if (GetNumberOfUnitsWithChasis("LC_THUNDER_BOMB",0)<=4*GetNumberOfUnitsWithChasis("LC_DESTROYER_RIDER",0))
+		{
+			EnableUnit("LC_DESTROYER_RIDER",false);
+		}
+		else
+		{	
+			EnableUnit("LC_DESTROYER_RIDER",true);
+		}		
+		
+		if (GetNumberOfUnitsWithChasis("LC_DESTROYER_RIDER",0)>=2*GetNumberOfUnitsWithChasis("LC_DESTROYER_PROTECTOR",0))
+		{
+			EnableUnit("LC_DESTROYER_PROTECTOR",true);
+			if (GetNumberOfUnitsWithChasis("LC_DESTROYER_PROTECTOR",0)>=GetNumberOfUnitsWithChasis("LC_CRUISER_ASSALUT",0)+GetNumberOfUnitsWithChasis("LC_CRUISER_RANGER",0)+GetNumberOfUnitsWithChasis("LC_CRUISER_DEWASTATOR",0))
+			{
+				EnableUnit("LC_CRUISER_ASSALUT",true);
+				EnableUnit("LC_CRUISER_RANGER",true);
+				EnableUnit("LC_CRUISER_DEWASTATOR",true);
+			}
+			else
+			{
+				EnableUnit("LC_CRUISER_ASSALUT",false);
+				EnableUnit("LC_CRUISER_RANGER",false);
+				EnableUnit("LC_CRUISER_DEWASTATOR",false);
+			}
+		}
+		else
+		{
+			EnableUnit("LC_DESTROYER_PROTECTOR",false);
+			
+			EnableUnit("LC_CRUISER_ASSALUT",false);
+			EnableUnit("LC_CRUISER_RANGER",false);
+			EnableUnit("LC_CRUISER_DEWASTATOR",false);
+		}
+	}
+	
+
+}
+function void Money(int nGameLevel)
+{
+	if (nGameLevel==eLevelHardcore)
+	{
+				AddResource(0,50000);
+				AddResource(1,50000);
+				AddResource(2, 50000);
+	}
+}
+function void AIBuildingsOrders(int time)	//Po 5 minutach.Co 3 minuty kolejna fabryka.
+{
+	if (time>=300 && time%180==0)
+	{
+		AddAIBuildingOrder	(eAIBuildingUnitsFactory);
+	}
+}
+
+function void InitAIBuildingsOrders(int nGameLevel)
+{
+	if (GetRace()==eRaceUCS)
+	{
+		AddAIBuildingOrder	(eAIBuildingPowerPlant);	//1
+		AddAIBuildingOrder	(eAIBuildingResourceRefinery);
+		AddAIBuildingOrder	(eAIBuildingUnitsFactory);
+		AddAIBuildingOrder	(eAIBuildingAnyType);		//zaczekaj na wykonanie poprzednich rozkazow
+		AddAIBuildingOrder	(eAIBuildingResourceRefinery);
+		AddAIBuildingOrder	(eAIBuildingResearchCenter);
+		AddAIBuildingOrder	(eAIBuildingLandingZone);
+		AddAIBuildingOrder	(eAIBuildingLandingZone);
+		AddAIBuildingOrder	(eAIBuildingLandingZone);
+		AddAIBuildingOrder	(eAIBuildingLandingZone);
+		AddAIBuildingOrder	(eAIBuildingPowerPlant); //2
+		AddAIBuildingOrder	(eAIBuildingUnitsFactory);
+		AddAIBuildingOrder	(eAIBuildingUnitsFactory);	
+		AddAIBuildingOrder	(eAIBuildingInfantryFactory);
+		AddAIBuildingOrder	(eAIBuildingResearchCenter);
+		AddAIBuildingOrder	(eAIBuildingPowerPlant); //3
+		AddAIBuildingOrder	(eAIBuildingUnitsFactory);
+		AddAIBuildingOrder	(eAIBuildingAmmoFactory);
+		AddAIBuildingOrder	(eAIBuildingPowerPlant); //4
+		AddAIBuildingOrder	(eAIBuildingInfantryFactory);
+		AddAIBuildingOrder	(eAIBuildingResearchCenter);
+		AddAIBuildingOrder	(eAIBuildingUnitsFactory);
+		AddAIBuildingOrder	(eAIBuildingUnitsFactory);	
+		AddAIBuildingOrder	(eAIBuildingPowerPlant); //5
+		AddAIBuildingOrder	(eAIBuildingInfantryFactory);
+		AddAIBuildingOrder	(eAIBuildingResearchCenter);
+
+	}
+	else if (GetRace()==eRaceED)
+	{
+		AddAIBuildingOrder	(eAIBuildingPowerPlant);
+		AddAIBuildingOrder	(eAIBuildingUnitsFactory);
+		AddAIBuildingOrder	(eAIBuildingUnitsFactory);	
+		AddAIBuildingOrder	(eAIBuildingInfantryFactory);
+		AddAIBuildingOrder	(eAIBuildingResearchCenter);
+		AddAIBuildingOrder	(eAIBuildingPowerPlant);
+		AddAIBuildingOrder	(eAIBuildingUnitsFactory);
+		AddAIBuildingOrder	(eAIBuildingAmmoFactory);
+		AddAIBuildingOrder	(eAIBuildingPowerPlant);
+		AddAIBuildingOrder	(eAIBuildingInfantryFactory);
+		AddAIBuildingOrder	(eAIBuildingResearchCenter);
+		AddAIBuildingOrder	(eAIBuildingUnitsFactory);
+		AddAIBuildingOrder	(eAIBuildingUnitsFactory);	
+		AddAIBuildingOrder	(eAIBuildingPowerPlant);
+		AddAIBuildingOrder	(eAIBuildingInfantryFactory);
+		AddAIBuildingOrder	(eAIBuildingResearchCenter);
+
+
+	}
+	else if (GetRace()==eRaceLC)
+	{
+		AddAIBuildingOrder	(eAIBuildingResourceMine);
+		AddAIBuildingOrder	(eAIBuildingResourceMine);
+		AddAIBuildingOrder	(eAIBuildingResourceMine);
+		AddAIBuildingOrder	(eAIBuildingResourceMine);	
+		AddAIBuildingOrder	(eAIBuildingResourceMine);
+		AddAIBuildingOrder	(eAIBuildingAnyType);		//zaczekaj na wykonanie poprzednich rozkazow
+		AddAIBuildingOrder	(eAIBuildingPowerPlant);
+		AddAIBuildingOrder	(eAIBuildingUnitsFactory);
+		AddAIBuildingOrder	(eAIBuildingAmmoFactory);
+		AddAIBuildingOrder	(eAIBuildingUnitsFactory);	
+		AddAIBuildingOrder	(eAIBuildingInfantryFactory);
+		AddAIBuildingOrder	(eAIBuildingResearchCenter);
+		AddAIBuildingOrder	(eAIBuildingPowerPlant);
+		AddAIBuildingOrder	(eAIBuildingUnitsFactory);
+		AddAIBuildingOrder	(eAIBuildingPowerPlant);
+		AddAIBuildingOrder	(eAIBuildingInfantryFactory);
+		AddAIBuildingOrder	(eAIBuildingResearchCenter);
+		AddAIBuildingOrder	(eAIBuildingUnitsFactory);
+		AddAIBuildingOrder	(eAIBuildingUnitsFactory);	
+		AddAIBuildingOrder	(eAIBuildingPowerPlant);
+		AddAIBuildingOrder	(eAIBuildingInfantryFactory);
+		AddAIBuildingOrder	(eAIBuildingResearchCenter);
+
+	}
+	else if (GetRace()==eRaceAlien)
+	{
+		AddAIBuildingOrder	(eAIBuildingDefenceTower);
+		AddAIBuildingOrder	(eAIBuildingDefenceTower);
+	}
+}
+
+//-------------------------------------- InitAIParameters --------------------------------------------|
+
+function void InitAIParameters(int nGameLevel)
+{
+	s_nGameLevel = nGameLevel;
+
+	//ustalenie max liczby plutonow do ataku (i obrony)
+	//SetDefaultAIPlatoonsSize (int nInfantry, int nJeep, int nTank, int nArtilery);
+	//SetDefaultAIAttackTimeDelay	(int nAttackTimeSecDelay);
+
+	if (nGameLevel==eLevelEasy)
+	{
+		SetDefaultAIPlatoonsSize(4, 3, 2, 1);
+		SetQueenPlatoonMaxSize(5);
+		SetDefaultAIAttackTimeDelay(4*60);
+		SetMaxCheatResourcesCount(0);
+		SetAIControlOptions(eAIControlUpdatesLevel1, true);
+		SetAIControlOptions(eAIControlUpdatesLevel2, false);
+		SetAIControlOptions(eAIControlAttackCapture, false);
+		SetAIControlOptions(eAIControlSpyEnemies,	 false);
+		SetAIControlOptions(eAIHarvestOutsideBase,	 false);
+		SetAIControlOptions(eAIControlAttackPositions,false);
+		SetAIControlOptions(eAIControlAttackStrategy,false);
+		SetAIControlOptions(eAIControlUpgradeCannons,false);
+		SetAIControlOptions(eAIControlAgentsAuction, false);
+		SetAIControlOptions(eAIControlRepairing,	 false);
+		SetAIControlOptions(eAIControlDefenceCannons,false);
+		SetAntiUnitsRelations (30, 200, 3000, 0);
+		if (GetRace()==eRaceLC)
+		{
+			SetMaxHarvestingObjectsCount(12);//was 5 in version 1.3
+		}
+		else
+		{
+			SetMaxHarvestingObjectsCount(15);//was 7 in version 1.3
+		}
+	}
+	else if (nGameLevel==eLevelMedium)
+	{
+		SetDefaultAIPlatoonsSize(6, 5, 3, 2);
+		SetQueenPlatoonMaxSize(7);
+		SetDefaultAIAttackTimeDelay(2*60);
+		SetMaxCheatResourcesCount(50);
+		SetAIControlOptions(eAIControlUpdatesLevel1, true);
+		SetAIControlOptions(eAIControlUpdatesLevel2, true);
+		SetAIControlOptions(eAIControlAttackCapture, true);
+		SetAIControlOptions(eAIControlSpyEnemies,	 true);
+		SetAIControlOptions(eAIHarvestOutsideBase,	 true);
+		SetAIControlOptions(eAIControlAttackPositions,true);
+		SetAIControlOptions(eAIControlAttackStrategy,false);
+		SetAIControlOptions(eAIControlDefenceCannons,true);
+		SetAntiUnitsRelations (70, -1, 1500, 0);
+		if (GetRace()==eRaceLC)
+		{
+			SetMaxHarvestingObjectsCount(21);
+		}
+		else
+		{
+			SetMaxHarvestingObjectsCount(30);
+		}
+	}
+	else //if (nGameLevel==eLevelHard)
+	{
+		SetDefaultAIPlatoonsSize(8,7,6,5);
+		SetQueenPlatoonMaxSize(10);
+		SetDefaultAIAttackTimeDelay(0);
+		SetMaxCheatResourcesCount(100000);
+		SetAIControlOptions(eAIControlAll, true);
+		SetAIControlOptions(eAIControlUpdatesLevel1, true);
+		SetAIControlOptions(eAIControlUpdatesLevel2, true);
+		SetAIControlOptions(eAIControlAttackCapture, true);
+		SetAIControlOptions(eAIControlSpyEnemies,	 true);
+		SetAIControlOptions(eAIHarvestOutsideBase,	 true);
+		SetAIControlOptions(eAIControlAttackPositions,true);
+		SetAIControlOptions(eAIControlAttackStrategy,true);
+		SetAIControlOptions(eAIControlConstructUnits,false);
+		SetAntiUnitsRelations (90, -1, 1000, 0);
+			if (GetRace()==eRaceLC)
+		{
+			SetMaxHarvestingObjectsCount(30);
+		}
+		else
+		{
+			SetMaxHarvestingObjectsCount(45);
+		}
+	}
+
+	if (GetRace()==eRaceUCS)
+	{
+		SetAIControlOptions(eAIControlBuildWall, false);
+	}
+	else
+	{
+		SetAIControlOptions(eAIControlBuildWall, true);
+	}
+		if(nGameLevel==eLevelMedium)
+		{
+				AddResource(0,50000);
+				AddResource(1,50000);
+				AddResource(2, 50000);
+		}
+		if(nGameLevel==eLevelHard)
+		{
+				AddResource(0,100000);
+				AddResource(1,100000);
+				AddResource(2, 100000);
+				SetResearchTimeMultiplyPercent(75);
+				SetResearchPriceMultiplyPercent(75);
+				SetBuildBuildingsTimeMultiplyPercent(75);
+				SetBuildBuildingsPriceMultiplyPercent(75);			
+		}
+		if (nGameLevel==eLevelExpert)
+		{	
+				AddResource(0,150000);
+				AddResource(1,150000);
+				AddResource(2, 150000);
+				SetResearchTimeMultiplyPercent(50);
+				SetResearchPriceMultiplyPercent(50);
+				SetBuildBuildingsTimeMultiplyPercent(50);
+				SetBuildBuildingsPriceMultiplyPercent(50);		
+		}	
+		if (nGameLevel==eLevelHardcore)
+		{
+
+				AddResource(0,500000);
+				AddResource(1,500000);
+				AddResource(2, 500000);
+				SetResearchTimeMultiplyPercent(10);
+				SetResearchPriceMultiplyPercent(10);
+				SetBuildBuildingsTimeMultiplyPercent(10);
+				SetBuildBuildingsPriceMultiplyPercent(10);
+
+		}
+	EnableUnit("UCS_SPIDER#UCS_SPIDER_SD",false);
+	//LockUnit();
+	InitAIBuildingsOrders (nGameLevel);
+	SetAIVariantResearches(nGameLevel);
+
+
+}
+//--------------------------------------Nothing------------------------------------------------------------------//
+
+function void AIWork(int nGameLevel)
+{
+	++time;
+	LockUnit();
+	AIBuildingsOrders(time);
+	Money(nGameLevel);
+}
+
+/*
+	SetAntiUnitsRelations (int nMinRelationPercent, int nMaxRelationPercent, int nMaxKillTicks, int nMinKillTicks);
+
+	eAIAntiUnitMinRelationPercent	= 70,	//ile procent moj unit moze byc gorszy od wroga (ponizej wymysla anty cannona)
+	eAIAntiUnitMaxRelationPercent	= -1,	//ile procent moj unit moze byc lepszy od wroga (-1:bez organiczen), staraj sie nie uzywac lepszych cannow
+	eAIAntiUnitMaxKillTicks			= 1000,	//max ilosc tickow do zabicia wroga z cannonem (powyzej wymysla anty cannona)
+	//nieuzywane
+	eAIAntiUnitMinKillTicks	= 0,			//min ilosc tickow do zabicia wroga z cannonem, staraj sie nie uzywac lepszego
+*/
+
+/*
+enum EAIControl
+{
+	eAIControlTurnOn			= 0x00000001,		//wlaczanie(wylaczanie) wszystkich opcji kontrolowania AI
+	eAIControlDefault			= 0xF0FFFFFF,		//domyslnie wszystko wlaczone
+	eAIControlAll				= 0xF00FFFFF,		//kontroluje wszystko
+
+	eAIControlChooseEnemies		= 0x00000002,		//wybieraj wroga
+	eAIControlAINeutralAI		= 0x00000004,		//AI nie walczy z drugim AI
+	eAIControlChooseAIVariant	= 0x00000008,		//AI wybiera wariant gry
+
+	eAIControlPatrols			= 0x00000020,		//kontroluje(buduje) plutony do patrolowania (bazy, swiata)
+	eAIControlResources			= 0x00000040,		//kontroluje(buduje) harvesterki, kopalnie
+	eAIControlBasePower			= 0x00000080,		//kontroluje(buduje) elektrownie
+	eAIControlBuildBase			= 0x00000100,		//buduje wiezyczki, magazyny, standardowe budynki (oprocz fabryk i kopalni)
+	eAIControlResearches		= 0x00000200,		//wybiera wynalazki do wymyslania
+	eAIControlSpyEnemies		= 0x00000400,		//szpieguje wrogow: wynalazki, ilosc unitow, ataki wrogow 
+	eAIControlConstructUnits	= 0x00000800,		//szuka najlepszych templatow przeciwko wrogowi
+
+	eAIControlAttack			= 0x00001000,		//kontroluje ataki, wybiera jednostki, czas i cel ataku
+	eAIControlAttackPositions	= 0x10000000,		//grupuje plutony przed celem ataku, wybiera pozycje do ataku
+	eAIControlAttackStrategy	= 0x20000000,		//podczas ataku zmienia glowny pluton atakujacy, wycofuje gorsze
+	eAIControlDefence			= 0x00002000,		//kontroluje obrone
+	eAIControlSupply			= 0x00004000,		//kontroluje(buduje) plutony zaopatrzenia
+	eAIControlTransport			= 0x00008000,		//kontroluje(buduje) plutony, budynki do transportowania unitow
+	eAIControlRepairing			= 0x00010000,		//kontroluje(buduje) plutony naprawcze
+	eAIControlUpgradeCannons	= 0x00020000,		//upgraduje dzialka na wiezyczkach
+	eAIControlAttackCapture		= 0x00040000,		//przejmuje budynki bez obstawy
+	eAIHarvestOutsideBase		= 0x00080000,		//przejmuje zasoby poza baza
+	eAIControlAgentsAuction		= 0x40000000,		//licytuje agentow
+	eAIControlDefenceCannons	= 0x80000000,		//upgraduje defensywne dzialka na wiezyczkach
+
+	//flagi dodatkowe domyslnie wlaczone
+	eAIControlWarUnitsFromScript= 0x00100000,		//kontroluje unity dodane ze skryptu
+	eAIControlUpdatesLevel1		= 0x00200000,		//updaty wynalazkow, upgrady plutonow Aliena, poziom 1 (licz od 0)
+	eAIControlUpdatesLevel2		= 0x00400000,		//updaty wynalazkow, upgrady plutonow Aliena, poziom 2
+	eAIControlBuildWall			= 0x00800000,		//buduje mur do okola bazy
+
+	//flagi dodatkowe domyslnie wylaczone
+	eAIAttackInNightOnly		= 0x01000000,		//atakuje tylko w nocy
+	eAIRebuildAllBuildings		= 0x02000000,		//odbudowuje wszystkie budynki
+	eAIPeaceTime				= 0x04000000,		//pokoj ze wszystkimi (buduj sie przeciwko wszystkim graczom)
+};*/
+
+
+/*
+	rObject->AddConst(CONST_NAME("eAIBuildingDefenceTower"),	CAIBase::eDefenceTower);
+	rObject->AddConst(CONST_NAME("eAIBuildingSingleConnector"),	CAIBase::eSingleConnector);
+	rObject->AddConst(CONST_NAME("eAIBuildingMultiConnector"),	CAIBase::eMultiConnector);
+	rObject->AddConst(CONST_NAME("eAIBuildingResourceStorage"),	CAIBase::eResourceStorage);
+	rObject->AddConst(CONST_NAME("eAIBuildingRadar"),			CAIBase::eRadar);
+	rObject->AddConst(CONST_NAME("eAIBuildingShadow"),			CAIBase::eShadow);
+	rObject->AddConst(CONST_NAME("eAIBuildingShieldGenerator"),	CAIBase::eShieldGenerator);
+	rObject->AddConst(CONST_NAME("eAIBuildingDefenceStation"),	CAIBase::eDefenceStation);
+	rObject->AddConst(CONST_NAME("eAIBuildingMainBase"),		CAIBase::eMainBaseBuilding);
+	rObject->AddConst(CONST_NAME("eAIBuildingTowerBase"),		CAIBase::eTowerBaseBuilding);
+	rObject->AddConst(CONST_NAME("eAIBuildingPowerPlant"),		CAIBase::ePowerPlant);
+	rObject->AddConst(CONST_NAME("eAIBuildingPowerCordinateCenter"),CAIBase::ePowerCordinateCenter);
+	rObject->AddConst(CONST_NAME("eAIBuildingPowerTransmitter"),CAIBase::ePowerTransmitter);
+	rObject->AddConst(CONST_NAME("eAIBuildingPowerAccelerator"),CAIBase::ePowerAccelerator);
+	rObject->AddConst(CONST_NAME("eAIBuildingResourceRefinery"),CAIBase::eResourceRefinery);
+	rObject->AddConst(CONST_NAME("eAIBuildingLandingZone"),		CAIBase::eRefineryLandingZone);
+	rObject->AddConst(CONST_NAME("eAIBuildingResourceMine"),	CAIBase::eResourceMine);
+	rObject->AddConst(CONST_NAME("eAIBuildingResearchCenter"),	CAIBase::eResearchCenter);
+	rObject->AddConst(CONST_NAME("eAIBuildingUnitsFactory"),	CAIBase::eUnitsFactory);
+	rObject->AddConst(CONST_NAME("eAIBuildingInfantryFactory"),	CAIBase::eInfantryFactory);
+	rObject->AddConst(CONST_NAME("eAIBuildingPlanesFactory"),	CAIBase::ePlanesFactory);
+	rObject->AddConst(CONST_NAME("eAIBuildingAmmoFactory"),		CAIBase::eAmmoFactory);
+	rObject->AddConst(CONST_NAME("eAIBuildingTeleport"),		CAIBase::eTeleport);
+	rObject->AddConst(CONST_NAME("eAIBuildingUnitsExit"),		CAIBase::eUnitsExit);
+	rObject->AddConst(CONST_NAME("eAIBuildingWall"),			CAIBase::eWall);
+	rObject->AddConst(CONST_NAME("eAIBuildingWallGate"),		CAIBase::eWallGate);
+	rObject->AddConst(CONST_NAME("eAIBuildingWallCannon"),		CAIBase::eWallCannon);
+	rObject->AddConst(CONST_NAME("eAIBuildingLaserWall"),		CAIBase::eLaserWall);
+	rObject->AddConst(CONST_NAME("eAIBuildingArmedLaserWall"),	CAIBase::eArmedLaserWall);
+	rObject->AddConst(CONST_NAME("eAIBuildingSingleWall"),		CAIBase::eSingleWall);
+	rObject->AddConst(CONST_NAME("eAIBuildingDefenceBunker"),	CAIBase::eDefenceBunker);
+	rObject->AddConst(CONST_NAME("eAIBuildingHighDefenceTower"),CAIBase::eHighDefenceTower);
+	rObject->AddConst(CONST_NAME("eAIBuildingSpecialWeapon"),	CAIBase::eSpecialWeapon);
+*/

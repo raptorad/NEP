@@ -1,0 +1,1425 @@
+// +ogolne wyswietlanie goali na starcie  i w goalach
+// +zrobic peace - wylaczyc aja chooseai controlAttack chooseenemy
+
+// +uncle sam ustawianie kasy, dodawanie kasy, wylaczenie harvesterow i rafinerii.
+// hero - sprawdzanie, wyswietlanie
+
+
+mission MISSION_NAME
+{
+
+#include "..\Campaigns\common.ech"
+#include "AgentsDialogs.ech"
+
+state Initialize;
+state Start;
+#ifdef PEACE
+state Peace;
+#endif
+state Nothing;
+/*Na potrzebę squadów stałe zostały zdefiniowane w common.ech
+consts
+{
+	eRaceUCS = 1;
+	eRaceED = 2;
+	eRaceLC = 3;
+	eRaceAlien = 4;
+	eRaceObserver = 5;
+	eEnemy = 0;
+	eNeutral = 1;
+	InfantrySquad=10;
+}*/
+
+enum comboAlliedVictory
+{
+    "translateGameMenuAlliedVictoryNo",
+    "translateGameMenuAlliedVictoryYes",
+		multi:
+    "translateGameMenuAlliedVictory"
+}
+
+
+enum comboWeather {
+	"translateGameMenuWeatherOn",
+    "translateGameMenuWeatherOff",
+		multi:
+    "translateGameMenuWeather"
+}
+
+enum comboUncleSamType
+{
+    "translateGameMenuUncleSamTypeOnlyUS",
+    "translateGameMenuUncleSamTypeUSandR",
+		multi:
+    "translateGameMenuUncleSamType"
+}
+
+enum comboTeam
+{
+	"translateGameMenuTeamsFFA",
+	"translateGameMenuTeamsTLF",
+	"translateGameMenuTeams2",
+	"translateGameMenuTeams3",
+	"translateGameMenuTeams4",
+	"translateGameMenuTeams2R",
+	"translateGameMenuTeams3R",
+	"translateGameMenuTeams4R",
+		multi:
+    "translateGameMenuTeams"
+}
+
+enum comboTechnology
+{
+	"translateGameMenuTechnology2",
+	"translateGameMenuTechnology4",
+	"translateGameMenuTechnology8",
+	"translateGameMenuTechnologyTW",
+		multi:
+    "translateGameMenuTechnology"
+}
+
+enum comboStartingUnits
+{
+    "translateGameMenuStartingUnitsDefault",
+    "translateGameMenuStartingUnitsBuilderOnly",
+multi:
+    "translateGameMenuStartingUnits"
+}
+
+
+
+
+
+
+int nWeatherTimer;
+
+
+function void InitPlayerUCS(player pPlayer, int bDynamicConn, int nX, int nY)
+{
+
+}
+
+function void InitPlayerED(player pPlayer, int bDynamicConn, int nX, int nY)
+{
+
+}
+
+function void InitPlayerLC(player pPlayer, int bDynamicConn, int nX, int nY)
+{
+
+}
+
+function void InitPlayerAlien(player pPlayer, int bDynamicConn, int nX, int nY)
+{
+
+}
+
+
+
+function void InitPlayer(player pPlayer, int bDynamicConn, int nNo)
+{
+    int nX, nY;
+    int nLimit;
+
+    GetStartingPoint(pPlayer.GetIFFNum(), nX, nY);
+    
+    pPlayer.LookAt(nX, nY, 6,0,20);
+
+	
+
+
+	
+    /*
+    //zwiekszenie poczatkowego maksymalnego limitu gdy na starcie sa unity
+    if (comboStartingUnits == 0)
+    {
+        nLimit = pPlayer.GetCurrUnitLimitSize();
+        pPlayer.SetPlayerMaxUnitLimitSize(nLimit);
+    }
+    */
+
+	if(pPlayer.GetRace()==eRaceUCS) //UCS
+	{
+        InitPlayerUCS(pPlayer, bDynamicConn, nX, nY);
+		#ifdef KILL_HERO
+		m_uHero[nNo] = pPlayer.CreateObject(UCS_HERO, nX,nY, 0, 0);//XXXMD wstawic 
+		#endif
+	}
+	if(pPlayer.GetRace()==eRaceED) //ED
+	{
+        InitPlayerED(pPlayer, bDynamicConn, nX, nY);
+		#ifdef KILL_HERO
+		m_uHero[nNo] = pPlayer.CreateObject(ED_HERO, nX,nY, 0, 0);
+		#endif
+	}
+	if(pPlayer.GetRace()==eRaceLC) //LC
+	{
+        InitPlayerLC(pPlayer, bDynamicConn, nX, nY);
+		#ifdef KILL_HERO
+		m_uHero[nNo] = pPlayer.CreateObject(LC_HERO, nX,nY, 0, 0);
+		#endif
+	}
+	if(pPlayer.GetRace()==eRaceAlien)
+	{
+        InitPlayerAlien(pPlayer, bDynamicConn, nX, nY);
+		#ifdef KILL_HERO
+		m_uHero[nNo] = pPlayer.CreateObject(AL_HERO, nX,nY, 0, 0);
+		#endif
+	}
+	pPlayer.SetMaxAgentsInPlayerCount(3);
+}
+
+
+
+int nAgentsCounter;
+//int bCheckVictory;
+
+#ifdef PEACE
+function void SetAliances(int bType)
+{
+	int nP1, nP2;
+    player pP1, pP2;
+
+	for (nP1 = 1; nP1 <= 8; ++nP1)
+    {
+        pP1 = GetPlayer(nP1);
+        if ((pP1 != null) && pP1.IsAlive() && HaveStartingPoint(nP1))
+        {
+			
+			for (nP2 = nP1+1; nP2 <= 8; ++nP2)
+			{
+				pP2 = GetPlayer(nP2);
+				if ((pP2 != null) && pP2.IsAlive() && HaveStartingPoint(nP2))
+				{
+					if(pP1.IsEnemy(pP2) || pP1.IsNeutral(pP2)) {
+						if(bType==eEnemy)
+						{
+							//pP1.SetAIControlOptions(eAIControlAttack,true);
+							//pP1.SetAIControlOptions(eAIControlChooseEnemies,true);
+							pP1.SetAIControlOptions(eAIPeaceTime,false);
+							pP1.SetEnemy(pP2);
+							pP2.SetEnemy(pP1);
+						}
+						if(bType==eNeutral)
+						{
+							//pP1.SetAIControlOptions(eAIControlAttack,false);
+							//pP1.SetAIControlOptions(eAIControlChooseEnemies,false);
+							pP1.SetAIControlOptions(eAIPeaceTime,true);
+							pP1.SetNeutral(pP2);
+							pP2.SetNeutral(pP1);
+						}
+						
+					}
+				}
+			}
+        }
+    }
+}
+#endif
+
+#ifdef HARD
+	function void  GiveUnitsToAi(int nHardLevel)
+	{
+		int nP,nE,nX,nY,nXE,nYE,nMinDistance,nMinDistancePlayer;
+		player pP,pE;
+		unit uUnit;
+		int n;
+		for(nP=1; nP<=8; ++nP)
+		{
+			pP=GetPlayer(nP);
+			
+
+			if(pP.IsAIPlayer() &&  pP.IsAlive())
+			{
+				nMinDistance=64000;//Szukanie najbliższego gracza-celu do którego zostaną wysłane unity
+				for(nE=1; nE<=8; ++nE)
+				{
+					pE=GetPlayer(nE);
+					if(pP.IsEnemy(pE))
+					{
+						GetStartingPoint(pE.GetIFFNum(), nXE, nYE);
+						if(nMinDistance>Distance(nX,nY,nXE, nYE))
+						{
+							nMinDistance=Distance(nX,nY,nXE, nYE);
+							nMinDistancePlayer=nE;
+						}
+					}				
+				}
+				pE=GetPlayer(nMinDistancePlayer);
+				GetStartingPoint(pE.GetIFFNum(), nXE, nYE);
+				
+				
+				GetStartingPoint(pP.GetIFFNum(), nX, nY);
+
+				n=0;
+				while (n<nHardLevel && pP.GetCurrUnitLimitSize()<pP.GetPlayerMaxUnitLimitSize() )
+				{
+
+					if(pP.GetRace()==eRaceED)
+					{
+
+						if(n<2*nHardLevel  && pP.GetCurrUnitLimitSize()<pP.GetPlayerMaxUnitLimitSize())
+						{
+							CreateAndAttackFromPointToPoint(pP, "ED_BTTI_R", 1, nX+Rand(24)-12, nY+Rand(24)-12, nXE, nYE);; ++n;	
+							CreateAndAttackFromPointToPoint(pP, "ED_BTTI_I", 1, nX+Rand(24)-12, nY+Rand(24)-12, nXE, nYE);; ++n;		
+						}						
+
+						if(pP.IsResearchResearched("ED_LAND_TECH1") && n<2*nHardLevel  && pP.GetCurrUnitLimitSize()<pP.GetPlayerMaxUnitLimitSize())
+						{
+							CreateAndAttackFromPointToPoint(pP, "ED_BTTV_HRA", 1, nX+Rand(24)-12, nY+Rand(24)-12, nXE, nYE);; ++n;	
+							CreateAndAttackFromPointToPoint(pP, "ED_BTTV_AAR", 1, nX+Rand(24)-12, nY+Rand(24)-12, nXE, nYE);; ++n;		
+						}
+						if(pP.IsResearchResearched("ED_LAND_TECH2") && n<2*nHardLevel  && pP.GetCurrUnitLimitSize()<pP.GetPlayerMaxUnitLimitSize())
+						{
+							CreateAndAttackFromPointToPoint(pP, "ED_PAMIR_PC", 1, nX+Rand(24)-12, nY+Rand(24)-12, nXE, nYE);; ++n;		
+							CreateAndAttackFromPointToPoint(pP, "ED_PAMIR_RA", 1, nX+Rand(24)-12, nY+Rand(24)-12, nXE, nYE);; ++n;		
+						}
+						if(pP.IsResearchResearched("ED_LAND_TECH3") && n<2*nHardLevel  && pP.GetCurrUnitLimitSize()<pP.GetPlayerMaxUnitLimitSize())
+						{
+							CreateAndAttackFromPointToPoint(pP, "KAUKAZ_2XPC", 1, nX+Rand(24)-12, nY+Rand(24)-12, nXE, nYE);; ++n;			
+							CreateAndAttackFromPointToPoint(pP, "KAUKAZ_2XL", 1, nX+Rand(24)-12, nY+Rand(24)-12, nXE, nYE);;	 ++n;		
+						}
+						if(pP.IsResearchResearched("ED_LAND_TECH4") && n<2*nHardLevel  && pP.GetCurrUnitLimitSize()<pP.GetPlayerMaxUnitLimitSize())
+						{
+							CreateAndAttackFromPointToPoint(pP, "ED_HT30_2XHRA", 1, nX+Rand(24)-12, nY+Rand(24)-12, nXE, nYE);; ++n;			
+							CreateAndAttackFromPointToPoint(pP, "ED_HT30_4XL", 1, nX+Rand(24)-12, nY+Rand(24)-12, nXE, nYE);; ++n;			
+						}
+						if(pP.IsResearchResearched("ED_AIR_TECH1") && n<2*nHardLevel  && pP.GetCurrUnitLimitSize()<pP.GetPlayerMaxUnitLimitSize())
+						{
+							CreateAndAttackFromPointToPoint(pP, "ED_STORM_R", 1, nX+Rand(24)-12, nY+Rand(24)-12, nXE, nYE);;	 ++n;		
+							CreateAndAttackFromPointToPoint(pP, "ED_STORM_I", 1, nX+Rand(24)-12, nY+Rand(24)-12, nXE, nYE);; ++n;		
+						}
+						if(pP.IsResearchResearched("ED_AIR_TECH2") && n<2*nHardLevel  && pP.GetCurrUnitLimitSize()<pP.GetPlayerMaxUnitLimitSize())
+						{
+							CreateAndAttackFromPointToPoint(pP, "ED_INTERCEPTOR_AAR", 1, nX+Rand(24)-12, nY+Rand(24)-12, nXE, nYE);; ++n;			
+							CreateAndAttackFromPointToPoint(pP, "ED_INTERCEPTOR_HRA", 1, nX+Rand(24)-12, nY+Rand(24)-12, nXE, nYE);; ++n;		
+						}
+						if(pP.IsResearchResearched("ED_AIR_TECH3") && n<2*nHardLevel  && pP.GetCurrUnitLimitSize()<pP.GetPlayerMaxUnitLimitSize())
+						{
+							CreateAndAttackFromPointToPoint(pP, "ED_BOMBER_CBOMB", 1, nX+Rand(24)-12, nY+Rand(24)-12, nXE, nYE);; ++n;			
+							CreateAndAttackFromPointToPoint(pP, "ED_BOMBER_HBOMB", 1, nX+Rand(24)-12, nY+Rand(24)-12, nXE, nYE);; ++n;		
+						}
+					}
+					if(pP.GetRace()==eRaceUCS)
+					{
+						if(n<2*nHardLevel  && pP.GetCurrUnitLimitSize()<pP.GetPlayerMaxUnitLimitSize())
+						{
+							CreateAndAttackFromPointToPoint(pP, "UCS_RAPTOR_R", 1, nX+Rand(24)-12, nY+Rand(24)-12, nXE, nYE);;	 ++n;		
+							CreateAndAttackFromPointToPoint(pP, "UCS_RAPTOR_P", 1, nX+Rand(24)-12, nY+Rand(24)-12, nXE, nYE);; ++n;			
+						}
+						if(pP.IsResearchResearched("UCS_LAND_TECH1") && n<2*nHardLevel  && pP.GetCurrUnitLimitSize()<pP.GetPlayerMaxUnitLimitSize())
+						{
+							CreateAndAttackFromPointToPoint(pP, "UCS_SPIDER_AAR", 1, nX+Rand(24)-12, nY+Rand(24)-12, nXE, nYE);;	 ++n;		
+							CreateAndAttackFromPointToPoint(pP, "UCS_SPIDER_P", 1, nX+Rand(24)-12, nY+Rand(24)-12, nXE, nYE);; ++n;			
+						}
+						if(pP.IsResearchResearched("UCS_LAND_TECH2") && n<2*nHardLevel  && pP.GetCurrUnitLimitSize()<pP.GetPlayerMaxUnitLimitSize())
+						{
+							CreateAndAttackFromPointToPoint(pP, "UCS_TIGER_R", 1, nX+Rand(24)-12, nY+Rand(24)-12, nXE, nYE);; ++n;			
+							CreateAndAttackFromPointToPoint(pP, "UCS_TIGER_G", 1, nX+Rand(24)-12, nY+Rand(24)-12, nXE, nYE);; ++n;			
+						}
+						if(pP.IsResearchResearched("UCS_LAND_TECH3") && n<2*nHardLevel  && pP.GetCurrUnitLimitSize()<pP.GetPlayerMaxUnitLimitSize())
+						{
+							CreateAndAttackFromPointToPoint(pP, "UCS_PANTHER_R", 1, nX+Rand(24)-12, nY+Rand(24)-12, nXE, nYE);; ++n;			
+							CreateAndAttackFromPointToPoint(pP, "UCS_PANTHER_P", 1, nX+Rand(24)-12, nY+Rand(24)-12, nXE, nYE);;	 ++n;		
+						}
+						if(pP.IsResearchResearched("UCS_LAND_TECH4") && n<2*nHardLevel  && pP.GetCurrUnitLimitSize()<pP.GetPlayerMaxUnitLimitSize())
+						{
+							CreateAndAttackFromPointToPoint(pP, "UCS_JAGUAR_R", 1, nX+Rand(24)-12, nY+Rand(24)-12, nXE, nYE);; ++n;			
+							CreateAndAttackFromPointToPoint(pP, "UCS_JAGUAR_P", 1, nX+Rand(24)-12, nY+Rand(24)-12, nXE, nYE);; ++n;		
+						}
+						if(pP.IsResearchResearched("UCS_AIR_TECH1") && n<2*nHardLevel  && pP.GetCurrUnitLimitSize()<pP.GetPlayerMaxUnitLimitSize())
+						{
+							CreateAndAttackFromPointToPoint(pP, "UCS_GARGOIL_R", 1, nX+Rand(24)-12, nY+Rand(24)-12, nXE, nYE);;	 ++n;		
+							CreateAndAttackFromPointToPoint(pP, "UCS_GARGOIL_P", 1, nX+Rand(24)-12, nY+Rand(24)-12, nXE, nYE);; ++n;		
+						}
+						if(pP.IsResearchResearched("UCS_AIR_TECH2") && n<2*nHardLevel  && pP.GetCurrUnitLimitSize()<pP.GetPlayerMaxUnitLimitSize())
+						{
+							CreateAndAttackFromPointToPoint(pP, "UCS_BAT_R", 1, nX+Rand(24)-12, nY+Rand(24)-12, nXE, nYE);;	 ++n;		
+							CreateAndAttackFromPointToPoint(pP, "UCS_BAT_P", 1, nX+Rand(24)-12, nY+Rand(24)-12, nXE, nYE);; ++n;		
+						}
+						if(pP.IsResearchResearched("UCS_AIR_TECH3") && n<2*nHardLevel  && pP.GetCurrUnitLimitSize()<pP.GetPlayerMaxUnitLimitSize())
+						{
+							CreateAndAttackFromPointToPoint(pP, "UCS_HELLWIND_NB", 1, nX+Rand(24)-12, nY+Rand(24)-12, nXE, nYE);; ++n;			
+							CreateAndAttackFromPointToPoint(pP, "UCS_HAWK_AAR", 1, nX+Rand(24)-12, nY+Rand(24)-12, nXE, nYE);; ++n;		
+						}						
+						
+					}
+					if(pP.GetRace()==eRaceLC)
+					{
+						if(n<2*nHardLevel  && pP.GetCurrUnitLimitSize()<pP.GetPlayerMaxUnitLimitSize())
+						{
+							CreateAndAttackFromPointToPoint(pP, "LC_MOON_E", 1, nX+Rand(24)-12, nY+Rand(24)-12, nXE, nYE);	 ++n;		
+							CreateAndAttackFromPointToPoint(pP, "LC_MOON_AAR", 1, nX+Rand(24)-12, nY+Rand(24)-12, nXE, nYE); ++n;									
+						}
+						if(pP.IsResearchResearched("LC_LAND_TECH1") && n<2*nHardLevel  && pP.GetCurrUnitLimitSize()<pP.GetPlayerMaxUnitLimitSize())
+						{
+							CreateAndAttackFromPointToPoint(pP, "LC_FANG_E", 1, nX+Rand(24)-12, nY+Rand(24)-12, nXE, nYE);	 ++n;		
+							CreateAndAttackFromPointToPoint(pP, "LC_FANG_ART", 1, nX+Rand(24)-12, nY+Rand(24)-12, nXE, nYE); ++n;									
+						}
+						if(pP.IsResearchResearched("LC_LAND_TECH2") && n<2*nHardLevel  && pP.GetCurrUnitLimitSize()<pP.GetPlayerMaxUnitLimitSize())
+						{
+							CreateAndAttackFromPointToPoint(pP, "LC_FATGIRL_2E", 1, nX+Rand(24)-12, nY+Rand(24)-12, nXE, nYE);	 ++n;		
+							CreateAndAttackFromPointToPoint(pP, "LC_FATGIRL_2AAR", 1, nX+Rand(24)-12, nY+Rand(24)-12, nXE, nYE); ++n;			
+						}
+						if(pP.IsResearchResearched("LC_LAND_TECH3") && n<2*nHardLevel  && pP.GetCurrUnitLimitSize()<pP.GetPlayerMaxUnitLimitSize())
+						{
+							CreateAndAttackFromPointToPoint(pP, "LC_CRATER_E", 1, nX+Rand(24)-12, nY+Rand(24)-12, nXE, nYE); ++n;			
+							CreateAndAttackFromPointToPoint(pP, "LC_CRATER_RA", 1, nX+Rand(24)-12, nY+Rand(24)-12, nXE, nYE); ++n;			
+						}
+						if(pP.IsResearchResearched("LC_LAND_TECH4") && n<2*nHardLevel  && pP.GetCurrUnitLimitSize()<pP.GetPlayerMaxUnitLimitSize())
+						{
+							CreateAndAttackFromPointToPoint(pP, "LC_CRUSCHER_2XHRA", 1, nX+Rand(24)-12, nY+Rand(24)-12, nXE, nYE);	 ++n;		
+							CreateAndAttackFromPointToPoint(pP, "LC_CRUSCHER_2XE", 1, nX+Rand(24)-12, nY+Rand(24)-12, nXE, nYE); ++n;			
+						}
+						if(pP.IsResearchResearched("LC_AIR_TECH1") && n<2*nHardLevel  && pP.GetCurrUnitLimitSize()<pP.GetPlayerMaxUnitLimitSize())
+						{
+							CreateAndAttackFromPointToPoint(pP, "LC_METEOR_R", 1, nX+Rand(24)-12, nY+Rand(24)-12, nXE, nYE);	 ++n;		
+							CreateAndAttackFromPointToPoint(pP, "LC_METEOR_AAR", 1, nX+Rand(24)-12, nY+Rand(24)-12, nXE, nYE);	 ++n;		
+						}
+						if(pP.IsResearchResearched("LC_AIR_TECH2") && n<2*nHardLevel  && pP.GetCurrUnitLimitSize()<pP.GetPlayerMaxUnitLimitSize())
+						{
+							CreateAndAttackFromPointToPoint(pP, "LC_SFIGHTER_2XAAR", 1, nX+Rand(24)-12, nY+Rand(24)-12, nXE, nYE); ++n;			
+							CreateAndAttackFromPointToPoint(pP, "LC_SFIGHTER_2XE", 1, nX+Rand(24)-12, nY+Rand(24)-12, nXE, nYE); ++n;		
+						}
+						if(pP.IsResearchResearched("LC_AIR_TECH3") && n<2*nHardLevel  && pP.GetCurrUnitLimitSize()<pP.GetPlayerMaxUnitLimitSize())
+						{
+							CreateAndAttackFromPointToPoint(pP, "LC_THUNDER_HRA", 1, nX+Rand(24)-12, nY+Rand(24)-12, nXE, nYE);	 ++n;		
+							CreateAndAttackFromPointToPoint(pP, "LC_THUNDER_BOMB", 1, nX+Rand(24)-12, nY+Rand(24)-12, nXE, nYE); ++n;		
+						}						
+											
+					}
+					if(pP.GetRace()==eRaceAlien)
+					{
+							
+						if(n<2*nHardLevel  && pP.GetCurrUnitLimitSize()<pP.GetPlayerMaxUnitLimitSize())
+						{
+							CreateAndAttackFromPointToPoint(pP, "MORPHOID_SCUT", 1, nX+Rand(24)-12, nY+Rand(24)-12, nXE, nYE);	++n;
+						}
+						if(pP.GetNumberOfUnitsWithChasis("MORPHOID_MORFER_TECH2", 0)>0 && n<2*nHardLevel  && pP.GetCurrUnitLimitSize()<pP.GetPlayerMaxUnitLimitSize())
+						{
+							CreateAndAttackFromPointToPoint(pP, "MORPHOID_ASSALUT_CRAFT", 1, nX+Rand(24)-12, nY+Rand(24)-125, nXE, nYE);	 ++n;		
+							CreateAndAttackFromPointToPoint(pP, "MORPHOID_FIGHTER", 1, nX+Rand(24)-12, nY+Rand(24)-12, nXE, nYE); ++n;			
+						}
+						if(pP.GetNumberOfUnitsWithChasis("MORPHOID_MORFER_TECH3", 0)>0 && n<2*nHardLevel  && pP.GetCurrUnitLimitSize()<pP.GetPlayerMaxUnitLimitSize())
+						{
+							CreateAndAttackFromPointToPoint(pP, "MORPHOID_PROTECTOR", 1, nX+Rand(24)-12, nY+Rand(24)-12, nXE, nYE);	 ++n;		
+							CreateAndAttackFromPointToPoint(pP, "MORPHOID_INTERCEPTOR", 1, nX+Rand(24)-12, nY+Rand(24)-12, nXE, nYE);	 ++n;		
+						}
+						if(pP.GetNumberOfUnitsWithChasis("MORPHOID_MORFER_TECH4", 0)>0 && n<2*nHardLevel  && pP.GetCurrUnitLimitSize()<pP.GetPlayerMaxUnitLimitSize())
+						{
+							CreateAndAttackFromPointToPoint(pP, "MORPHOID_MAIN_CRAFT", 1, nX+Rand(24)-12, nY+Rand(24)-12, nXE, nYE); ++n;			
+							CreateAndAttackFromPointToPoint(pP, "MORPHOID_BARAGER_CRAFT", 1, nX+Rand(24)-12, nY+Rand(24)-12, nXE, nYE);	 ++n;		
+						}
+						if(pP.GetNumberOfUnitsWithChasis("MORPHOID_MORFER_TECH5", 0)>0 && n<2*nHardLevel  && pP.GetCurrUnitLimitSize()<pP.GetPlayerMaxUnitLimitSize())
+						{
+							CreateAndAttackFromPointToPoint(pP, "MORPHOID_HEAVY_CRAFT", 1, nX+Rand(24)-12, nY+Rand(24)-12, nXE, nYE);	 ++n;		
+						}
+					}
+				}
+			}
+		}
+	}
+#endif
+
+function void setTeams() {
+	
+	int nP1, nP2,nP3,nP4;
+	player pP1, pP2,pP3,pP4;
+	int pom,pom2,good,i,j,bezteam,rnum,koniec,n,last[];
+	int tab[];
+	tab.Create(9);
+	
+	for(i=1;i<=8;++i) {
+		pP1 = GetPlayer(i);
+		if(pP1.GetRace() == 5) {
+			tab[i]=9;
+		} else tab[i]=0;
+	}
+	
+	if(comboTeam==0) { //free for all
+		for (nP1 = 1; nP1 <= 8; ++nP1) {
+			pP1 = GetPlayer(nP1);
+			 if ((pP1 != null) && pP1.IsAlive() && HaveStartingPoint(nP1))
+       		{
+				for (nP2 = nP1+1; nP2 <= 8; ++nP2) {
+					pP2 = GetPlayer(nP2);
+					if(pP1.GetRace() == 5 || pP2.GetRace() == 5) { //obserwator
+							pP1.SetAlly(pP2);
+							pP2.SetAlly(pP1);
+					} else
+					if ((pP2 != null) && pP2.IsAlive() && HaveStartingPoint(nP2)) {
+						pP1.SetEnemy(pP2);
+						pP2.SetEnemy(pP1);
+					}
+				}
+			}
+		}
+	} else if(comboTeam ==1) { //teams like fractions
+			for (nP1 = 1; nP1 <= 8; ++nP1) {
+			pP1 = GetPlayer(nP1);
+			 if ((pP1 != null) && pP1.IsAlive() && HaveStartingPoint(nP1))
+       		{
+				for (nP2 = nP1+1; nP2 <= 8; ++nP2) {
+					pP2 = GetPlayer(nP2);
+					if ((pP2 != null) && pP2.IsAlive() && HaveStartingPoint(nP2)) {
+						if(pP1.GetRace() == 5 || pP2.GetRace() == 5) { //obserwator
+								pP1.SetAlly(pP2);
+								pP2.SetAlly(pP1);
+						} else {
+							if(pP1.GetRace()==pP2.GetRace()) {
+								pP1.SetAlly(pP2);
+								pP2.SetAlly(pP1);
+							} else {
+								pP1.SetEnemy(pP2);
+								pP2.SetEnemy(pP1);
+							}
+						}
+					}
+				}
+			}
+		}
+	} else if(comboTeam ==2) { // 2v2
+			
+			pom=1;
+			for (nP1 = 1; nP1 <= 8; ++nP1) {
+			pP1 = GetPlayer(nP1);
+			 if ((pP1 != null) && pP1.IsAlive() && HaveStartingPoint(nP1))
+       		{
+				if(pP1.GetRace() != 5) {
+					pom = pom -1;
+				}
+				for (nP2 = nP1+1; nP2 <= 8; ++nP2) {
+					pP2 = GetPlayer(nP2);
+					if ((pP2 != null) && pP2.IsAlive() && HaveStartingPoint(nP2)) {
+						if(pP1.GetRace() == 5 || pP2.GetRace() == 5) { //obserwator
+									pP1.SetAlly(pP2);
+									pP2.SetAlly(pP1);
+							} else {
+								if(pom==0) {
+									pP1.SetAlly(pP2);
+									pP2.SetAlly(pP1);
+									pom=2;
+								} else {
+									pP1.SetEnemy(pP2);
+									pP2.SetEnemy(pP1);
+								}
+							}
+					}
+				}
+			}
+		}
+	} else if(comboTeam ==3) { // 3v3
+			good=2;
+		
+			for (nP1 = 1; nP1 <= 8; ++nP1) {
+			pP1 = GetPlayer(nP1);
+			 if ((pP1 != null) && pP1.IsAlive() && HaveStartingPoint(nP1))
+       		{
+				if(pP1.GetRace() != 5) {
+					pom=good;
+					if(good==0) good=2;
+						else good = good -1;
+				}
+				for (nP2 = nP1+1; nP2 <= 8; ++nP2) {
+					pP2 = GetPlayer(nP2);
+					if ((pP2 != null) && pP2.IsAlive() && HaveStartingPoint(nP2)) {
+						if(pP1.GetRace() == 5 || pP2.GetRace() == 5) { //obserwator
+									pP1.SetAlly(pP2);
+									pP2.SetAlly(pP1);
+							} else {
+								if(pom!=0) {
+									pP1.SetAlly(pP2);
+									pP2.SetAlly(pP1);
+									pom = pom -1;
+								} else {
+									pP1.SetEnemy(pP2);
+									pP2.SetEnemy(pP1);
+								}
+							}
+					}
+				}
+			}
+		}
+	} else if(comboTeam ==4) { // 4v4
+			good=3;
+		
+			for (nP1 = 1; nP1 <= 8; ++nP1) {
+			pP1 = GetPlayer(nP1);
+			 if ((pP1 != null) && pP1.IsAlive() && HaveStartingPoint(nP1))
+       		{
+				if(pP1.GetRace() != 5) {
+					pom=good;
+					if(good==0) good=3;
+						else good = good -1;
+				}
+				
+				for (nP2 = nP1+1; nP2 <= 8; ++nP2) {
+					pP2 = GetPlayer(nP2);
+					if ((pP2 != null) && pP2.IsAlive() && HaveStartingPoint(nP2)) {
+						if(pP1.GetRace() == 5 || pP2.GetRace() == 5) { //obserwator
+									pP1.SetAlly(pP2);
+									pP2.SetAlly(pP1);
+							} else {
+								if(pom!=0) {
+									pP1.SetAlly(pP2);
+									pP2.SetAlly(pP1);
+									pom = pom -1;
+								} else {
+									pP1.SetEnemy(pP2);
+									pP2.SetEnemy(pP1);
+								}
+							}
+					}
+				}
+			}
+		}
+	} else if(comboTeam ==5) { // 2v2 Random
+					
+			for (nP1 = 1; nP1 <= 8; ++nP1) {
+			pP1 = GetPlayer(nP1);
+			 if ((pP1 != null) && pP1.IsAlive() && HaveStartingPoint(nP1))
+       		{
+				rnum=0;
+				if(pP1.GetRace() != 5 && tab[nP1]<1) {
+					
+					//liczymy liczbe osob bez teamu i nie obserwator
+					bezteam=0;
+					for (nP3 = 1; nP3 <= 8; ++nP3) {
+						pP3 = GetPlayer(nP3);
+						 if (pP3 != null && pP3.IsAlive() && HaveStartingPoint(nP3) && tab[nP3]<1) {
+						 	++bezteam;
+						 }
+					}
+					
+					//jesli mozna losujemy ally'a
+					if(bezteam>1) {
+						koniec=0;
+						while(koniec==0) {
+							rnum=Rand(8-nP1)+nP1+1;
+							pP3 = GetPlayer(rnum);
+							 if (pP3 != null && pP3.IsAlive() && HaveStartingPoint(rnum) &&  !pP1.IsAlly(pP3) && tab[rnum]<1) {
+						 			pP1.SetAlly(pP3);
+									pP3.SetAlly(pP1);
+									++tab[nP1];
+									++tab[rnum];
+									koniec=1;
+						  	}
+						}
+					}
+				} 
+				for (nP2 = nP1+1; nP2 <= 8; ++nP2) {
+					pP2 = GetPlayer(nP2);
+					if ((pP2 != null) && pP2.IsAlive() && HaveStartingPoint(nP2)) {
+						if(pP1.GetRace() == 5 || pP2.GetRace() == 5) { //obserwator
+									pP1.SetAlly(pP2);
+									pP2.SetAlly(pP1);
+							} else {
+								if(rnum!=nP2) {
+									pP1.SetEnemy(pP2);
+									pP2.SetEnemy(pP1);
+								}
+							}
+					}
+				}
+			}
+		}
+	} else if(comboTeam ==6) { // 3v3 Random
+		
+			n=2;
+			last.Create(n);
+			
+			for (nP1 = 1; nP1 <= 8; ++nP1) {
+				pP1 = GetPlayer(nP1);
+				 if ((pP1 != null) && pP1.IsAlive() && HaveStartingPoint(nP1) )
+	       		{
+					if(pP1.GetRace() == 5) {
+						for (nP2 = nP1+1; nP2 <= 8; ++nP2) {
+							pP2 = GetPlayer(nP2);
+							pP1.SetAlly(pP2);
+							pP2.SetAlly(pP1);
+						}
+					} else if(tab[nP1]<n) {
+						
+						//liczymy liczbe osob bez teamu i nie obserwator
+						bezteam=0;
+						for (nP3 = 1; nP3 <= 8; ++nP3) {
+							pP3 = GetPlayer(nP3);
+							 if (pP3 != null && pP3.IsAlive() && HaveStartingPoint(nP3) && tab[nP3]<n) {
+							 	++bezteam;
+							 }
+						}
+						
+						//jesli mozna losujemy ally'a
+						for(i=0;i<n;++i) last[i]=0;
+						if(bezteam>1) {
+						
+							if(bezteam>2) bezteam=2; //ilosc do wylosowania
+							else bezteam=1;
+							for(i=0;i<bezteam;++i) {
+								koniec=0;
+								while(koniec==0) {
+									last[i]=Rand(8-nP1)+nP1+1;
+									if(last[i]!=last[0] || last[i]!=last[1]) {
+										pP3 = GetPlayer(last[i]);
+										pom = last[i];
+										 if (pP3 != null && pP3.IsAlive() && HaveStartingPoint(last[i]) &&  !pP1.IsAlly(pP3) && tab[pom]<n) {
+												koniec=1;
+									  	}
+									}
+								}
+							}
+							
+							pom=0;
+							pom2=0;
+							//po wybraniu ustawiamy sojusze
+							pP2 = GetPlayer(last[0]);
+							pP1.SetAlly(pP2);
+							pP2.SetAlly(pP1);
+							
+							pom = last[0];
+							tab[nP1]=n;
+							tab[pom]=n;
+							
+							if(bezteam==2) {
+								pP3 = GetPlayer(last[1]);
+								pP1.SetAlly(pP3);
+								pP3.SetAlly(pP1);
+								pP2.SetAlly(pP3);
+								pP3.SetAlly(pP2);
+								
+								pom2 = last[1];
+								tab[pom2]=n;
+								
+								for (nP4 = pom2+1; nP4 <= 8; ++nP4) {
+									pP4 = GetPlayer(nP4);
+									if ((pP4 != null) && pP4.IsAlive() && HaveStartingPoint(nP4)) {
+										if(pP4.GetRace() == 5) { //obserwator
+													pP3.SetAlly(pP4);
+													pP4.SetAlly(pP3);
+											} else {
+												if(last[0]!=nP4 && last[1]!=nP4) {
+													pP3.SetEnemy(pP4);
+													pP4.SetEnemy(pP3);
+												}
+											}
+										}
+								}
+							}
+							
+							for (nP4 = pom+1; nP4 <= 8; ++nP4) {
+								pP4 = GetPlayer(nP4);
+								if ((pP4 != null) && pP4.IsAlive() && HaveStartingPoint(nP4)) {
+									if(pP4.GetRace() == 5) { //obserwator
+												pP2.SetAlly(pP4);
+												pP4.SetAlly(pP2);
+										} else {
+											if(last[0]!=nP4 && last[1]!=nP4) {
+												pP2.SetEnemy(pP4);
+												pP4.SetEnemy(pP2);
+											}
+										}
+									}
+							}
+						}
+						
+						for (nP4 = nP1+1; nP4 <= 8; ++nP4) {
+							pP4 = GetPlayer(nP4);
+							if ((pP4 != null) && pP4.IsAlive() && HaveStartingPoint(nP4)) {
+								if(pP4.GetRace() == 5) { //obserwator
+											pP1.SetAlly(pP4);
+											pP4.SetAlly(pP1);
+									} else {
+										if(last[0]!=nP4 && last[1]!=nP4) {
+											pP1.SetEnemy(pP4);
+											pP4.SetEnemy(pP1);
+										}
+									}
+							}
+					}
+				} 
+			}
+		}
+	
+	} else if(comboTeam ==7) { // 4v4 Random
+	
+			n=4;
+			last.Create(n);
+			
+			//liczymy liczbe osob bez teamu i nie obserwator
+			bezteam=0;
+			for (nP3 = 1; nP3 <= 8; ++nP3) {
+				pP3 = GetPlayer(nP3);
+				 if (pP3 != null && pP3.IsAlive() && HaveStartingPoint(nP3) && tab[nP3]<n) {
+				 	++bezteam;
+				 }
+			}
+			
+			if(bezteam>4) bezteam=4;
+			for(i=0;i<bezteam;++i) {
+				koniec=0;
+				while(koniec==0) {
+					last[i]=Rand(8-nP1)+nP1+1;
+					pom=1;
+					for(j=0;j<n;++j) { //sprawdzamy czy wystapila
+						if(j!=i && last[j] ==last[i]) {pom=0;break;}
+					}
+					if(pom) {
+						pP3 = GetPlayer(last[i]);
+						pom = last[i];
+						 if (pP3 != null && pP3.IsAlive() && HaveStartingPoint(last[i]) &&  !pP1.IsAlly(pP3) && tab[pom]<n) {
+								koniec=1;
+					  	}
+					}
+				}
+				pP1 = GetPlayer(last[i]);
+				for(j=0;j<i;++j) {
+					pP2 = GetPlayer(last[j]);
+					pP2.SetAlly(pP1);
+					pP1.SetAlly(pP2);
+				}
+			}
+			
+			for (nP1 = 1; nP1 <= 8; ++nP1) {
+				pP1 = GetPlayer(nP1);
+				 if ((pP1 != null) && pP1.IsAlive() && HaveStartingPoint(nP1) )
+	       		{
+					if(pP1.GetRace() == 5) {
+						for (nP2 = nP1+1; nP2 <= 8; ++nP2) {
+							pP2 = GetPlayer(nP2);
+							pP1.SetAlly(pP2);
+							pP2.SetAlly(pP1);
+						}
+					} else {
+						pom=1;
+						for(j=0;j<n;++j) { //sprawdzamy czy wystapila
+							if(last[j] == nP1) {pom=0;break;}
+						}
+						if(pom) { // nie wystapila
+								for (nP4 = nP1+1; nP4 <= 8; ++nP4) {
+									pP4 = GetPlayer(nP4);
+									if ((pP4 != null) && pP4.IsAlive() && HaveStartingPoint(nP4)) {
+										if(pP4.GetRace() == 5) { //obserwator
+													pP1.SetAlly(pP4);
+													pP4.SetAlly(pP1);
+											} else {
+												pom=1;
+												for(j=0;j<n;++j) { //sprawdzamy czy wystapila
+													if(last[j] == nP4) {pom=0;break;}
+												}
+												if(!pom) { // wystapila
+													pP1.SetEnemy(pP4);
+													pP4.SetEnemy(pP1);
+												} else {
+													pP1.SetAlly(pP4);
+													pP4.SetAlly(pP1);
+												}
+											}
+										}
+								}
+						} else { //wystapil
+							for (nP4 = nP1+1; nP4 <= 8; ++nP4) {
+									pP4 = GetPlayer(nP4);
+									if ((pP4 != null) && pP4.IsAlive() && HaveStartingPoint(nP4)) {
+										if(pP4.GetRace() == 5 ) { //obserwator
+													pP1.SetAlly(pP4);
+													pP4.SetAlly(pP1);
+											} else {
+												pom=1;
+												for(j=0;j<n;++j) { //sprawdzamy czy wystapila
+													if(last[j] == nP4) {pom=0;break;}
+												}
+												if(pom) { // nie wystapila
+													pP1.SetEnemy(pP4);
+													pP4.SetEnemy(pP1);
+												} 
+											}
+										}
+								}
+							}
+						}
+				}
+		} 
+	}
+}
+
+
+
+
+function void setTechnologySpeed() {
+		player pP1;
+		int nP1;	
+
+		for (nP1 = 1; nP1 <= 8; ++nP1) {
+			pP1 = GetPlayer(nP1);
+			 if ((pP1 != null) && pP1.IsAlive() && HaveStartingPoint(nP1))
+	      	{
+				if(comboTechnology==0) {
+					pP1.SetResearchTimeMultiplyPercent(50);
+				} else if(comboTechnology==1) {
+					pP1.SetResearchTimeMultiplyPercent(25);
+				} else if(comboTechnology==2) {
+					pP1.SetResearchTimeMultiplyPercent(12);
+				}  else if(comboTechnology==3) {
+				
+					pP1.SetResearchTimeMultiplyPercent(12);
+					pP1.SetResearchPriceMultiplyPercent(12);
+					
+					if(pP1.GetRace() == eRaceUCS) {
+						addAllResearchUCS(pP1);
+					} else if(pP1.GetRace() == eRaceED) {
+						addAllResearchED(pP1);
+					} else if(pP1.GetRace() == eRaceLC) {
+						addAllResearchLC(pP1);
+					} else if(pP1.GetRace() == eRaceLC) {
+						addAllResearchAlien(pP1);
+					}
+				}	
+			}
+	}
+}
+
+
+
+int bAllowVictory;
+
+int aHaveBuildings[];
+//================================================================================================
+state Initialize
+{
+    int nPlayer;
+	int pom1,pom2;
+    player pPlayer;
+
+	//bCheckVictory=false;
+	InitCarriers();
+	SetTimer(0,3*30);//sprawdzanie victory
+	
+	InitializeAgents();
+    
+	aHaveBuildings.Create(17);
+	#ifdef KILL_HERO
+	InitializeHeroes();
+	#endif
+
+	for (nPlayer = 1; nPlayer <= 8; ++nPlayer)
+    {
+        pPlayer = GetPlayer(nPlayer);
+        if ((pPlayer != null) && pPlayer.IsAlive() && HaveStartingPoint(nPlayer))
+        {
+            InitPlayer(pPlayer, false, nPlayer);
+			aHaveBuildings[nPlayer]=0;
+			if(comboAlliedVictory) pPlayer.SetSendENResults(false);
+			else pPlayer.SetSendENResults(true);
+            //if(comboAlliedVictory) pPlayer.SetAIControlOptions(eAIControlAINeutralAI, false);
+            //else pPlayer.SetAIControlOptions(eAIControlAINeutralAI, true);
+        }
+    }
+	bAllowVictory = false;
+	RegisterGoal(0, MISSION_GOAL);
+	EnableGoal(0, true, false); 
+
+	SetInterfaceOptions(
+			//eNoConstructorDialog |
+		    //eNoResearchCenterDialog |
+			//eNoBuildingUpgradeDialog |
+			//eNoBuildPanelDialog |
+			//eNoMoneyConfigDialog |
+			//eNoGoalsDialog |
+			//eNoCommandsDialog |
+			//eNoMapDialog |
+			//eNoAllianceDialog |
+			//eForceAllianceDialog |
+			//eForceAllianceDialog |
+			//eNoMoneyDisplay |
+			//eNoMenuButton |
+            eShowStatisticsOnExitSkirmish |
+			0
+			);
+		
+	
+	
+	#ifdef UNCLE_SAM
+		if(comboCash==0) m_nCash=5000;
+		if(comboCash==1) m_nCash=10000;
+		if(comboCash==2) m_nCash=15000;
+		if(comboCash==3) m_nCash=20000;
+		if(comboCash==4) m_nCash=9999999;
+	#else
+		if(comboWeather==0) {
+			 nWeatherTimer=30;
+		}
+	#endif
+	setTechnologySpeed();
+	return Start;
+}
+
+//==================================================================================================
+state Start
+{
+	SetConsoleText(MISSION_GOAL, 10*30);
+	SetConsole2Text( "NEP - New Earth Project", 10*30);
+	
+	setTeams();
+#ifdef PEACE
+	
+	SetAliances(eNeutral);
+	
+	if(comboPeace==0) nPeaceTimer=60*3;
+	if(comboPeace==1) nPeaceTimer=60*5;
+	if(comboPeace==2) nPeaceTimer=60*7;
+	if(comboPeace==3) nPeaceTimer=60*10;
+	if(comboPeace==4) nPeaceTimer=60*15;
+	return Peace,10 * 30;
+	
+#else
+	return Nothing;
+#endif
+}
+//==================================================================================================
+
+#ifdef PEACE
+state Peace
+{
+	string sConsole, sTrl1, sTrl2, sTrl3, sNum1, sNum2;
+
+    --nPeaceTimer;
+	if(nPeaceTimer<1)
+	{
+		RegisterGoal(1, MISSION_GOAL2);
+		SetGoalState(0,goalAchieved,false);
+		EnableGoal(1, true, false); 
+
+		SetAliances(eEnemy);
+		SetConsoleText("translateGameTypeWAR", 10*30,true);		
+		return Nothing;
+	}
+	
+	sTrl1.Translate("translateGameTypePeaceCounter");
+	sTrl2.Translate("translateGameTypePeaceCounterSec");
+        
+	if(nPeaceTimer<60)
+    {
+        sNum1.Format(" %d", nPeaceTimer);
+		sConsole.Append(sTrl1);
+        sConsole.Append(sNum1);
+        sConsole.Append(sTrl2);
+    }
+	else
+	{
+		sTrl3.Translate("translateGameTypePeaceCounterMin");
+		sNum1.Format(" %d", nPeaceTimer/60);
+		sNum2.Format(" %d", nPeaceTimer%60);
+		sConsole.Append(sTrl1);
+		sConsole.Append(sNum1);
+		sConsole.Append(sTrl3);
+		sConsole.Append(sNum2);
+		sConsole.Append(sTrl2);
+	}
+	SetConsoleText(sConsole, 60, false);
+	return Peace, 30;
+}
+#endif
+
+state Nothing
+{
+	int pom1,pom2,t;
+	AddUnitsToCarrier();
+	AddUnitsToLeader();
+	#ifdef HARD
+	++nHardTimer;
+	if(nHardTimer>60)
+	{
+		nHardTimer=0;
+		GiveUnitsToAi(comboHard);	
+	}
+	#endif
+	#ifdef UNCLE_SAM
+	
+	++m_nCashTimer;
+	if(m_nCashTimer>60)
+	{
+		m_nCashTimer=0;
+		AddMoneyToAllPlayers(m_nCash);
+	}
+	#endif
+	
+	//ustawianie pogody
+	if(comboWeather==0) {
+		--nWeatherTimer;
+		if(nWeatherTimer<=0) {
+		
+			t = Rand(4);
+			if(t!=0) { //jak zero to czysto
+				
+				if(t==1) { //deszcz
+					pom1 = Rand(100);
+					SetRain(pom1);
+					
+					pom1 = Rand(2);
+					if(pom1==0) { // +wiatr
+						pom1 = Rand(100);
+						pom2 = Rand(255);
+						SetWind(pom1,pom2);
+					} else {
+							SetWind(0,0);
+					}
+				} else if(t==2) {
+					pom1 = Rand(100); //snieg
+					SetSnow(pom1);
+					
+					pom1 = Rand(2);
+					if(pom1==0) { // +wiatr
+						pom1 = Rand(100);
+						pom2 = Rand(255);
+						SetWind(pom1,pom2);
+					} else {
+							SetWind(0,0);
+					}
+					
+				} else { 	//tylko wiatr
+					SetSnow(0);
+					SetRain(0);
+					
+					pom1 = Rand(100);
+					pom2 = Rand(255);
+					SetWind(pom1,pom2);
+				}
+				
+			} else {
+				//czyste niebo
+				SetWind(0,0);
+				SetSnow(0);
+				SetRain(0);
+			}
+			
+			nWeatherTimer = 5+Rand(120);
+		}
+	}
+	
+    return Nothing,30;
+}
+//==================================================================================================
+int bDontCheckVictory;
+
+event Timer0()
+{
+#ifndef NO_VICTORYDEFEAT
+
+	player pPlayer, pPlayer2;
+	int nPlayer, nPlayer2, bLiveEnemy;
+    int bKilled;
+
+	bLiveEnemy =true;
+	if(bDontCheckVictory) return;
+#ifndef KILL_HERO
+	//if (!bCheckVictory) return;
+	//bCheckVictory=false;
+	
+    //defeat?
+	for (nPlayer = 1; nPlayer <= 8; ++nPlayer)
+    {
+        pPlayer = GetPlayer(nPlayer);
+		if(pPlayer.GetRace() != 5) { //pomijamy obserwatorow
+	        if ((pPlayer != null) && pPlayer.IsAlive())
+			{
+	            bKilled = false;
+	
+				if(aHaveBuildings[nPlayer])
+				{
+				   if ((pPlayer.GetNumberOfBuildings() == 0) && (pPlayer.GetNumberOfTransformationCopulas() == 0))
+	               {
+	                    bKilled = true;
+	               }
+				}
+				else
+				{
+					if (pPlayer.GetNumberOfUnits() == 0)
+	                {
+	                    bKilled = true;
+	                }
+					if ((pPlayer.GetNumberOfBuildings()>0) || (pPlayer.GetNumberOfTransformationCopulas() >0))
+					{
+						bKilled = false;
+					}
+					if (pPlayer.GetNumberOfBuildings()>2)
+					{
+						aHaveBuildings[nPlayer] = 1;
+					}
+				}
+				if (bKilled)
+				{
+					bAllowVictory = true;
+					pPlayer.GameDefeat(true);//bShowStatistic
+				}
+			}
+		}
+    }
+#endif
+#ifdef KILL_HERO
+bAllowVictory=true;
+#endif
+    //victory?
+	if(bAllowVictory)
+	{
+		for (nPlayer = 1; nPlayer <= 8; ++nPlayer)
+		{
+			pPlayer = GetPlayer(nPlayer);
+			if(pPlayer.GetRace() != 5) { //pomijamy obserwatorow
+				if ((pPlayer != null) && pPlayer.IsAlive())
+				{
+					bLiveEnemy = false;
+					for (nPlayer2 = 1; nPlayer2 <= 8; ++nPlayer2)
+					{
+						pPlayer2 = GetPlayer(nPlayer2);
+						if ((nPlayer2 != nPlayer) && (pPlayer2 != null) && pPlayer2.IsAlive())
+						{
+							if ((comboAlliedVictory == 0) || !pPlayer.IsAlly(pPlayer2))
+							{
+								bLiveEnemy = true;
+							}
+						}
+					}
+					if (!bLiveEnemy)
+					{
+						bDontCheckVictory = true;
+						pPlayer.GameVictory(true, true);//bAddAgentsReputationOnVictory, bShowStatistic
+					}
+				}
+			}
+		}
+		if(!bLiveEnemy) {
+			for (nPlayer = 1; nPlayer <= 8; ++nPlayer) { //poinformowanie  obserwatorow  o wygranej
+					pPlayer = GetPlayer(nPlayer);
+					if(pPlayer.GetRace() == 5) pPlayer.GameVictory(true, true); 
+			}
+		}
+	}
+
+#endif
+}
+
+event KilledNetworkPlayer(int nIFFNum)
+{
+	bAllowVictory = true;
+}
+
+
+	
+
+event RemovedUnit(unit uKilled, unit uAttacker, int nNotifyType)
+{
+	player p1,p2;
+	unit u1,u2;
+	player pPlayer;
+	int x,y,pom,alpha;
+	
+//	if(uKilled.IsVehicle() && uKilled.IsLandObject() && uKilled.HaveCannon()) {
+		
+//		pom = Rand(2); //losowość pojawienia się wraku
+//		if(pom==0) {
+//			x=uKilled.GetLocationX();
+//			y=uKilled.GetLocationY();
+//			alpha = uKilled.GetDirectionAlpha();
+//			p1 = GetPlayer(0);
+//			u1 = p1.CreateObject(uKilled.GetObjectIDName(),x,y,0,alpha);
+//			u1.RemoveCrew();
+//			u2=u1.GetCrew();
+//			u2.RemoveObject();
+//			u1.SetImmediatePosition(x, y, 0, alpha, pom);
+//			if(pom || u1.GetLocationX()!=x || u1.GetLocationY()!=y) {
+//				u1.RemoveObject();
+//			} 	
+//		}
+//	}
+#ifdef PEACE
+	
+	if(nPeaceTimer>0 && uAttacker.GetIFFNum()>0 && uAttacker.GetIFFNum()<9 && uKilled.GetIFF()!= uAttacker.GetIFF())
+	{
+		pPlayer = GetPlayer(uAttacker.GetIFFNum());
+		if(pPlayer!=null && pPlayer.IsAlive())
+		{
+			//XXXMD wyswietlic przegrywajacemu komunikat "
+			pPlayer.SetConsoleText("translateGameTypePeaceDefeat");
+			pPlayer.GameDefeat(true);
+		}
+	}
+#endif
+#ifdef KILL_HERO
+	CheckHeroes(uKilled);
+#endif
+	//bCheckVictory=true;
+}
+
+event RemovedBuilding(unit uKilled, unit uAttacker, int nNotifyType)
+{
+	
+	#ifdef PEACE
+	player pPlayer;
+	if(nPeaceTimer>0 && uAttacker.GetIFFNum()>0 && uAttacker.GetIFFNum()<9 && uKilled.GetIFF()!= uAttacker.GetIFF())
+	{
+		pPlayer = GetPlayer(uAttacker.GetIFFNum());
+		if(pPlayer!=null && pPlayer.IsAlive())
+		{
+			//XXXMD wyswietlic przegrywajacemu komunikat "
+			pPlayer.SetConsoleText("translateGameTypePeaceDefeat");
+			pPlayer.GameDefeat(true);
+		}
+	}
+	#endif
+	//bCheckVictory=true;
+}
+
+event AddedBuilding(unit Building,  int nNotifyType)
+{
+	CheckUCSRafinery(Building);
+}
+
+event AddedUnit(unit uUnit,  int nNotifyType)
+{
+	CheckCarrierUnit(uUnit);
+}
+event NewDynamicConnectionPlayer(int nIFFNum)
+{
+	player pPlayer;
+	pPlayer = GetPlayer(nIFFNum);
+    InitPlayer(pPlayer, true, nIFFNum);
+	pPlayer.RegisterGoal(0, MISSION_GOAL);
+	pPlayer.EnableGoal(0, true, false); 
+	pPlayer.SetConsoleText(MISSION_GOAL, 10*30);
+	aHaveBuildings[nIFFNum]=0;
+	bDontCheckVictory = false;
+	if(comboAlliedVictory) pPlayer.SetSendENResults(false);
+	else pPlayer.SetSendENResults(true);
+    //if(comboAlliedVictory) pPlayer.SetAIControlOptions(eAIControlAINeutralAI, false);
+    //else pPlayer.SetAIControlOptions(eAIControlAINeutralAI, true);
+#ifdef PEACE
+	if(nPeaceTimer<1)
+	{
+		pPlayer.RegisterGoal(1, MISSION_GOAL2);
+		pPlayer.SetGoalState(0,goalAchieved,false);
+		pPlayer.EnableGoal(1, true, true); 
+		pPlayer.SetConsoleText(MISSION_GOAL2, 10*30);
+		SetAliances(eEnemy);
+	}
+	else
+	{
+		SetAliances(eNeutral);
+	}
+#endif
+}
+
+event RemoveUnits()
+{
+    if (comboStartingUnits) 
+    {
+        return true;
+    }
+    return false;
+}
+event NotUseAgents()
+{
+    return !comboAgents;
+}
+
+event UseExtraSkirmishPlayers()
+{
+    return true;
+}
+
+event SpecialLevelFlags()
+{
+    return 0x01;
+}
+
+event AIPlayerFlags()
+{
+    return 0x0F;
+}
+
+command Initialize()
+{
+	comboAlliedVictory=1;
+    comboStartingUnits=1;
+    comboAgents=1;
+    return true;
+}
+
+command Uninitialize()
+{
+    return true;
+}
+    
+command Combo1(int nMode) button comboStartingUnits 
+{
+    comboStartingUnits = nMode;
+	return true;
+}
+
+#ifdef UNCLE_SAM
+
+command Combo2(int nMode) button comboUncleSamType
+{
+    comboUncleSamType = nMode;
+    return true;
+}
+
+command Combo3(int nMode) button comboCash
+{
+    comboCash = nMode;
+    return true;
+}
+
+command Combo4(int nMode) button comboTeam
+{
+    comboTeam = nMode;
+	return true;
+}
+
+command Combo5(int nMode) button comboTechnology
+{
+    comboTechnology = nMode;
+	return true;
+}
+
+#else 
+
+
+command Combo2(int nMode) button comboTeam
+{
+    comboTeam = nMode;
+	return true;
+}
+
+
+#ifdef PEACE
+command Combo3(int nMode) button comboPeace
+{
+    comboPeace = nMode;
+    return true;
+}
+#endif
+
+command Combo4(int nMode) button comboTechnology
+{
+    comboTechnology = nMode;
+	return true;
+}
+#ifdef HARD
+command Combo5(int nMode) button comboHard
+{
+    comboHard = nMode;
+    return true;
+}
+
+#else
+command Combo5(int nMode) button comboWeather
+{
+    comboWeather = nMode;
+    return true;
+}
+
+
+#endif
+#endif
+
+}

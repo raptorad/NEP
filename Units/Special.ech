@@ -1,0 +1,303 @@
+#ifndef SPECIAL_ECH
+#define SPECIAL_ECH
+
+////    Declarations    ////
+
+state MovingToCloneUnitPos;
+state ClonningUnit;
+state MovingToTransformUnitPos;
+state TransformingUnit;
+
+enum effectEnergyDisperseMode
+{
+    TRL_ENERGYDISPERSEMODE_0 item ITEM_ENERGYDISPERSEMODE_0,
+    TRL_ENERGYDISPERSEMODE_1 item ITEM_ENERGYDISPERSEMODE_1,
+multi:
+    TRL_ENERGYDISPERSEMODE_X item ITEM_ENERGYDISPERSEMODE_X
+}//————————————————————————————————————————————————————————————————————————————————————————————————————|
+
+////    States    ////
+
+state MovingToCloneUnitPos
+{
+    int nX, nY;
+
+    if (IsMoving() || IsStartingMoving())
+    {
+        TRACE1("MovingToCloneUnitPos");
+        return MovingToCloneUnitPos, 5;
+    }
+    else
+    {
+        if (IsInGoodPlaceToCloneUnit())
+        {
+            TRACE1("MovingToCloneUnitPos->ClonningUnit");
+            CallCloneUnit();
+            return ClonningUnit, 1;
+        }
+        else
+        {
+            if (FindGoodPlaceToCloneUnit(nX, nY))
+            {
+                TRACE1("MovingToCloneUnitPos->!GoodPlace->MovingToCloneUnitPos");
+                CallMoveToPoint(nX, nY);
+                return MovingToCloneUnitPos, 10;
+            }
+            else
+            {
+                TRACE1("MovingToCloneUnitPos->!GoodPlace->Nothing");
+                EndCommand(false);
+                return Nothing;
+            }
+        }
+    }
+}//————————————————————————————————————————————————————————————————————————————————————————————————————|
+
+state ClonningUnit
+{
+    if (IsClonningUnit())
+    {
+        TRACE1("ClonningUnit");
+        return ClonningUnit, 5;
+    }
+    else
+    {
+        TRACE1("ClonningUnit->Nothing");
+        EndCommand(true);
+        return Nothing;
+    }
+}//————————————————————————————————————————————————————————————————————————————————————————————————————|
+
+state MovingToTransformUnitPos
+{
+    int nX, nY;
+
+    if (IsMoving() || IsStartingMoving())
+    {
+        TRACE1("MovingToTransformUnitPos");
+        return MovingToTransformUnitPos, 5;
+    }
+    else
+    {
+        if (IsInGoodPlaceToTransformUnit(GetTransformToID()))
+        {
+            TRACE1("MovingToTransformUnitPos->TransformingUnit");
+            CallTransformUnit(GetTransformToID());
+            return TransformingUnit, 1;
+        }
+        else
+        {
+            if (FindGoodPlaceToTransformUnit(GetTransformToID(), nX, nY))
+            {
+                TRACE1("MovingToTransformUnitPos->!GoodPlace->MovingToTransformUnitPos");
+                CallMoveToPoint(nX, nY);
+                return MovingToTransformUnitPos, 10;
+            }
+            else
+            {
+                TRACE1("MovingToTransformUnitPos->!GoodPlace->Nothing");
+                EndCommand(false);
+                return Nothing;
+            }
+        }
+    }
+}//————————————————————————————————————————————————————————————————————————————————————————————————————|
+
+state TransformingUnit
+{
+    if (IsTransformingUnit())
+    {
+        TRACE1("TransformingUnit");
+        return TransformingUnit, 5;
+    }
+    else
+    {
+        TRACE1("TransformingUnit->Nothing");
+        EndCommand(true);
+        return Nothing;
+    }
+}//————————————————————————————————————————————————————————————————————————————————————————————————————|
+
+////    Commands    ////
+
+command SetEffectEnergyDisperseMode(int nMode) button effectEnergyDisperseMode priority PRIOR_ENERGYDISPERSEMODE
+{
+    if (nMode == -1)
+    {
+        effectEnergyDisperseMode = (effectEnergyDisperseMode + 1) % 2;
+    }
+    else
+    {
+        effectEnergyDisperseMode = nMode;
+    }
+    if (effectEnergyDisperseMode == 0)
+    {//On 
+        SetEffectEnergyDisperseMode(true);
+    }
+    else
+    {//Off
+        SetEffectEnergyDisperseMode(false);
+    }
+    EndCommand(true);
+    return true;
+}//————————————————————————————————————————————————————————————————————————————————————————————————————|
+
+command ReleaseAgentFromHire() button TRL_RELEASEAGENTFROMHIRE item ITEM_RELEASEAGENTFROMHIRE priority PRIOR_RELEASEAGENTFROMHIRE
+{
+    ReleaseAgentFromHire();
+    EndCommand(true);
+    return true;
+}//————————————————————————————————————————————————————————————————————————————————————————————————————|
+
+//button z kodu, item z parametrow
+command SwitchAgentAI() priority PRIOR_SWITCHAGENTAI
+{
+    SwitchAgentAI();
+    EndCommand(true);
+    return true;
+}//————————————————————————————————————————————————————————————————————————————————————————————————————|
+
+command CloneUnit() button TRL_CLONEUNIT item ITEM_CLONEUNIT priority PRIOR_CLONEUNIT
+{
+    int nX, nY;
+    int nDelay;
+
+    if (!CanCloneUnit())
+    {
+        return false;
+    }
+    if (!FindGoodPlaceToCloneUnit(nX, nY))
+    {
+        return false;
+    }
+    CHECK_STOP_CURR_ACTION(eCommandCloneUnit);
+    if ((nX == GetLocationX()) && (nY == GetLocationY()))
+    {
+        if (IsMoving())
+        {
+            CallStopMoving();
+        }
+        nDelay = 0;
+    }
+    else
+    {
+        CallMoveToPoint(nX, nY);
+        nDelay = 10;
+    }
+    state MovingToCloneUnitPos;//state Moving* niezaleznie od tego czy CallMoveToPoint czy CallStopMoving
+    SetStateDelay(nDelay);
+    return true;
+}//————————————————————————————————————————————————————————————————————————————————————————————————————|
+
+command TransformUnit(int nTransformID) button TRL_TRANSFORMUNIT item ITEM_TRANSFORMUNIT priority PRIOR_TRANSFORMUNIT
+{
+    int nX, nY;
+    int nDelay;
+
+    if (!CanTransformUnit(nTransformID))
+    {
+        return false;
+    }
+    if (!FindGoodPlaceToTransformUnit(nTransformID, nX, nY))
+    {
+        return false;
+    }
+    //nTransformID nie mozemy trzymac w tym obiekcie bo po zaladowaniu ID obiektu moglby byc juz walniety
+    CHECK_STOP_CURR_ACTION(eCommandTransformUnit);
+    SetTransformToID(nTransformID);
+    if (((nX == GetLocationX()) && (nY == GetLocationY())) || 
+        (IsLandMove() && (DistanceTo(nX, nY) <= 0x20)))
+    {
+        if (IsMoving())
+        {
+            CallStopMoving();
+        }
+        nDelay = 0;
+    }
+    else
+    {
+        CallMoveToPoint(nX, nY);
+        nDelay = 10;
+    }
+    state MovingToTransformUnitPos;//state Moving* niezaleznie od tego czy CallMoveToPoint czy CallStopMoving
+    SetStateDelay(nDelay);
+    return true;
+}//————————————————————————————————————————————————————————————————————————————————————————————————————|
+
+command ShowHeroInventoryDialog() button TRL_SHOWINVENTORYDIALOG item ITEM_SHOWINVENTORYDIALOG priority PRIOR_SHOWINVENTORYDIALOG
+{
+    //nie robimy EndCommand
+    return true;
+}//————————————————————————————————————————————————————————————————————————————————————————————————————|
+
+command UseRegenerateInfantryHPMindFromInventory() hidden
+{
+    UseRegenerateInfantryHPMindFromInventory();
+    //nie robimy EndCommand
+    return true;
+}//————————————————————————————————————————————————————————————————————————————————————————————————————|
+
+command UseRegenerateUnitHPFromInventory() hidden
+{
+    UseRegenerateUnitHPFromInventory();
+    //nie robimy EndCommand
+    return true;
+}//————————————————————————————————————————————————————————————————————————————————————————————————————|
+
+command UseRegenerateShieldFromInventory() hidden
+{
+    UseRegenerateShieldFromInventory();
+    //nie robimy EndCommand
+    return true;
+}//————————————————————————————————————————————————————————————————————————————————————————————————————|
+
+command SetUseRegenerateInfantryHPMindFromInventoryAutoMode(int nMode) hidden
+{
+    SetUseRegenerateInfantryHPMindFromInventoryAutoMode(nMode);
+    //nie robimy EndCommand
+    return true;
+}//————————————————————————————————————————————————————————————————————————————————————————————————————|
+
+command SetUseRegenerateUnitHPFromInventoryAutoMode(int nMode) hidden
+{
+    SetUseRegenerateUnitHPFromInventoryAutoMode(nMode);
+    //nie robimy EndCommand
+    return true;
+}//————————————————————————————————————————————————————————————————————————————————————————————————————|
+
+command SetUseRegenerateShieldFromInventoryAutoMode(int nMode) hidden
+{
+    SetUseRegenerateShieldFromInventoryAutoMode(nMode);
+    //nie robimy EndCommand
+    return true;
+}//————————————————————————————————————————————————————————————————————————————————————————————————————|
+
+command UseObjectFromInventory(int nObjectID) hidden
+{
+    UseObjectFromInventory(nObjectID);
+    //nie robimy EndCommand
+    return true;
+}//————————————————————————————————————————————————————————————————————————————————————————————————————|
+
+command MoveEquipmentToInventory(int nObjectID) hidden
+{
+    MoveEquipmentToInventory(nObjectID);
+    //nie robimy EndCommand
+    return true;
+}//————————————————————————————————————————————————————————————————————————————————————————————————————|
+
+command DropObjectFromInventory(int nObjectID) hidden
+{
+    DropObjectFromInventory(nObjectID);
+    //nie robimy EndCommand
+    return true;
+}//————————————————————————————————————————————————————————————————————————————————————————————————————|
+
+command DropEquipment(int nObjectID) hidden
+{
+    DropEquipment(nObjectID);
+    //nie robimy EndCommand
+    return true;
+}//————————————————————————————————————————————————————————————————————————————————————————————————————|
+
+#endif

@@ -1,0 +1,1043 @@
+// Documentation/scenariusz/kampania LC/propozycje dla LC.doc
+
+
+function void SetPlayerTemplateseEDCampaign(player pPlayer, int nMission);
+function void SetPlayerResearchesEDCampaign(player pPlayer, int nMission);
+function void SetEnemyResearchesEDCampaign(player pEnemy, int nMission);
+function void AddPlayerResearchesEDCampaign(player pPlayer, int nMission);
+function void AddEnemyResearchesEDCampaign(player pEnemy, int nMission);
+
+function void SetPlayerTemplateseLCCampaign(player pPlayer, int nMission);
+function void SetPlayerResearchesLCCampaign(player pPlayer, int nMission);
+//function void SetEnemyResearchesLCCampaign(player pEnemy, int nMission);
+function void AddPlayerResearchesLCCampaign(player pPlayer, int nMission);
+//function void AddEnemyResearchesLCCampaign(player pEnemy, int nMission);
+
+
+	function void SetPlayerTemplateseUCSCampaign(player pPlayer, int nMission)
+	{
+		pPlayer.AddObjectTemplate("U_CH_AH_10_1#U_EN_NO_10_1,U_IE_SG_01_1");
+		pPlayer.AddObjectTemplate("U_CH_AR_08_1#U_IE_SG_01_1");
+		pPlayer.AddObjectTemplate("U_CH_AS_09_1#U_IE_SG_01_1");
+
+	//Air Jeep 
+		pPlayer.AddObjectTemplate("U_CH_AJ_01_1#U_WP_CH_01_1,U_AR_CL_01_1,U_EN_NO_01_1,U_IE_SG_01_1");		
+	//Light Jeep
+		pPlayer.AddObjectTemplate("U_CH_GJ_02_1#U_WP_CH_02_1,U_AR_CL_02_1,U_EN_NO_02_1,U_IE_SG_01_1");		
+	//Heavy Jeep-Tank
+		pPlayer.AddObjectTemplate("U_CH_GT_03_1#U_WP_CH_03_1,U_AR_CL_03_1,U_EN_NO_03_1,U_IE_SG_01_1,U_IE_RD_01_1");
+	//Heavy Tank - 1
+		pPlayer.AddObjectTemplate("U_CH_GT_04_1#U_WP_AR_04_1,U_AR_CL_04_1,U_EN_NO_04_1,U_IE_SG_04_1,U_IE_RD_01_1");
+	//Heavy Tank - 2
+		pPlayer.AddObjectTemplate("U_CH_GT_05_1#U_WP_PB_05_1,U_WP_PB2_05_1,U_AR_CL_05_1,U_EN_NO_05_1,U_IE_SG_04_1,U_IE_RD_01_1");
+	//Air Artyllery
+		pPlayer.AddObjectTemplate("U_CH_AA_06_1#U_WP_PL_06_1,U_AR_CL_06_1,U_EN_NO_06_1,U_IE_SG_04_1");
+	//Ground Artillery		
+		pPlayer.AddObjectTemplate("U_CH_GA_07_1#U_WP_PL_07_1,U_AR_CL_07_1,U_EN_NO_07_1,U_IE_SG_01_1");		
+	//Air Bomber
+		pPlayer.AddObjectTemplate("U_CH_AB_12_1#U_WP_PB_12_1,U_AR_CL_12_1,U_EN_PR_12_1,U_IE_SG_01_1");
+	}
+function void SetPlayerResearchesUCSCampaign(player pPlayer, int nMission)
+	{
+		// Misja 1
+
+		pPlayer.EnableAllResearches(false);
+
+		if(nMission>=2)
+		{
+		pPlayer.EnableResearch("RES_U_CH_GT_03_1",true);
+		pPlayer.EnableResearch("RES_U_WP_NG_02_1",true);
+		pPlayer.EnableResearch("RES_U_WP_XR_01_1",true);
+		pPlayer.EnableResearch("RES_U_AR_CL_01_1",true);
+		pPlayer.EnableResearch("RES_U_IE_SG_01_1",true);
+		pPlayer.EnableResearch("RES_U_WP_CH_01_2",true);
+		pPlayer.EnableResearch("RES_U_WP_CH_01_3",true);
+		pPlayer.EnableResearch("RES_U_MI_CH_01_2",true);
+		pPlayer.EnableResearch("RES_U_MI_CH_01_3",true);
+		pPlayer.EnableResearch("RES_U_IN_TE_01_2",true);
+		pPlayer.EnableResearch("RES_U_IN_TE_01_3",true);
+		pPlayer.EnableResearch("RES_U_AR_RL_01_1",true);
+		pPlayer.EnableResearch("RES_U_AR_RL_01_2",true);
+		pPlayer.EnableResearch("RES_U_AR_RL_01_3",true);
+		pPlayer.EnableResearch("RES_U_WP_NG_02_2",true);		
+		pPlayer.EnableResearch("RES_U_WP_NG_02_3",true);
+		pPlayer.EnableResearch("RES_U_MI_NG_02_2",true);
+		pPlayer.EnableResearch("RES_U_MI_NG_02_3",true);
+		pPlayer.EnableResearch("RES_U_IE_RD_01_1",true);
+		}
+		if(nMission>=3)
+		{
+		
+		pPlayer.EnableResearch("RES_U_CH_AJ_01_1",true);
+		pPlayer.EnableResearch("RES_U_WP_SH_01_2",true);
+		
+		pPlayer.EnableResearch("RES_U_MI_XR_01_2",true);
+		
+		pPlayer.EnableResearch("RES_U_EE_CA_11_1",true);
+		pPlayer.EnableResearch("RES_U_TCH_TP_07_1",true);
+		pPlayer.EnableResearch("RES_U_EN_SP_01_1",true);
+		pPlayer.EnableResearch("RES_U_IE_SG_01_2",true);
+		
+		}
+		if(nMission>=3)
+		{
+		pPlayer.EnableResearch("RES_U_AR_CH_01_1",true);
+		pPlayer.EnableResearch("RES_U_TCH_UC_01_1",true);
+		
+		pPlayer.EnableResearch("RES_U_IE_RD_01_2",true);
+		pPlayer.EnableResearch("RES_U_MI_SH_01_2",true);
+		pPlayer.EnableResearch("RES_U_WP_SG_04_1",true);
+		pPlayer.EnableResearch("RES_U_CH_AA_06_1",true);
+		pPlayer.EnableResearch("RES_U_WP_XR_01_2",true);
+		pPlayer.EnableResearch("RES_U_MI_XR_01_3",true);
+		pPlayer.EnableResearch("RES_U_WP_FT_04_1",true);
+		pPlayer.EnableResearch("RES_U_WP_AR_03_1",true);
+		pPlayer.EnableResearch("RES_U_CH_GT_04_1",true);
+		pPlayer.EnableResearch("RES_U_TCH_TU_07_1",true);
+		pPlayer.EnableResearch("RES_U_AR_CL_01_2",true);
+		pPlayer.EnableResearch("RES_U_AR_CH_01_2",true);
+		pPlayer.EnableResearch("RES_U_EN_PR_01_1",true);
+		pPlayer.EnableResearch("RES_U_EN_SP_01_2",true);
+		pPlayer.EnableResearch("RES_U_IE_SG_04_2",true);
+		
+		}
+		if(nMission>=3)
+		{
+		pPlayer.EnableResearch("RES_U_TCH_UC_01_2",true);
+		pPlayer.EnableResearch("RES_U_IN_HA_03_1",true);
+		pPlayer.EnableResearch("RES_U_IE_RD_01_3",true);
+		pPlayer.EnableResearch("RES_U_WP_SH_01_3",true);
+		pPlayer.EnableResearch("RES_U_WP_SG_04_2",true);
+		pPlayer.EnableResearch("RES_U_MI_SG_04_2",true);
+		pPlayer.EnableResearch("RES_U_CH_AB_12_1",true);
+		pPlayer.EnableResearch("RES_U_WP_CB_12_1",true);
+		pPlayer.EnableResearch("RES_U_WP_XR_01_3",true);
+		
+		pPlayer.EnableResearch("RES_U_WP_FT_04_2",true);
+		pPlayer.EnableResearch("RES_U_MI_FT_04_2",true);
+		pPlayer.EnableResearch("RES_U_WP_AR_03_2",true);
+		pPlayer.EnableResearch("RES_U_WP_SDI_01_1",true);
+		pPlayer.EnableResearch("RES_U_MI_AR_03_2",true);
+		pPlayer.EnableResearch("RES_U_EE_IR_11_1",true);
+		pPlayer.EnableResearch("RES_U_WP_PB_04_2",true);
+		pPlayer.EnableResearch("RES_U_MI_PB_04_2",true);
+		pPlayer.EnableResearch("RES_U_CH_GT_05_1",true);
+		pPlayer.EnableResearch("RES_U_WP_GB_04_1",true);
+		pPlayer.EnableResearch("RES_U_CH_GA_07_1",true);
+		pPlayer.EnableResearch("RES_U_AR_CL_01_3",true);
+		pPlayer.EnableResearch("RES_U_AR_RL_01_2",true);
+		pPlayer.EnableResearch("RES_U_AR_CH_01_3",true);
+		pPlayer.EnableResearch("RES_U_EN_PR_01_2",true);
+		pPlayer.EnableResearch("RES_U_IE_SG_01_3",true);
+		pPlayer.EnableResearch("RES_U_WP_SD_02_1",true);
+		pPlayer.EnableResearch("RES_U_IE_SG_04_3",true);
+		
+
+		}
+		if(nMission>=6)
+		{
+		pPlayer.EnableResearch("RES_U_IN_HA_03_2",true);
+		pPlayer.EnableResearch("RES_U_MI_SH_01_3",true);
+		pPlayer.EnableResearch("RES_U_WP_SG_04_3",true);
+		pPlayer.EnableResearch("RES_U_MI_PB_12_2",true);
+		pPlayer.EnableResearch("RES_U_MI_CB_12_2",true);
+		pPlayer.EnableResearch("RES_U_WP_AR_06_2",true);
+		pPlayer.EnableResearch("RES_U_MI_AR_06_2",true);
+		pPlayer.EnableResearch("RES_U_WP_FT_04_3",true);
+		pPlayer.EnableResearch("RES_U_MI_FT_04_3",true);
+		pPlayer.EnableResearch("RES_U_WP_AR_03_3",true);
+		pPlayer.EnableResearch("RES_U_MI_AR_03_3",true);
+		pPlayer.EnableResearch("RES_U_EE_SH_11_1",true);
+		pPlayer.EnableResearch("RES_U_WP_PB_04_3",true);
+		pPlayer.EnableResearch("RES_U_MI_PB_04_3",true);
+		pPlayer.EnableResearch("RES_U_WP_GB_04_2",true);
+		pPlayer.EnableResearch("RES_U_MI_GB_04_2",true);
+		pPlayer.EnableResearch("RES_U_WP_PL_06_2",true);
+		pPlayer.EnableResearch("RES_U_MI_PL_07_2",true);
+		pPlayer.EnableResearch("RES_U_WP_TB_07_1",true);
+		pPlayer.EnableResearch("RES_U_AR_RL_01_3",true);
+		pPlayer.EnableResearch("RES_U_EN_SP_01_3",true);
+		pPlayer.EnableResearch("RES_U_WP_SD_02_2",true);
+		pPlayer.EnableResearch("RES_U_IE_SG_04_4",true);
+		
+
+		}
+		if(nMission>=7)
+		{
+		pPlayer.EnableResearch("RES_U_IN_HA_03_3",true);
+		pPlayer.EnableResearch("RES_U_MI_SG_04_3",true);
+		pPlayer.EnableResearch("RES_U_MI_PB_12_3",true);
+		pPlayer.EnableResearch("RES_U_MI_CB_12_3",true);
+		pPlayer.EnableResearch("RES_U_WP_AR_06_3",true);
+		pPlayer.EnableResearch("RES_U_MI_AR_06_3",true);
+		pPlayer.EnableResearch("RES_U_WP_GB_04_3",true);
+		pPlayer.EnableResearch("RES_U_MI_GB_04_3",true);
+		pPlayer.EnableResearch("RES_U_WP_PL_06_3",true);
+		pPlayer.EnableResearch("RES_U_MI_PL_07_3",true);
+		pPlayer.EnableResearch("RES_U_MI_TB_07_2",true);
+		pPlayer.EnableResearch("RES_U_MI_TB_07_3",true);
+		pPlayer.EnableResearch("RES_U_EN_PR_01_3",true);
+		pPlayer.EnableResearch("RES_U_WP_SD_02_3",true);
+		
+
+		}
+}
+function void AddPlayerResearchesUCSCampaign(player pPlayer, int nMission)
+	{
+		// Misja 1
+
+		
+
+		if(nMission>2)
+		{
+		pPlayer.AddResearch("RES_U_CH_GT_03_1");
+		pPlayer.AddResearch("RES_U_WP_NG_02_1");
+		pPlayer.AddResearch("RES_U_WP_XR_01_1");
+		pPlayer.AddResearch("RES_U_AR_CL_01_1");
+		pPlayer.AddResearch("RES_U_IE_SG_01_1");
+		pPlayer.AddResearch("RES_U_WP_CH_01_2");
+		pPlayer.AddResearch("RES_U_WP_CH_01_3");
+		pPlayer.AddResearch("RES_U_MI_CH_01_2");
+		pPlayer.AddResearch("RES_U_MI_CH_01_3");
+		pPlayer.AddResearch("RES_U_IN_TE_01_2");
+		pPlayer.AddResearch("RES_U_IN_TE_01_3");
+		
+		}
+		if(nMission>5)
+		{
+		pPlayer.AddResearch("RES_U_IN_TE_01_2");
+		pPlayer.AddResearch("RES_U_IE_RD_01_1");
+		pPlayer.AddResearch("RES_U_CH_AJ_01_1");
+		pPlayer.AddResearch("RES_U_WP_SH_01_2");
+		pPlayer.AddResearch("RES_U_WP_CH_01_2");
+		pPlayer.AddResearch("RES_U_MI_XR_01_2");
+		pPlayer.AddResearch("RES_U_MI_NG_02_2");
+		pPlayer.AddResearch("RES_U_EE_CA_11_1");
+		pPlayer.AddResearch("RES_U_TCH_TP_07_1");
+		pPlayer.AddResearch("RES_U_EN_SP_01_1");
+		pPlayer.AddResearch("RES_U_IE_SG_01_2");
+		pPlayer.AddResearch("RES_U_AR_RL_01_1");
+		}
+		if(nMission>5)
+		{
+		pPlayer.AddResearch("RES_U_AR_CH_01_1");
+		pPlayer.AddResearch("RES_U_TCH_UC_01_1");
+		pPlayer.AddResearch("RES_U_IN_TE_01_3");
+		pPlayer.AddResearch("RES_U_IE_RD_01_2");
+		pPlayer.AddResearch("RES_U_MI_SH_01_2");
+		pPlayer.AddResearch("RES_U_WP_SG_04_1");
+		pPlayer.AddResearch("RES_U_CH_AA_06_1");
+		pPlayer.AddResearch("RES_U_MI_CH_01_2");
+		pPlayer.AddResearch("RES_U_MI_CH_01_3");
+		pPlayer.AddResearch("RES_U_WP_XR_01_2");
+		pPlayer.AddResearch("RES_U_MI_XR_01_3");
+		pPlayer.AddResearch("RES_U_WP_NG_02_2");
+		pPlayer.AddResearch("RES_U_MI_NG_02_3");
+		pPlayer.AddResearch("RES_U_WP_FT_04_1");
+		pPlayer.AddResearch("RES_U_WP_AR_03_1");
+		pPlayer.AddResearch("RES_U_CH_GT_04_1");
+		pPlayer.AddResearch("RES_U_TCH_TU_07_1");
+		pPlayer.AddResearch("RES_U_AR_CL_01_2");
+		pPlayer.AddResearch("RES_U_AR_CH_01_2");
+		pPlayer.AddResearch("RES_U_EN_PR_01_1");
+		pPlayer.AddResearch("RES_U_EN_SP_01_2");
+		pPlayer.AddResearch("RES_U_IE_SG_04_2");
+		
+		}
+		if(nMission>5)
+		{
+		pPlayer.AddResearch("RES_U_TCH_UC_01_2");
+		pPlayer.AddResearch("RES_U_IN_HA_03_1");
+		pPlayer.AddResearch("RES_U_IE_RD_01_3");
+		pPlayer.AddResearch("RES_U_WP_SH_01_3");
+		pPlayer.AddResearch("RES_U_WP_SG_04_2");
+		pPlayer.AddResearch("RES_U_MI_SG_04_2");
+		pPlayer.AddResearch("RES_U_CH_AB_12_1");
+		pPlayer.AddResearch("RES_U_WP_CB_12_1");
+		pPlayer.AddResearch("RES_U_WP_CH_01_3");
+		pPlayer.AddResearch("RES_U_WP_XR_01_3");
+		pPlayer.AddResearch("RES_U_WP_NG_02_3");
+		pPlayer.AddResearch("RES_U_WP_FT_04_2");
+		pPlayer.AddResearch("RES_U_MI_FT_04_2");
+		pPlayer.AddResearch("RES_U_WP_AR_03_2");
+		pPlayer.AddResearch("RES_U_WP_SDI_01_1");
+		pPlayer.AddResearch("RES_U_MI_AR_03_2");
+		pPlayer.AddResearch("RES_U_EE_IR_11_1");
+		pPlayer.AddResearch("RES_U_WP_PB_04_2");
+		pPlayer.AddResearch("RES_U_MI_PB_04_2");
+		pPlayer.AddResearch("RES_U_CH_GT_05_1");
+		pPlayer.AddResearch("RES_U_WP_GB_04_1");
+		pPlayer.AddResearch("RES_U_CH_GA_07_1");
+		pPlayer.AddResearch("RES_U_AR_CL_01_3");
+		pPlayer.AddResearch("RES_U_AR_RL_01_2");
+		pPlayer.AddResearch("RES_U_AR_CH_01_3");
+		pPlayer.AddResearch("RES_U_EN_PR_01_2");
+		pPlayer.AddResearch("RES_U_IE_SG_01_3");
+		pPlayer.AddResearch("RES_U_WP_SD_02_1");
+		pPlayer.AddResearch("RES_U_IE_SG_04_3");
+		
+
+		}
+		if(nMission>6)
+		{
+		pPlayer.AddResearch("RES_U_IN_HA_03_2");
+		pPlayer.AddResearch("RES_U_MI_SH_01_3");
+		pPlayer.AddResearch("RES_U_WP_SG_04_3");
+		pPlayer.AddResearch("RES_U_MI_PB_12_2");
+		pPlayer.AddResearch("RES_U_MI_CB_12_2");
+		pPlayer.AddResearch("RES_U_WP_AR_06_2");
+		pPlayer.AddResearch("RES_U_MI_AR_06_2");
+		pPlayer.AddResearch("RES_U_WP_FT_04_3");
+		pPlayer.AddResearch("RES_U_MI_FT_04_3");
+		pPlayer.AddResearch("RES_U_WP_AR_03_3");
+		pPlayer.AddResearch("RES_U_MI_AR_03_3");
+		pPlayer.AddResearch("RES_U_EE_SH_11_1");
+		pPlayer.AddResearch("RES_U_WP_PB_04_3");
+		pPlayer.AddResearch("RES_U_MI_PB_04_3");
+		pPlayer.AddResearch("RES_U_WP_GB_04_2");
+		pPlayer.AddResearch("RES_U_MI_GB_04_2");
+		pPlayer.AddResearch("RES_U_WP_PL_06_2");
+		pPlayer.AddResearch("RES_U_MI_PL_07_2");
+		pPlayer.AddResearch("RES_U_WP_TB_07_1");
+		pPlayer.AddResearch("RES_U_AR_RL_01_3");
+		pPlayer.AddResearch("RES_U_EN_SP_01_3");
+		pPlayer.AddResearch("RES_U_WP_SD_02_2");
+		pPlayer.AddResearch("RES_U_IE_SG_04_4");
+		
+
+		}
+		
+}
+
+	function void SetPlayerTemplateseEDCampaign(player pPlayer, int nMission)
+	{
+			pPlayer.AddObjectTemplate("E_CH_AH_12#E_IE_SG_01_1");
+			pPlayer.AddObjectTemplate("E_CH_AJ_01_1#E_WP_SL_01_1,E_AR_CL_01_1,E_EN_NO_01_1,E_IE_SG_01_1");		
+			pPlayer.AddObjectTemplate("E_CH_GJ_02_1#E_WP_SL_02_1,E_AR_CL_02_1,E_EN_NO_02_1,E_IE_SG_01_1");
+			pPlayer.AddObjectTemplate("E_CH_GJ_03_1#E_WP_SL_03_1,E_AR_CL_03_1,E_EN_NO_03_1,E_IE_SG_01_1");
+			pPlayer.AddObjectTemplate("E_CH_GT_04_1#E_WP_CA_04_1,E_AR_CL_04_1,E_EN_NO_04_1,E_IE_SG_04_1,E_IE_RD_01_1");
+			pPlayer.AddObjectTemplate("E_CH_GT_05_1#E_WP_CA_05_1,E_AR_CL_05_1,E_EN_NO_05_1,E_IE_SG_04_1,E_IE_RD_01_1");
+			pPlayer.AddObjectTemplate("E_CH_GT_06_1#E_WP_CA_06_1,E_WP_CA2_06_1,E_AR_CL_06_1,E_EN_NO_06_1,E_IE_SG_04_1,E_IE_RD_01_1");
+			pPlayer.AddObjectTemplate("E_CH_AA_07_1#E_WP_GR_07_1,E_AR_CL_07_1,E_EN_NO_07_1,E_IE_SG_01_1");
+			pPlayer.AddObjectTemplate("E_CH_GA_08_1#E_WP_EQ_08_1,E_AR_CL_08_1,E_EN_NO_08_1,E_IE_SG_01_1");
+			pPlayer.AddObjectTemplate("E_CH_AF_11_1#E_WP_GB_11_1,E_AR_CL_11_1,E_EN_NO_11_1,E_IE_SG_01_1");
+			pPlayer.AddObjectTemplate("E_CH_TR_09_2#E_IE_SG_01_1");
+			pPlayer.AddObjectTemplate("E_CH_AR_13_1#E_IE_SG_01_1");
+	}
+
+	function void SetPlayerResearchesEDCampaign(player pPlayer, int nMission)
+	{
+		// Misja 1
+
+		pPlayer.EnableAllResearches(false);
+
+		pPlayer.EnableResearch("RES_E_TCH_AR_01_1"   , true);
+		pPlayer.EnableResearch("RES_E_TCH_AR_01_2"   , true);
+		pPlayer.EnableResearch("RES_E_CH_TR_09_1"   , true);
+
+		// Misja 3
+		if(nMission>1)
+		{
+			pPlayer.EnableResearch("RES_E_TCH_CA_04_1"   , true);
+			pPlayer.EnableResearch("RES_E_TCH_CA_04_2"   , true);
+			pPlayer.EnableResearch("RES_E_CH_GJ_03_1"    , true);
+			pPlayer.EnableResearch("RES_E_CH_GT_04_1"    , true);
+			pPlayer.EnableResearch("RES_E_TCH_AR_01_3"   , true);
+			pPlayer.EnableResearch("RES_E_TCH_AR_FL_04_1", true);
+			pPlayer.EnableResearch("RES_E_EN_SP_01_1"    , true);
+			pPlayer.EnableResearch("RES_E_TCH_SG_01_1"   , true);
+		
+		
+			pPlayer.EnableResearch("RES_E_TCH_CA_04_3"   , true);
+			pPlayer.EnableResearch("RES_E_TCH_AL_02_1"   , true);
+			pPlayer.EnableResearch("RES_E_TCH_AL_MI_01_2", true);
+			pPlayer.EnableResearch("RES_E_TCH_AAL_01_1"  , true);
+			pPlayer.EnableResearch("RES_E_EN_PR_01_1"    , true);
+			pPlayer.EnableResearch("RES_E_TCH_SG_01_2"   , true);
+			pPlayer.EnableResearch("RES_E_CH_AJ_01_1"    , true);
+			pPlayer.EnableResearch("RES_E_TCH_ACA_01_1"  , true);
+		}
+		
+		// Misja 5
+		if(nMission>3)
+		{
+
+			pPlayer.EnableResearch("RES_E_TCH_EX_04_1"   , true);
+			pPlayer.EnableResearch("RES_E_TCH_EX_04_2"   , true);
+			pPlayer.EnableResearch("RES_E_CH_GT_05_1"    , true);
+			pPlayer.EnableResearch("RES_E_TCH_AL_02_2"   , true);
+			pPlayer.EnableResearch("RES_E_TCH_AL_MI_01_3", true);
+			pPlayer.EnableResearch("RES_E_TCH_AAL_01_2"  , true);
+			pPlayer.EnableResearch("RES_E_TCH_ACA_01_2"  , true);
+			pPlayer.EnableResearch("RES_E_TCH_IO_01_1"   , true);
+			pPlayer.EnableResearch("RES_E_TCH_AR_01_3"   , true);
+			pPlayer.EnableResearch("RES_E_TCH_AR_FL_04_2", true);
+
+			// Misja 5
+
+			pPlayer.EnableResearch("RES_E_CH_AR_13_1"  , true);
+			pPlayer.EnableResearch("RES_E_IE_RD_01_2"  , true);
+			pPlayer.EnableResearch("RES_E_CH_AF_11_1"  , true);
+			pPlayer.EnableResearch("RES_E_TCH_CH_01_1" , true);
+			pPlayer.EnableResearch("RES_E_TCH_ACH_01_1", true);
+			pPlayer.EnableResearch("RES_E_EN_SP_01_2"  , true);
+			pPlayer.EnableResearch("RES_E_EN_PR_01_2"  , true);
+			pPlayer.EnableResearch("RES_E_TCH_IO_01_2" , true);
+			pPlayer.EnableResearch("RES_E_EE_DR_10_1"  , true);
+		}
+
+		// Misja 6
+		if(nMission>5)
+		{
+			pPlayer.EnableResearch("RES_E_TCH_CH_01_2"   , true);
+			pPlayer.EnableResearch("RES_E_TCH_ACH_01_2"  , true);
+			pPlayer.EnableResearch("RES_E_CH_GA_08_1"    , true);
+			pPlayer.EnableResearch("RES_E_TCH_BR_10_1"   , true);
+			pPlayer.EnableResearch("RES_E_TCH_SG_04_2"   , true);
+			pPlayer.EnableResearch("RES_E_TCH_SU_03_1"   , true);
+			pPlayer.EnableResearch("RES_E_CH_GT_06_1"    , true);
+			pPlayer.EnableResearch("RES_E_EE_DRB_17_1"   , true);
+			pPlayer.EnableResearch("RES_E_EE_JA_10_1"    , true);
+			pPlayer.EnableResearch("RES_E_TCH_IO_01_3"   , true);
+			pPlayer.EnableResearch("RES_E_TCH_AR_FL_04_3", true);
+			pPlayer.EnableResearch("RES_E_TCH_ACA_01_3"  , true);
+			pPlayer.EnableResearch("RES_E_TCH_EQ_08_1"   , true);
+			pPlayer.EnableResearch("RES_E_TCH_BMB_08_1"  , true);
+			pPlayer.EnableResearch("RES_E_TCH_SG_01_3"   , true);
+		}
+		// Misja 7
+		if(nMission>6)
+		{
+			pPlayer.EnableResearch("RES_E_CH_AA_07_1"  , true);
+			pPlayer.EnableResearch("RES_E_IE_RD_01_3"  , true);
+			pPlayer.EnableResearch("RES_E_EE_CD_10_1"  , true);
+			pPlayer.EnableResearch("RES_E_TCH_CH_01_3" , true);
+			pPlayer.EnableResearch("RES_E_TCH_ACH_01_3", true);
+			pPlayer.EnableResearch("RES_E_TCH_AL_02_3" , true);
+			pPlayer.EnableResearch("RES_E_TCH_AAL_01_3", true);
+			pPlayer.EnableResearch("RES_E_TCH_BR_10_2" , true);
+			pPlayer.EnableResearch("RES_E_TCH_BR_10_3" , true);
+			pPlayer.EnableResearch("RES_E_TCH_EX_04_3" , true);
+			pPlayer.EnableResearch("RES_E_TCH_EQ_08_2" , true);
+			pPlayer.EnableResearch("RES_E_TCH_EQ_08_3" , true);
+			pPlayer.EnableResearch("RES_E_TCH_BMB_08_2", true);
+			pPlayer.EnableResearch("RES_E_TCH_SU_03_2" , true);
+			pPlayer.EnableResearch("RES_E_TCH_SU_03_3" , true);
+			pPlayer.EnableResearch("RES_E_TCH_SG_04_3" , true);
+			pPlayer.EnableResearch("RES_E_TCH_SG_04_4" , true);
+			pPlayer.EnableResearch("RES_E_EN_PR_01_3"  , true);
+			pPlayer.EnableResearch("RES_E_EN_SP_01_3"  , true);
+		}
+	}
+
+	
+	function void SetEnemyResearchesEDCampaign(player pEnemy, int nMission)
+	{
+
+		
+		pEnemy.EnableAllResearches(false);
+
+		//Mission 1
+		pEnemy.EnableResearch("RES_L_WP_RG_01_2", true);
+		pEnemy.EnableResearch("RES_L_MI_EL_01_2", true);
+		pEnemy.EnableResearch("RES_L_MI_EL_01_3", true);
+		pEnemy.EnableResearch("RES_L_BL_CA_06", true);
+		pEnemy.EnableResearch("RES_L_WP_PG_01_1", true);
+		pEnemy.EnableResearch("RES_L_WP_PG_01_2", true);
+		pEnemy.EnableResearch("RES_L_WP_PG_01_3", true);
+		pEnemy.EnableResearch("RES_L_MI_PG_01_2", true);
+		pEnemy.EnableResearch("RES_L_MI_PG_01_3", true);
+		pEnemy.EnableResearch("RES_L_WP_SG_01_2", true);
+		pEnemy.EnableResearch("RES_L_MI_SG_01_2", true);
+		pEnemy.EnableResearch("RES_L_WP_SA_01_1", true);
+		pEnemy.EnableResearch("RES_L_WP_SA_01_2", true);
+		pEnemy.EnableResearch("RES_L_WP_SA_01_3", true);
+		pEnemy.EnableResearch("RES_L_MI_SA_01_2", true);
+		pEnemy.EnableResearch("RES_L_MI_SA_01_3", true);
+
+//Mission 3
+		if(nMission>2)
+		{
+		
+			pEnemy.EnableResearch("RES_L_CH_AJ_01_1", true);
+			pEnemy.EnableResearch("RES_L_EN_SP_01_1", true);
+			pEnemy.EnableResearch("RES_L_EN_SP_01_2", true);
+			pEnemy.EnableResearch("RES_L_EN_SP_01_3", true);
+			pEnemy.EnableResearch("RES_L_AR_CL_01_1", true);
+			pEnemy.EnableResearch("RES_L_AR_CH_01_1", true);
+			pEnemy.EnableResearch("RES_L_AR_RL_01_1", true);
+			pEnemy.EnableResearch("RES_L_WP_PB_03_2", true);
+			pEnemy.EnableResearch("RES_L_WP_PB_03_3", true);
+			pEnemy.EnableResearch("RES_L_CH_GT_04_1", true);
+			pEnemy.EnableResearch("RES_L_WP_MP_04_2", true);
+			pEnemy.EnableResearch("RES_L_WP_MP_04_3", true);
+			pEnemy.EnableResearch("RES_L_MI_MP_03_2", true);
+			pEnemy.EnableResearch("RES_L_MI_MP_03_3", true);
+			pEnemy.EnableResearch("RES_L_WP_SG_01_3", true);
+			pEnemy.EnableResearch("RES_L_MI_SG_01_3", true);
+			pEnemy.EnableResearch("RES_L_CH_AT_03_1", true);
+			pEnemy.EnableResearch("RES_L_WP_SB_03_2", true);
+			pEnemy.EnableResearch("RES_L_WP_SB_03_3", true);
+			pEnemy.EnableResearch("RES_L_MI_SB_03_2", true);
+			pEnemy.EnableResearch("RES_L_MI_SB_03_3", true);
+			pEnemy.EnableResearch("RES_L_IE_SG_01_1", true);
+		}
+		//Mission 5
+		if(nMission>4)
+		{
+			pEnemy.EnableResearch("RES_L_MI_PB_03_2", true);
+			pEnemy.EnableResearch("RES_L_MI_PB_03_3", true);
+			pEnemy.EnableResearch("RES_L_BL_TW_13", true);
+			pEnemy.EnableResearch("RES_L_IE_SG_01_1", true);
+			pEnemy.EnableResearch("RES_L_IE_SG_01_2", true);
+			pEnemy.EnableResearch("RES_L_IE_SG_01_3", true);
+			pEnemy.EnableResearch("RES_L_EN_PR_01_1", true);
+			pEnemy.EnableResearch("RES_L_EN_PR_01_2", true);
+			pEnemy.EnableResearch("RES_L_EN_PR_01_3", true);
+			pEnemy.EnableResearch("RES_L_AR_CL_01_2", true);
+			pEnemy.EnableResearch("RES_L_AR_CH_01_2", true);
+			pEnemy.EnableResearch("RES_L_AR_RL_01_2", true);
+			pEnemy.EnableResearch("RES_L_WP_AA_01_1", true);
+			pEnemy.EnableResearch("RES_L_WP_AA_01_2", true);
+			pEnemy.EnableResearch("RES_L_WP_AA_01_3", true);
+			pEnemy.EnableResearch("RES_L_MI_AA_01_2", true);
+			pEnemy.EnableResearch("RES_L_MI_AA_01_3", true);
+			pEnemy.EnableResearch("RES_L_CH_GT_05_1", true);
+			pEnemy.EnableResearch("RES_L_WP_PS_03_2", true);
+			pEnemy.EnableResearch("RES_L_WP_PS_03_3", true);
+			pEnemy.EnableResearch("RES_L_MI_PS_03_2", true);
+			pEnemy.EnableResearch("RES_L_MI_PS_03_3", true);
+			pEnemy.EnableResearch("RES_L_WP_EL_01_2", true);
+			pEnemy.EnableResearch("RES_L_WP_EL_01_3", true);
+			pEnemy.EnableResearch("RES_L_CH_UW_07_1", true);
+			pEnemy.EnableResearch("RES_L_CH_AB_12_1", true);
+			pEnemy.EnableResearch("RES_L_CH_AF_11_1", true);
+			pEnemy.EnableResearch("RES_L_CH_AA_07_1", true);
+			pEnemy.EnableResearch("RES_L_WP_PC_07_2", true);
+			pEnemy.EnableResearch("RES_L_WP_PC_07_3", true);
+			pEnemy.EnableResearch("RES_L_MI_PC_07_2", true);
+			pEnemy.EnableResearch("RES_L_MI_PC_07_3", true);
+			pEnemy.EnableResearch("RES_L_WP_EM_01_1", true);
+			pEnemy.EnableResearch("RES_L_WP_EM_01_2", true);
+			pEnemy.EnableResearch("RES_L_WP_EM_01_3", true);
+			pEnemy.EnableResearch("RES_L_MI_EM_01_2", true);
+			pEnemy.EnableResearch("RES_L_MI_EM_01_3", true);
+			pEnemy.EnableResearch("RES_L_MI_FR_07_1", true);
+			pEnemy.EnableResearch("RES_L_MI_FR_07_2", true);
+			pEnemy.EnableResearch("RES_L_MI_FR_07_3", true);
+		}		
+}
+
+
+
+//*****************
+	function void AddPlayerResearchesEDCampaign(player pPlayer, int nMission)
+	{
+		// Misja 1
+
+		
+		if(nMission>1)
+		{
+		
+		pPlayer.AddResearch("RES_E_TCH_AR_01_1"    );
+		pPlayer.AddResearch("RES_E_TCH_AR_01_2"    );
+		pPlayer.AddResearch("RES_E_CH_TR_09_1"    );
+		}
+		// Misja 3
+		if(nMission>3)
+		{
+			pPlayer.AddResearch("RES_E_TCH_CA_04_1"    );
+			pPlayer.AddResearch("RES_E_TCH_CA_04_2"    );
+			pPlayer.AddResearch("RES_E_CH_GJ_03_1"     );
+			pPlayer.AddResearch("RES_E_CH_GT_04_1"     );
+			pPlayer.AddResearch("RES_E_TCH_AR_01_3"    );
+			pPlayer.AddResearch("RES_E_TCH_AR_FL_04_1" );
+			pPlayer.AddResearch("RES_E_EN_SP_01_1"     );
+			pPlayer.AddResearch("RES_E_TCH_SG_01_1"    );
+		
+		
+			pPlayer.AddResearch("RES_E_TCH_CA_04_3"    );
+			pPlayer.AddResearch("RES_E_TCH_AL_02_1"    );
+			pPlayer.AddResearch("RES_E_TCH_AL_MI_01_2" );
+			pPlayer.AddResearch("RES_E_TCH_AAL_01_1"   );
+			pPlayer.AddResearch("RES_E_EN_PR_01_1"     );
+			pPlayer.AddResearch("RES_E_TCH_SG_01_2"    );
+			pPlayer.AddResearch("RES_E_CH_AJ_01_1"     );
+			pPlayer.AddResearch("RES_E_TCH_ACA_01_1"   );
+		}
+		
+		// Misja 5
+		if(nMission>5)
+		{
+
+			pPlayer.AddResearch("RES_E_TCH_EX_04_1"    );
+			pPlayer.AddResearch("RES_E_TCH_EX_04_2"    );
+			pPlayer.AddResearch("RES_E_CH_GT_05_1"     );
+			pPlayer.AddResearch("RES_E_TCH_AL_02_2"    );
+			pPlayer.AddResearch("RES_E_TCH_AL_MI_01_3" );
+			pPlayer.AddResearch("RES_E_TCH_AAL_01_2"   );
+			pPlayer.AddResearch("RES_E_TCH_ACA_01_2"   );
+			pPlayer.AddResearch("RES_E_TCH_IO_01_1"    );
+			pPlayer.AddResearch("RES_E_TCH_AR_01_3"    );
+			pPlayer.AddResearch("RES_E_TCH_AR_FL_04_2" );
+
+			// Misja 5
+
+			pPlayer.AddResearch("RES_E_CH_AR_13_1"   );
+			pPlayer.AddResearch("RES_E_IE_RD_01_2"   );
+			pPlayer.AddResearch("RES_E_CH_AF_11_1"   );
+			pPlayer.AddResearch("RES_E_TCH_CH_01_1"  );
+			pPlayer.AddResearch("RES_E_TCH_ACH_01_1" );
+			pPlayer.AddResearch("RES_E_EN_SP_01_2"   );
+			pPlayer.AddResearch("RES_E_EN_PR_01_2"   );
+			pPlayer.AddResearch("RES_E_TCH_IO_01_2"  );
+			pPlayer.AddResearch("RES_E_EE_DR_10_1"   );
+		}
+
+		// Misja 6
+		if(nMission>6)
+		{
+			pPlayer.AddResearch("RES_E_TCH_CH_01_2"    );
+			pPlayer.AddResearch("RES_E_TCH_ACH_01_2"   );
+			pPlayer.AddResearch("RES_E_CH_GA_08_1"     );
+			pPlayer.AddResearch("RES_E_TCH_BR_10_1"    );
+			pPlayer.AddResearch("RES_E_TCH_SG_04_2"    );
+			pPlayer.AddResearch("RES_E_TCH_SU_03_1"    );
+			pPlayer.AddResearch("RES_E_CH_GT_06_1"     );
+			pPlayer.AddResearch("RES_E_EE_DRB_17_1"    );
+			pPlayer.AddResearch("RES_E_EE_JA_10_1"     );
+			pPlayer.AddResearch("RES_E_TCH_IO_01_3"    );
+			pPlayer.AddResearch("RES_E_TCH_AR_FL_04_3" );
+			pPlayer.AddResearch("RES_E_TCH_ACA_01_3"   );
+			pPlayer.AddResearch("RES_E_TCH_EQ_08_1"    );
+			pPlayer.AddResearch("RES_E_TCH_BMB_08_1"   );
+			pPlayer.AddResearch("RES_E_TCH_SG_01_3"    );
+		}
+		// Misja 7
+		
+	}
+
+	
+	function void AddEnemyResearchesEDCampaign(player pEnemy, int nMission)
+	{
+
+		//Mission 3
+		if(nMission>3)
+		{
+			pEnemy.AddResearch("UCS_LAND_TECH1");
+			pEnemy.AddResearch("UCS_LAND_TECH2");
+			pEnemy.AddResearch("UCS_LAND_ARMOUR1");
+			pEnemy.AddResearch("UCS_LAND_ARMOUR2");
+			pEnemy.AddResearch("UCS_AIR_TECH1");
+			pEnemy.AddResearch("UCS_AIR_TECH2");
+			pEnemy.AddResearch("UCS_AIR_ARMOUR1");
+			pEnemy.AddResearch("UCS_AIR_ARMOUR2");
+			pEnemy.AddResearch("UCS_DEFENSE_TECH1");
+			pEnemy.AddResearch("UCS_DEFENSE_TECH2");
+			pEnemy.AddResearch("UCS_BUILDINGS_ARMOUR1");
+			pEnemy.AddResearch("UCS_PULSE_GUN");
+			pEnemy.AddResearch("UCS_PULSE_GUN2");
+			pEnemy.AddResearch("UCS_PULSE_BULLET");
+			pEnemy.AddResearch("UCS_PULSE_BULLET2");
+			pEnemy.AddResearch("UCS_ROENTGEN_EMMITER");
+			pEnemy.AddResearch("UCS_ROENTGEN_EMMITER2");
+			pEnemy.AddResearch("UCS_ROENTGEN_GENERATOR");
+			pEnemy.AddResearch("UCS_ROENTGEN_GENERATOR2");
+			pEnemy.AddResearch("UCS_PLASMA_GUN");
+			pEnemy.AddResearch("UCS_PLASMA_GENERATOR1");
+			pEnemy.AddResearch("UCS_PLASMA_CANNON");
+			pEnemy.AddResearch("UCS_ROCKET_LAUNCHER");
+			pEnemy.AddResearch("UCS_ROCKET");
+			pEnemy.AddResearch("UCS_ROCKET2");
+			pEnemy.AddResearch("UCS_GRANADE_LAUNCHER");
+			pEnemy.AddResearch("UCS_GRANADE");
+			pEnemy.AddResearch("UCS_BOMB_LAUNCHER");
+			pEnemy.AddResearch("UCS_BOMB_LAUNCHER2");
+			pEnemy.AddResearch("UCS_BOMB");
+			pEnemy.AddResearch("UCS_BOMB2");
+			pEnemy.AddResearch("UCS_SHIELD");
+			pEnemy.AddResearch("UCS_SHIELD2");
+			pEnemy.AddResearch("UCS_SHIELD3");
+			pEnemy.AddResearch("UCS_ANTI_SHIELD");
+			pEnemy.AddResearch("UCS_ANTI_SHIELD2");
+			pEnemy.AddResearch("UCS_AMIS_LAUNCHER");
+			pEnemy.AddResearch("UCS_DRONE");
+			pEnemy.AddResearch("UCS_DRONE2");
+			pEnemy.AddResearch("UCS_SDI");
+			pEnemy.AddResearch("UCS_RADAR");
+			pEnemy.AddResearch("UCS_SENSORS");
+			pEnemy.AddResearch("UCS_SENSORS2");
+			pEnemy.AddResearch("SHADOW");
+			pEnemy.AddResearch("UCS_TELEPORT1");
+			pEnemy.AddResearch("UCS_TELEPORT2");
+			pEnemy.AddResearch("UCS_TELEPORT3");
+		}
+}
+
+
+
+	function void SetPlayerResearchesLCCampaign(player pPlayer, int nMission)
+	{
+
+		pPlayer.EnableAllResearches(false);
+		
+		pPlayer.EnableResearch("RES_L_WP_RG_01_2"   , true);
+		pPlayer.EnableResearch("RES_L_MI_EL_01_2"   , true);
+		pPlayer.EnableResearch("RES_L_MI_EL_01_3"   , true);
+		pPlayer.EnableResearch("RES_L_BL_CA_06"   , true);
+		pPlayer.EnableResearch("RES_L_WP_AA_01_1"   , true);
+		pPlayer.EnableResearch("RES_L_WP_AA_01_2"   , true);
+		pPlayer.EnableResearch("RES_L_WP_AA_01_3"   , true);
+		pPlayer.EnableResearch("RES_L_MI_AA_01_2"   , true);
+		pPlayer.EnableResearch("RES_L_MI_AA_01_3"   , true);
+		pPlayer.EnableResearch("RES_L_EE_AD_10_1"   , true);
+		pPlayer.EnableResearch("RES_L_WP_PG_01_1"   , true);
+		pPlayer.EnableResearch("RES_L_WP_PG_01_2"   , true);
+		pPlayer.EnableResearch("RES_L_WP_PG_01_3"   , true);
+		pPlayer.EnableResearch("RES_L_MI_PG_01_2"   , true);
+		pPlayer.EnableResearch("RES_L_MI_PG_01_3"   , true);
+		pPlayer.EnableResearch("RES_L_WP_SG_01_2"   , true);
+		pPlayer.EnableResearch("RES_L_MI_SG_01_2"   , true);
+		pPlayer.EnableResearch("RES_L_WP_SA_01_1"   , true);
+		pPlayer.EnableResearch("RES_L_WP_SA_01_2"   , true);
+		pPlayer.EnableResearch("RES_L_WP_SA_01_3"   , true);
+		pPlayer.EnableResearch("RES_L_MI_SA_01_2"   , true);
+		pPlayer.EnableResearch("RES_L_MI_SA_01_3"   , true);
+		pPlayer.EnableResearch("RES_L_WP_EL_01_2"   , true);
+		pPlayer.EnableResearch("RES_L_WP_EL_01_3"   , true);
+		pPlayer.EnableResearch("RES_L_MI_EL_01_2"   , true);
+		pPlayer.EnableResearch("RES_L_MI_EL_01_3"   , true);
+		pPlayer.EnableResearch("RES_L_AR_CL_01_1"   , true);
+		pPlayer.EnableResearch("RES_L_AR_CH_01_1"   , true);
+
+		if(nMission>=2)
+		{	
+			pPlayer.EnableResearch("RES_L_IE_SG_01_1"   , true);
+			pPlayer.EnableResearch("RES_L_IE_SG_01_2"   , true);
+			pPlayer.EnableResearch("RES_L_IE_SG_01_3"   , true);
+
+			pPlayer.EnableResearch("RES_L_IE_SG_04_2"   , true);
+			pPlayer.EnableResearch("RES_L_IE_SG_04_3"   , true);
+			pPlayer.EnableResearch("RES_L_IE_SG_04_4"   , true);
+
+			pPlayer.EnableResearch("RES_L_CH_AJ_01_1"   , true);
+			pPlayer.EnableResearch("RES_L_EN_SP_01_1"   , true);
+			pPlayer.EnableResearch("RES_L_EN_SP_01_2"   , true);
+			pPlayer.EnableResearch("RES_L_EN_SP_01_3"   , true);
+			
+			
+			pPlayer.EnableResearch("RES_L_AR_RL_01_1"   , true);
+			pPlayer.EnableResearch("RES_L_MI_PB_03_2"   , true);
+			pPlayer.EnableResearch("RES_L_MI_PB_03_3"   , true);
+			pPlayer.EnableResearch("RES_L_BL_TW_13"   , true);
+			pPlayer.EnableResearch("RES_L_WP_PB_03_2"   , true);
+			pPlayer.EnableResearch("RES_L_WP_PB_03_3"   , true);
+			pPlayer.EnableResearch("RES_L_CH_GT_04_1"   , true);
+			pPlayer.EnableResearch("RES_L_WP_MP_04_2"   , true);
+			pPlayer.EnableResearch("RES_L_WP_MP_04_3"   , true);
+			pPlayer.EnableResearch("RES_L_MI_MP_03_2"   , true);
+			pPlayer.EnableResearch("RES_L_MI_MP_03_3"   , true);
+			pPlayer.EnableResearch("RES_L_WP_SG_01_3"   , true);
+			pPlayer.EnableResearch("RES_L_MI_SG_01_3"   , true);
+			pPlayer.EnableResearch("RES_L_CH_AT_03_1"   , true);
+			pPlayer.EnableResearch("RES_L_WP_SB_03_2"   , true);
+			pPlayer.EnableResearch("RES_L_WP_SB_03_3"   , true);
+			pPlayer.EnableResearch("RES_L_MI_SB_03_2"   , true);
+			pPlayer.EnableResearch("RES_L_MI_SB_03_3"   , true);
+		}
+		if(nMission>=4)
+		{
+			pPlayer.EnableResearch("RES_L_EN_PR_01_1"   , true);
+			pPlayer.EnableResearch("RES_L_EN_PR_01_2"   , true);
+			pPlayer.EnableResearch("RES_L_EN_PR_01_3"   , true);
+			pPlayer.EnableResearch("RES_L_AR_CL_01_2"   , true);
+			pPlayer.EnableResearch("RES_L_AR_CH_01_2"   , true);
+			pPlayer.EnableResearch("RES_L_AR_RL_01_2"   , true);
+			
+			pPlayer.EnableResearch("RES_L_CH_GT_05_1"   , true);
+			pPlayer.EnableResearch("RES_L_WP_PS_03_2"   , true);
+			pPlayer.EnableResearch("RES_L_WP_PS_03_3"   , true);
+			pPlayer.EnableResearch("RES_L_MI_PS_03_2"   , true);
+			pPlayer.EnableResearch("RES_L_MI_PS_03_3"   , true);
+			pPlayer.EnableResearch("RES_L_CH_UW_07_1"   , true);
+			pPlayer.EnableResearch("RES_L_CH_AB_12_1"   , true);
+			pPlayer.EnableResearch("RES_L_CH_AF_11_1"   , true);
+			pPlayer.EnableResearch("RES_L_CH_AA_07_1"   , true);
+			pPlayer.EnableResearch("RES_L_WP_PC_07_2"   , true);
+			pPlayer.EnableResearch("RES_L_WP_PC_07_3"   , true);
+			pPlayer.EnableResearch("RES_L_MI_PC_07_2"   , true);
+			pPlayer.EnableResearch("RES_L_MI_PC_07_3"   , true);
+			pPlayer.EnableResearch("RES_L_WP_EM_01_1"   , true);
+			pPlayer.EnableResearch("RES_L_WP_EM_01_2"   , true);
+			pPlayer.EnableResearch("RES_L_WP_EM_01_3"   , true);
+			pPlayer.EnableResearch("RES_L_MI_EM_01_2"   , true);
+			pPlayer.EnableResearch("RES_L_MI_EM_01_3"   , true);
+			pPlayer.EnableResearch("RES_L_MI_FR_07_1"   , true);
+			pPlayer.EnableResearch("RES_L_MI_FR_07_2"   , true);
+			pPlayer.EnableResearch("RES_L_MI_FR_07_3"   , true);
+		}
+		if(nMission>=6)
+		{
+			pPlayer.EnableResearch("RES_L_EE_RE_10_1"   , true);
+			pPlayer.EnableResearch("RES_L_EE_BARD_19_1"   , true);
+			pPlayer.EnableResearch("RES_L_EE_AJ_10_1"   , true);
+			pPlayer.EnableResearch("RES_L_AR_CL_01_3"   , true);
+			pPlayer.EnableResearch("RES_L_AR_CH_01_3"   , true);
+			pPlayer.EnableResearch("RES_L_AR_RL_01_3"   , true);
+			pPlayer.EnableResearch("RES_L_CH_GA_08_1"   , true);
+			pPlayer.EnableResearch("RES_L_WP_PC_08_2"   , true);
+			pPlayer.EnableResearch("RES_L_WP_PC_08_3"   , true);
+			pPlayer.EnableResearch("RES_L_MI_PC_08_2"   , true);
+			pPlayer.EnableResearch("RES_L_MI_PC_08_3"   , true);
+			pPlayer.EnableResearch("RES_L_CH_GT_06_1"   , true);
+			pPlayer.EnableResearch("RES_L_CH_UW_07_2"   , true);
+			pPlayer.EnableResearch("RES_L_MI_PB_12_2"   , true);
+			pPlayer.EnableResearch("RES_L_MI_PB_12_3"   , true);
+			pPlayer.EnableResearch("RES_L_EE_ED_10_1"   , true);
+		}
+		if(nMission>=7)
+		{
+			pPlayer.EnableResearch("RES_L_EE_AN_10_1"   , true);
+		}
+	}
+
+	function void AddPlayerResearchesLCCampaign(player pPlayer, int nMission)
+	{
+
+		
+		if(nMission>1)
+		{	
+
+//shiedy dostajemy od sebastiana w 2 misji
+			pPlayer.AddResearch("RES_L_IE_SG_01_1"   );
+			pPlayer.AddResearch("RES_L_IE_SG_01_2"   );
+			pPlayer.AddResearch("RES_L_IE_SG_01_3"   );
+			pPlayer.AddResearch("RES_L_IE_SG_04_2"   );
+			pPlayer.AddResearch("RES_L_IE_SG_04_3"   );
+			pPlayer.AddResearch("RES_L_IE_SG_04_4"   );
+			
+			
+			pPlayer.AddResearch("RES_L_WP_RG_01_2"   );
+			pPlayer.AddResearch("RES_L_MI_EL_01_2"   );
+			pPlayer.AddResearch("RES_L_MI_EL_01_3"   );
+			pPlayer.AddResearch("RES_L_BL_CA_06"   );
+			pPlayer.AddResearch("RES_L_WP_PG_01_1"   );
+			pPlayer.AddResearch("RES_L_WP_PG_01_2"   );
+			pPlayer.AddResearch("RES_L_WP_PG_01_3"   );
+			pPlayer.AddResearch("RES_L_MI_PG_01_2"   );
+			pPlayer.AddResearch("RES_L_MI_PG_01_3"   );
+			pPlayer.AddResearch("RES_L_WP_SG_01_2"   );
+			pPlayer.AddResearch("RES_L_MI_SG_01_2"   );
+			pPlayer.AddResearch("RES_L_WP_SA_01_1"   );
+			pPlayer.AddResearch("RES_L_WP_SA_01_2"   );
+			pPlayer.AddResearch("RES_L_WP_SA_01_3"   );
+			pPlayer.AddResearch("RES_L_MI_SA_01_2"   );
+			pPlayer.AddResearch("RES_L_MI_SA_01_3"   );
+		pPlayer.AddResearch("RES_L_WP_EL_01_2" );
+		pPlayer.AddResearch("RES_L_WP_EL_01_3" );
+		
+
+		}
+		if(nMission>2)
+		{	
+			pPlayer.AddResearch("RES_L_CH_AJ_01_1"   );
+			pPlayer.AddResearch("RES_L_EN_SP_01_1"   );
+			pPlayer.AddResearch("RES_L_EN_SP_01_2"   );
+			pPlayer.AddResearch("RES_L_EN_SP_01_3"   );
+			pPlayer.AddResearch("RES_L_AR_CL_01_1"   );
+			pPlayer.AddResearch("RES_L_AR_CH_01_1"   );
+			pPlayer.AddResearch("RES_L_AR_RL_01_1"   );
+			pPlayer.AddResearch("RES_L_MI_PB_03_2"   );
+			pPlayer.AddResearch("RES_L_MI_PB_03_3"   );
+			pPlayer.AddResearch("RES_L_BL_TW_13"   );
+			pPlayer.AddResearch("RES_L_WP_PB_03_2"   );
+			pPlayer.AddResearch("RES_L_WP_PB_03_3"   );
+			pPlayer.AddResearch("RES_L_CH_GT_04_1"   );
+			pPlayer.AddResearch("RES_L_WP_MP_04_2"   );
+			pPlayer.AddResearch("RES_L_WP_MP_04_3"   );
+			pPlayer.AddResearch("RES_L_MI_MP_03_2"   );
+			pPlayer.AddResearch("RES_L_MI_MP_03_3"   );
+			pPlayer.AddResearch("RES_L_WP_SG_01_3"   );
+			pPlayer.AddResearch("RES_L_MI_SG_01_3"   );
+			pPlayer.AddResearch("RES_L_CH_AT_03_1"   );
+			pPlayer.AddResearch("RES_L_WP_SB_03_2"   );
+			pPlayer.AddResearch("RES_L_WP_SB_03_3"   );
+			pPlayer.AddResearch("RES_L_MI_SB_03_2"   );
+			pPlayer.AddResearch("RES_L_MI_SB_03_3"   );
+		}
+		if(nMission>4)
+		{
+			pPlayer.AddResearch("RES_L_EN_PR_01_1"   );
+			pPlayer.AddResearch("RES_L_EN_PR_01_2"   );
+			pPlayer.AddResearch("RES_L_EN_PR_01_3"   );
+			pPlayer.AddResearch("RES_L_AR_CL_01_2"   );
+			pPlayer.AddResearch("RES_L_AR_CH_01_2"   );
+			pPlayer.AddResearch("RES_L_AR_RL_01_2"   );
+			pPlayer.AddResearch("RES_L_WP_AA_01_1"   );
+			pPlayer.AddResearch("RES_L_WP_AA_01_2"   );
+			pPlayer.AddResearch("RES_L_WP_AA_01_3"   );
+			pPlayer.AddResearch("RES_L_MI_AA_01_2"   );
+			pPlayer.AddResearch("RES_L_MI_AA_01_3"   );
+			pPlayer.AddResearch("RES_L_CH_GT_05_1"   );
+			pPlayer.AddResearch("RES_L_WP_PS_03_2"   );
+			pPlayer.AddResearch("RES_L_WP_PS_03_3"   );
+			pPlayer.AddResearch("RES_L_MI_PS_03_2"   );
+			pPlayer.AddResearch("RES_L_MI_PS_03_3"   );
+			pPlayer.AddResearch("RES_L_WP_EL_01_2"   );
+			pPlayer.AddResearch("RES_L_WP_EL_01_3"   );
+			pPlayer.AddResearch("RES_L_CH_UW_07_1"   );
+			pPlayer.AddResearch("RES_L_CH_AB_12_1"   );
+			pPlayer.AddResearch("RES_L_CH_AF_11_1"   );
+			pPlayer.AddResearch("RES_L_CH_AA_07_1"   );
+			pPlayer.AddResearch("RES_L_WP_PC_07_2"   );
+			pPlayer.AddResearch("RES_L_WP_PC_07_3"   );
+			pPlayer.AddResearch("RES_L_MI_PC_07_2"   );
+			pPlayer.AddResearch("RES_L_MI_PC_07_3"   );
+			pPlayer.AddResearch("RES_L_WP_EM_01_1"   );
+			pPlayer.AddResearch("RES_L_WP_EM_01_2"   );
+			pPlayer.AddResearch("RES_L_WP_EM_01_3"   );
+			pPlayer.AddResearch("RES_L_MI_EM_01_2"   );
+			pPlayer.AddResearch("RES_L_MI_EM_01_3"   );
+			pPlayer.AddResearch("RES_L_MI_FR_07_1"   );
+			pPlayer.AddResearch("RES_L_MI_FR_07_2"   );
+			pPlayer.AddResearch("RES_L_MI_FR_07_3"   );
+		}
+		if(nMission>6)
+		{
+		/*	pPlayer.AddResearch("RES_L_EE_RE_10_1"   );
+			pPlayer.AddResearch("RES_L_EE_BARD_19_1"   );
+			pPlayer.AddResearch("RES_L_EE_AJ_10_1"   );
+			pPlayer.AddResearch("RES_L_AR_CL_01_3"   );
+			pPlayer.AddResearch("RES_L_AR_CH_01_3"   );
+			pPlayer.AddResearch("RES_L_AR_RL_01_3"   );
+			pPlayer.AddResearch("RES_L_EE_AD_10_1"   );
+			pPlayer.AddResearch("RES_L_CH_GA_08_1"   );
+			pPlayer.AddResearch("RES_L_WP_PC_08_2"   );
+			pPlayer.AddResearch("RES_L_WP_PC_08_3"   );
+			pPlayer.AddResearch("RES_L_MI_PC_08_2"   );
+			pPlayer.AddResearch("RES_L_MI_PC_08_3"   );
+			pPlayer.AddResearch("RES_L_CH_GT_06_1"   );
+			pPlayer.AddResearch("RES_L_CH_UW_07_2"   );
+			pPlayer.AddResearch("RES_L_MI_PB_12_2"   );
+			pPlayer.AddResearch("RES_L_MI_PB_12_3"   );
+			pPlayer.AddResearch("RES_L_EE_ED_10_1"   );*/
+		}
+	}
+
+function void SetPlayerTemplateseLCCampaign(player pPlayer, int nMission)
+{
+	pPlayer.AddObjectTemplate("L_CH_AJ_01_1#L_WP_SG_01_1,L_AR_CL_01_1,L_EN_NO_01_1,L_IE_SG_01_1");
+	pPlayer.AddObjectTemplate("L_CH_GJ_02_1#L_WP_SG_02_1,L_AR_CL_02_1,L_EN_NO_02_1,L_IE_SG_01_1");
+	pPlayer.AddObjectTemplate("L_CH_AT_03_1#L_WP_SB_03_1,L_AR_CL_03_1,L_EN_NO_03_1,L_IE_SG_01_1");
+	pPlayer.AddObjectTemplate("L_CH_GT_04_1#L_WP_MP_04_1,L_AR_CL_04_1,L_EN_NO_04_1,L_IE_SG_04_1,L_IE_SG_04_1");
+	pPlayer.AddObjectTemplate("L_CH_GT_05_1#L_WP_PS_05_1#L_WP_PS2_05_1,L_AR_CL_05_1,L_EN_NO_05_1,L_IE_SG_04_1,L_IE_SG_04_1");
+	pPlayer.AddObjectTemplate("L_CH_GT_06_1#L_WP_MP_06_1#L_WP_EL_06_1,L_WP_MP2_06_1,L_WP_MP2_06_1,L_AR_CL_06_1,L_EN_NO_06_1,L_IE_SG_04_1,L_IE_SG_04_1");
+	pPlayer.AddObjectTemplate("L_CH_AA_07_1#L_WP_PC_07_1,L_AR_CL_07_1,L_EN_NO_07_1,L_IE_SG_01_1");
+	pPlayer.AddObjectTemplate("L_CH_GA_08_1#L_WP_PC_08_1,L_AR_CL_08_1,L_EN_NO_08_1,L_IE_SG_01_1");
+	pPlayer.AddObjectTemplate("L_CH_AF_11_1#L_WP_AA_11_1,L_AR_CL_11_1,L_EN_NO_11_1,L_IE_SG_01_1");
+	pPlayer.AddObjectTemplate("L_CH_AB_12_1#L_WP_PB_12_1,L_AR_CL_12_1,L_EN_NO_12_1,L_IE_SG_01_1");
+}
+
+function void AddUCSEnemyResearchesLCCampaign(player pPlayer, int nMission)
+	{
+
+		
+		if(nMission>3)
+		{
+			pPlayer.AddResearch("RES_U_IN_TE_01_2");
+			pPlayer.AddResearch("RES_U_IE_RD_01_1");
+			pPlayer.AddResearch("RES_U_CH_AJ_01_1");
+			pPlayer.AddResearch("RES_U_WP_SH_01_2");
+			pPlayer.AddResearch("RES_U_WP_CH_01_2");
+			pPlayer.AddResearch("RES_U_MI_XR_01_2");
+			pPlayer.AddResearch("RES_U_MI_NG_02_2");
+			pPlayer.AddResearch("RES_U_EE_CA_11_1");
+			pPlayer.AddResearch("RES_U_TCH_TP_07_1");
+			pPlayer.AddResearch("RES_U_AR_CH_01_1");
+			pPlayer.AddResearch("RES_U_EN_SP_01_1");
+			pPlayer.AddResearch("RES_U_IE_SG_01_2");
+		}
+		if(nMission>4)
+		{
+			pPlayer.AddResearch("RES_U_TCH_UC_01_1");
+			pPlayer.AddResearch("RES_U_IN_TE_01_3");
+			pPlayer.AddResearch("RES_U_IE_RD_01_2");
+			pPlayer.AddResearch("RES_U_MI_SH_01_2");
+			pPlayer.AddResearch("RES_U_WP_SG_04_1");
+			pPlayer.AddResearch("RES_U_CH_AA_06_1");
+			pPlayer.AddResearch("RES_U_MI_CH_01_2");
+			pPlayer.AddResearch("RES_U_MI_CH_01_3");
+			pPlayer.AddResearch("RES_U_WP_XR_01_2");
+			pPlayer.AddResearch("RES_U_MI_XR_01_3");
+			pPlayer.AddResearch("RES_U_WP_NG_02_2");
+			pPlayer.AddResearch("RES_U_MI_NG_02_3");
+			pPlayer.AddResearch("RES_U_WP_FT_04_1");
+			pPlayer.AddResearch("RES_U_WP_AR_03_1");
+			pPlayer.AddResearch("RES_U_CH_GT_04_1");
+			pPlayer.AddResearch("RES_U_TCH_TU_07_1");
+			pPlayer.AddResearch("RES_U_AR_CL_01_2");
+			pPlayer.AddResearch("RES_U_AR_RL_01_1");
+			pPlayer.AddResearch("RES_U_AR_CH_01_2");
+			pPlayer.AddResearch("RES_U_EN_PR_01_1");
+			pPlayer.AddResearch("RES_U_EN_SP_01_2");
+			pPlayer.AddResearch("RES_U_IE_SG_04_2");
+		}
+		if(nMission>5)
+		{
+			pPlayer.AddResearch("RES_U_TCH_UC_01_2");
+			pPlayer.AddResearch("RES_U_IN_HA_03_1");
+			pPlayer.AddResearch("RES_U_IE_RD_01_3");
+			pPlayer.AddResearch("RES_U_WP_SH_01_3");
+			pPlayer.AddResearch("RES_U_WP_SG_04_2");
+			pPlayer.AddResearch("RES_U_MI_SG_04_2");
+			pPlayer.AddResearch("RES_U_CH_AB_12_1");
+			pPlayer.AddResearch("RES_U_WP_CB_12_1");
+			pPlayer.AddResearch("RES_U_WP_CH_01_3");
+			pPlayer.AddResearch("RES_U_WP_XR_01_3");
+			pPlayer.AddResearch("RES_U_WP_NG_02_3");
+			pPlayer.AddResearch("RES_U_WP_FT_04_2");
+			pPlayer.AddResearch("RES_U_MI_FT_04_2");
+			pPlayer.AddResearch("RES_U_WP_AR_03_2");
+			pPlayer.AddResearch("RES_U_WP_SDI_01_1");
+			pPlayer.AddResearch("RES_U_MI_AR_03_2");
+			pPlayer.AddResearch("RES_U_EE_IR_11_1");
+			pPlayer.AddResearch("RES_U_WP_PB_04_2");
+			pPlayer.AddResearch("RES_U_MI_PB_04_2");
+			pPlayer.AddResearch("RES_U_CH_GT_05_1");
+			pPlayer.AddResearch("RES_U_WP_GB_04_1");
+			pPlayer.AddResearch("RES_U_CH_GA_07_1");
+			pPlayer.AddResearch("RES_U_AR_CL_01_3");
+			pPlayer.AddResearch("RES_U_AR_RL_01_2");
+			pPlayer.AddResearch("RES_U_AR_CH_01_3");
+			pPlayer.AddResearch("RES_U_EN_PR_01_2");
+			pPlayer.AddResearch("RES_U_IE_SG_01_3");
+			pPlayer.AddResearch("RES_U_WP_SD_02_1");
+			pPlayer.AddResearch("RES_U_IE_SG_04_3");
+		}
+		if(nMission>6)
+		{
+			pPlayer.AddResearch("RES_U_IN_HA_03_2");
+			pPlayer.AddResearch("RES_U_MI_SH_01_3");
+			pPlayer.AddResearch("RES_U_WP_SG_04_3");
+			pPlayer.AddResearch("RES_U_MI_PB_12_2");
+			pPlayer.AddResearch("RES_U_MI_CB_12_2");
+			pPlayer.AddResearch("RES_U_WP_AR_06_2");
+			pPlayer.AddResearch("RES_U_MI_AR_06_2");
+			pPlayer.AddResearch("RES_U_WP_FT_04_3");
+			pPlayer.AddResearch("RES_U_MI_FT_04_3");
+			pPlayer.AddResearch("RES_U_WP_AR_03_3");
+			pPlayer.AddResearch("RES_U_MI_AR_03_3");
+			pPlayer.AddResearch("RES_U_EE_SH_11_1");
+			pPlayer.AddResearch("RES_U_WP_PB_04_3");
+			pPlayer.AddResearch("RES_U_MI_PB_04_3");
+			pPlayer.AddResearch("RES_U_WP_GB_04_2");
+			pPlayer.AddResearch("RES_U_MI_GB_04_2");
+			pPlayer.AddResearch("RES_U_WP_PL_06_2");
+			pPlayer.AddResearch("RES_U_MI_PL_07_2");
+			pPlayer.AddResearch("RES_U_WP_TB_07_1");
+			pPlayer.AddResearch("RES_U_AR_RL_01_3");
+			pPlayer.AddResearch("RES_U_EN_SP_01_3");
+			pPlayer.AddResearch("RES_U_WP_SD_02_2");
+			pPlayer.AddResearch("RES_U_IE_SG_04_4");
+		}
+}

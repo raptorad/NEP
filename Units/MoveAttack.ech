@@ -1,0 +1,30 @@
+#ifndef MOVEATTACK_ECH
+#define MOVEATTACK_ECH
+
+//komenda MoveAttack dla unitow cywilnych (ktore nie maja include "Attack.ech"
+//robi to co command Move
+
+function int MakeCommandMoveAttack(int nCommand, int nX, int nY)
+{
+    TRACE2("command MoveAttack (civil)", GetUnitRef());
+    if (IS_IN_ENTRENCHMENT_MODE())
+    {
+        return false;
+    }
+    CHECK_STOP_CURR_ACTION(nCommand);
+    MoveToPoint(nX, nY);
+	state Moving;
+    return true;
+}//————————————————————————————————————————————————————————————————————————————————————————————————————|
+
+command MoveAttack(int nX, int nY) hidden
+{
+    return MakeCommandMoveAttack(eCommandMoveAttack, nX, nY);
+}//————————————————————————————————————————————————————————————————————————————————————————————————————|
+
+command MoveAttackDblClk(int nX, int nY) hidden
+{
+    return MakeCommandMoveAttack(eCommandMoveAttackDblClk, nX, nY);
+}//————————————————————————————————————————————————————————————————————————————————————————————————————|
+
+#endif

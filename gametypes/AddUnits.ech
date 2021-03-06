@@ -1,0 +1,140 @@
+#include "..\Campaigns\common.ech"
+
+
+
+
+function void InitCarriers()
+{
+	
+	int m_nC[];//number of player's Carriers
+	unit m_uCarrier[]; 
+	int m_nBuildTimer[];
+	unit m_uInfantry[];
+	unit m_uUnit1[];  
+	int nEscort; int nEscortTimer;
+	m_nC.Create(8);
+	m_uInfantry.Create(8*1000);
+	m_uCarrier.Create(20*8);
+	m_nBuildTimer.Create(20*8);
+	m_uUnit1.Create(20*16*8);
+	for(i=1;i<=8;++i)
+	{
+		m_nC[i]=0;
+	}
+
+}
+
+
+function void AddUnitsToCarrier()
+{
+	player P;
+	int nP;
+	int nX,nY,nZ;
+	int i,n;
+	unit uUnit, uUnit2;
+	int nTr,nExist;
+	++nEscortTimer;
+	if(nEscortTimer>10)
+	{
+		nEscortTimer=0;
+		++nEscort;
+		if(nEscort>3)
+		{
+			nEscort=0;
+		}
+	}	
+	for(nP=1;nP<=8;++nP)
+	{
+		P=GetPlayer(nP);
+		for(i=1;i<=P.GetNumberOfUnits();++i)
+		{
+	  	 	uUnit=P.GetUnit(i);
+	        if(uUnit.IsTransporter() && uUnit.GetExperienceLevel()==0 && uUnit.GetMaxHP()>=2000)
+    	    {
+       	   		++ m_nC[nP];
+				nExist=0;
+				for(n=1; n<=m_nC[nP];++n)
+	          	{
+    	        	uUnit2=m_uCarrier[(nP-1)*20+n];
+        	    	if(uUnit==uUnit2)
+            		{
+ 	            		-- m_nC[nP]; 
+						nExist=1;
+						 break;
+    	        	}
+        	  	}
+    	      	if(nExist==0)
+        	  	{
+            		for(n=1; n<=m_nC[nP];++n)
+            		{
+						uUnit2=m_uCarrier[(nP-1)*20+n];
+            			if(!uUnit2.IsLive())
+						{
+							uUnit2=null;
+						}
+						if(uUnit2==null)
+            			{
+             				 m_uCarrier[(nP-1)*20+n]=uUnit;
+							 break;
+            			}
+                       
+          			}
+        		}	
+			}
+		}
+		for(i=1;i<=m_nC[nP];++i)
+		{
+				++ m_nBuildTimer[(nP-1)*20+1];	
+				uUnit=m_uCarrier[(nP-1)*20+i];
+				nX=uUnit.GetLocationX();
+			 	nY=uUnit.GetLocationY();
+			 	nZ=uUnit.GetLocationZ();
+				for(n=1;n<=16;++n)
+				{
+					uUnit=m_uCarrier[(nP-1)*20+i];
+					if(!uUnit==null && uUnit.IsLive())
+					{
+						uUnit=m_uUnit1[(nP-1)*20+(i-1)*16+n];
+						if(!uUnit.IsLive())     
+						{
+							m_uUnit1[(nP-1)*20+(i-1)*16+n]=null;
+						}
+						if (m_uUnit1[(nP-1)*20+(i-1)*16+n] == null && m_nBuildTimer[(nP-1)*20+i]>10)
+						{
+							if(P.GetRace()==eRaceUCS)
+							{	
+								m_uUnit1[(nP-1)*20+(i-1)*16+n]=P.CreateObject("UCS_HAWK_AAR",nX,nY,2,uUnit.GetDirectionAlpha());
+							}
+							if(P.GetRace()==eRaceED)
+							{
+								m_uUnit1[(nP-1)*20+(i-1)*16+n]=P.CreateObject("ED_INTERCEPTOR_AAR",nX,nY,2,uUnit.GetDirectionAlpha());					
+							}
+							if(P.GetRace()==eRaceLC)
+							{
+								m_uUnit1[(nP-1)*20+(i-1)*16+n]=P.CreateObject("LC_SFIGHTER_2XAAR",nX,nY,2,uUnit.GetDirectionAlpha());					
+							}
+							if(P.GetRace()==eRaceAlien)
+							{
+								m_uUnit1[(nP-1)*20+(i-1)*16+n]=P.CreateObject("MORPHOID_FIGHTER",nX,nY,2,uUnit.GetDirectionAlpha());					
+							}
+							m_nBuildTimer[(nP-1)*20+i]=0;
+						}
+						uUnit=m_uCarrier[(nP-1)*20+i];
+						uUnit2=m_uUnit1[(nP-1)*20+(i-1)*16+n];
+						if( nEscortTimer==0	&& n>nEscort*4 && n<=4*nEscort+4 && uUnit.IsLive() )
+						{
+							uUnit2.CommandMoveXYZA(nX, nY, 2, uUnit.GetDirectionAlpha());
+						}
+						if(uUnit.IsSelected() && !uUnit2.IsSelected() && uUnit.IsLive())
+						{
+						 uUnit2.SetSelected(true);
+						}
+						if(uUnit2.IsSelected() && !uUnit.IsSelected() && uUnit.IsLive())
+						{
+							uUnit.SetSelected(true);
+						}
+					}
+				}
+		}
+	}
+}
