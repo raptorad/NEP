@@ -2336,10 +2336,10 @@ function int GetUnitPrice(string Name)
 	string UnitIDName; int price;
 	price=0;
 	UnitIDName=Name;
-	if(!UnitIDName.Compare("U_I_SILVER_ONE_1")){ price=50; }else
-	if(!UnitIDName.Compare("U_P_SILVER")){ price= 200; }else
-	if(!UnitIDName.Compare("U_R_SILVER")){ price= 100; }else
-	if(!UnitIDName.Compare("U_X_SILVER")){ price= 200; }else
+	if(!UnitIDName.Compare(U_I_SILVER_ONE_1)){ price=50; }else
+	if(!UnitIDName.Compare(U_P_SILVER)){ price= 200; }else
+	if(!UnitIDName.Compare(U_R_SILVER)){ price= 100; }else
+	if(!UnitIDName.Compare(U_X_SILVER)){ price= 200; }else
 	if(!UnitIDName.Compare(U_I3_SILVER_MK3)){ price= 200; }else
 	if(!UnitIDName.Compare(U_R3_SILVER_MK3)){ price= 200; }else
 	if(!UnitIDName.Compare(U_P3_SILVER_MK3)){ price= 200; }else
@@ -2750,10 +2750,10 @@ function int GetUnitProductionTime(string Name)
 	string UnitIDName; int time;
 	time=0;
 	UnitIDName=Name;
-	if(!UnitIDName.Compare("U_I_SILVER_ONE_1")){ time=2; }else
-	if(!UnitIDName.Compare("U_P_SILVER")){ time= 2; }else
-	if(!UnitIDName.Compare("U_R_SILVER")){ time= 2; }else
-	if(!UnitIDName.Compare("U_X_SILVER")){ time= 2; }else
+	if(!UnitIDName.Compare(U_I_SILVER_ONE_1)){ time=2; }else
+	if(!UnitIDName.Compare(U_P_SILVER)){ time= 2; }else
+	if(!UnitIDName.Compare(U_R_SILVER)){ time= 2; }else
+	if(!UnitIDName.Compare(U_X_SILVER)){ time= 2; }else
 	if(!UnitIDName.Compare(U_I3_SILVER_MK3)){ time= 2; }else
 	if(!UnitIDName.Compare(U_R3_SILVER_MK3)){ time= 2; }else
 	if(!UnitIDName.Compare(U_P3_SILVER_MK3)){ time= 2; }else
@@ -2880,9 +2880,9 @@ function string GetSubordinateUnitID(string IDName,int Race)
 	if(Race==eRaceUCS)
 	{
 	 	if(!Name.Compare("U_CH_AH_10_1")){ return "UCS_TERMIT"; }else	
- 		if(!Name.Compare("UCS_LEADER_SILVER_ONE_1")){ return "U_I_SILVER_ONE_1"; }else
-		if(!Name.Compare("UCS_LEADER_SILVER_PLASMA_1")){ return "U_P_SILVER"; }else
-		if(!Name.Compare("UCS_LEADER_SILVER_RA_1")){ return "U_R_SILVER"; }else
+ 		if(!Name.Compare("UCS_LEADER_SILVER_ONE_1")){ return U_I_SILVER_ONE_1; }else
+		if(!Name.Compare("UCS_LEADER_SILVER_PLASMA_1")){ return U_P_SILVER; }else
+		if(!Name.Compare("UCS_LEADER_SILVER_RA_1")){ return U_R_SILVER; }else
 		if(!Name.Compare("UCS_LEADER_SILVER_MK3")){ return U_I3_SILVER_MK3; }else
 		if(!Name.Compare("UCS_LEADER_SILVER_MK3_RA")){ return U_R3_SILVER_MK3; }else 
 		if(!Name.Compare("UCS_LEADER_SILVER_MK3_PLASMA_GUN")){ return U_P3_SILVER_MK3; }else
@@ -3428,10 +3428,10 @@ function void AddUnitsToCarrier()
 								Console2.Translate("translateLC_THUNDER_TORP"); Console2.Append(AddedToCarrier); P.SetConsole2Text(Console2,90);
 								m_uUnit1[(nP-1)*20+(i-1)*8+n]=P.CreateObject(L_T_THUNDER,nX,nY,2,uUnit.GetDirectionAlpha());P.AddResource(1, -GetUnitPrice(L_T_THUNDER));							
 							}
-							if(!sName.Compare("UCSSF_BS")) if(GetUnitPrice("UCS_HELLWIND_TORP")<P.GetResource(1, 1, 1) && P.GetCurrUnitLimitSize()<P.GetPlayerMaxUnitLimitSize())
+							if(!sName.Compare("UCSSF_BS")) if(GetUnitPrice(U_T_HELLWIND)<P.GetResource(1, 1, 1) && P.GetCurrUnitLimitSize()<P.GetPlayerMaxUnitLimitSize())
 							{
 								Console2.Translate("translateUCS_HELLWIND_TORP"); Console2.Append(AddedToCarrier); P.SetConsole2Text(Console2,90);
-								m_uUnit1[(nP-1)*20+(i-1)*8+n]=P.CreateObject("UCS_HELLWIND_TORP",nX,nY,2,uUnit.GetDirectionAlpha());P.AddResource(1, -GetUnitPrice("UCS_HELLWIND_TORP"));														
+								m_uUnit1[(nP-1)*20+(i-1)*8+n]=P.CreateObject(U_T_HELLWIND,nX,nY,2,uUnit.GetDirectionAlpha());P.AddResource(1, -GetUnitPrice(U_T_HELLWIND));														
 							}
 						}
 						if(n==3 || n==6)
@@ -3639,7 +3639,7 @@ function void FreeAddUnitsToCarrier() //Funkcja  bazuje na AddUnitsToCarrier(), 
 							}
 							if(!sName.Compare("UCSSF_BS"))
 							{
-								m_uUnit1[(nP-1)*20+(i-1)*8+n]=P.CreateObject("UCS_HELLWIND_TORP",nX,nY,nZ,uUnit.GetDirectionAlpha());										
+								m_uUnit1[(nP-1)*20+(i-1)*8+n]=P.CreateObject(U_T_HELLWIND,nX,nY,nZ,uUnit.GetDirectionAlpha());										
 							}
 						}
 					}
@@ -3786,41 +3786,41 @@ function void CheckCarrierUnit(unit uUnit)
 	}	
 	/*if(!UnitIDName.Compare("UCS_TARNSPORTER_I"))
 	{
-		for(i=1;i<7;++i){uUnit.CreateTransportedCrew("U_I_SILVER_ONE_1");}
+		for(i=1;i<7;++i){uUnit.CreateTransportedCrew(U_I_SILVER_ONE_1);}
 	}
 	if(!UnitIDName.Compare("UCS_TARNSPORTER_R"))
 	{
-		for(i=1;i<7;++i){uUnit.CreateTransportedCrew("U_R_SILVER");}
+		for(i=1;i<7;++i){uUnit.CreateTransportedCrew(U_R_SILVER);}
 	}
 	if(!UnitIDName.Compare("UCS_TARNSPORTER_P"))
 	{
-		for(i=1;i<7;++i){uUnit.CreateTransportedCrew("U_P_SILVER");}
+		for(i=1;i<7;++i){uUnit.CreateTransportedCrew(U_P_SILVER);}
 	}
 	//ED
 	if(!UnitIDName.Compare("ED_BTVA_I"))
 	{
-		for(i=1;i<9;++i){uUnit.CreateTransportedCrew("E_TROOPER");}
+		for(i=1;i<9;++i){uUnit.CreateTransportedCrew(E_TROOPER);}
 	}
 	if(!UnitIDName.Compare("ED_BTVA_R"))
 	{
-		for(i=1;i<9;++i){uUnit.CreateTransportedCrew("E_ROCKETER");}
+		for(i=1;i<9;++i){uUnit.CreateTransportedCrew(E_ROCKETER);}
 	}
 	//LC
 	if(!UnitIDName.Compare("LC_FATGIRL_2AAR"))
 	{
-		for(i=1;i<7;++i){uUnit.CreateTransportedCrew("L_R_GUARDIAN");}
+		for(i=1;i<7;++i){uUnit.CreateTransportedCrew(L_R_GUARDIAN);}
 	}
 	if(!UnitIDName.Compare("LC_FATGIRL_2E"))
 	{
-		for(i=1;i<7;++i){uUnit.CreateTransportedCrew("L_E_GUARDIAN");}
+		for(i=1;i<7;++i){uUnit.CreateTransportedCrew(L_E_GUARDIAN);}
 	}
 	if(!UnitIDName.Compare("LC_FATGIRL_2I"))
 	{
-		for(i=1;i<7;++i){uUnit.CreateTransportedCrew("L_GURDIAN_1");}
+		for(i=1;i<7;++i){uUnit.CreateTransportedCrew(L_GURDIAN_1);}
 	}
 	if(!UnitIDName.Compare("LC_FATGIRL_2S"))
 	{
-		for(i=1;i<7;++i){uUnit.CreateTransportedCrew("L_M_CYBER_GUARDIAN");}
+		for(i=1;i<7;++i){uUnit.CreateTransportedCrew(L_M_CYBER_GUARDIAN);}
 	}
 	*/
 	
