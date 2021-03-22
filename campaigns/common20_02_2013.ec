@@ -261,6 +261,8 @@ function void CheckUCSRafinery(unit Building);
 function void CheckCarrierUnit(unit uUnit);
 function void AddToFactoriesArray(unit uFactory);
 function void SetBuildCommands();
+function string AIGetUnitName(int Race,int SquadType,int n);
+function int GetSquadType(int Race, string UnitIDName);
 
 //|
 
@@ -3032,204 +3034,208 @@ function void AddUnitToLeaderArray(unit uUnit)
 }
 function void IncInfantryBuildTimer(int nP,int i)
 {
-				if (m_nInfantryBuildTimer[(nP-1)*200+i]>0)
-				{
-					++ m_nInfantryBuildTimer[(nP-1)*200+i];
-				}	
+	if (m_nInfantryBuildTimer[(nP-1)*200+i]>0)
+	{
+		++ m_nInfantryBuildTimer[(nP-1)*200+i];
+	}	
 }
 function void LeaderContainingObject(int nP,int i)
 {
 	unit uUnit;
 	uUnit=m_uLeader[(nP-1)*200+i];
-				if(uUnit.IsLive() && !uUnit==null){			
-				if(!uUnit.IsStored())
-				{
-					uUnit=uUnit.GetObjectContainingObject();
-					if(uUnit.IsBuilding())
-					{
-						m_uLeader[(nP-1)*200+i]=null;
-						uUnit=null;
-						m_uLeaderContainingObject[(nP-1)*200+i]=null;
-					}
-					else
-					{
-						if(!uUnit.IsTransporter())
-						{
-							m_uLeaderContainingObject[(nP-1)*200+i]=uUnit;
-						}							
-					}
-				}
-				else
+	if(uUnit.IsLive() && !uUnit==null)
+	{			
+		if(!uUnit.IsStored())
+		{
+			uUnit=uUnit.GetObjectContainingObject();
+			if(uUnit.IsBuilding())
+			{
+				m_uLeader[(nP-1)*200+i]=null;
+				uUnit=null;
+				m_uLeaderContainingObject[(nP-1)*200+i]=null;
+			}
+			else
+			{
+				if(!uUnit.IsTransporter())
 				{
 					m_uLeaderContainingObject[(nP-1)*200+i]=uUnit;
-				}}	
+				}							
+			}
+		}
+		else
+		{
+			m_uLeaderContainingObject[(nP-1)*200+i]=uUnit;
+		}
+	}	
 }
 function void Replenish(int nP,int i, int n)
 {
-string UnitIDName,Console2;
-unit uUnit,uUnit2;
-int nX,nY,nZ,nPrice;
-player P;
-				P=GetPlayer(nP);
-						uUnit=m_uLeader[(nP-1)*200+i];
-						nX=uUnit.GetLocationX();
-			 			nY=uUnit.GetLocationY();
-			 			nZ=uUnit.GetLocationZ();
-						if (m_uSubordinate[(nP-1)*200+(i-1)*5+n] == null)
-						if (!m_uContainingObject[(nP-1)*200+(i-1)*5+n] == null) 
-						{
-							if(m_nInfantryBuildTimer[(nP-1)*200+i]==-1)
-							{
-								m_nInfantryBuildTimer[(nP-1)*200+i]=1;
-							}
-							else
-							{
-								uUnit2=m_uContainingObject[(nP-1)*200+(i-1)*5+n];
-								UnitIDName=uUnit2.GetObjectIDName();
-								UnitIDName=GetSubordinateUnitID(UnitIDName,P.GetRace());
-								nPrice=PriceIfGoodTimeAndRace(UnitIDName,P.GetRace(),m_nInfantryBuildTimer[(nP-1)*200+i],uUnit2.IsInfantry());
-								if(nPrice)
-								{
-									if(nPrice<P.GetResource(1, 1, 1) && P.GetCurrUnitLimitSize()<P.GetPlayerMaxUnitLimitSize())
-									{	 
-										m_uContainingObject[(nP-1)*200+(i-1)*5+n]=P.CreateObject(UnitIDName,nX,nY,40,uUnit.GetDirectionAlpha());	 P.AddResource(1, -nPrice);
-										uUnit2=m_uContainingObject[(nP-1)*200+(i-1)*5+n];
-										CreateFxToCreatedUnit(uUnit2,P);
-										Console2="translate";
-										Console2.Append(UnitIDName);
-										Console2.Translate(Console2);
-										Console2.Append(AddedToSquad);
-										P.SetConsole2Text(Console2,90);
-										uUnit2.SetGroupNum(uUnit.GetGroupNum());
-										if(uUnit2.HaveCrew())
-										{
-											m_uSubordinate[(nP-1)*200+(i-1)*5+n]=uUnit2.GetCrew();
-										}
-										else
-										{
-											m_uSubordinate[(nP-1)*200+(i-1)*5+n]=uUnit2;
-										}
-										uUnit2=m_uSubordinate[(nP-1)*200+(i-1)*5+n];
-										uUnit2.CommandMove(nX, nY);					
-										m_nInfantryBuildTimer[(nP-1)*200+i]=-1;
-									}
-								}
-							}
-						}
-						else
-						{
-							if(m_nInfantryBuildTimer[(nP-1)*200+i]==-1)
-							{
-								m_nInfantryBuildTimer[(nP-1)*200+i]=1;
-							}
-							else
-							{
-								
-								uUnit2=m_uSubordinate[(nP-1)*200+(i-1)*5+n];
-								UnitIDName=uUnit.GetObjectIDName();
-								UnitIDName=GetSubordinateUnitID(UnitIDName,P.GetRace());
-								nPrice=PriceIfGoodTimeAndRace(UnitIDName,P.GetRace(),m_nInfantryBuildTimer[(nP-1)*200+i],uUnit.IsInfantry());
-								if(nPrice)
-								{
-									
-										if(nPrice<P.GetResource(1, 1, 1))
-										{
-											m_uContainingObject[(nP-1)*200+(i-1)*5+n]=m_uSubordinate[(nP-1)*200+(i-1)*5+n]=P.CreateObject(UnitIDName,nX,nY,40,uUnit.GetDirectionAlpha());
-											uUnit2=m_uSubordinate[(nP-1)*200+(i-1)*5+n];
-											CreateFxToCreatedUnit(uUnit2,P);
-											uUnit2.SetGroupNum(uUnit.GetGroupNum());	
-										 	P.AddResource(1,  -GetUnitPrice(UnitIDName));
-										}
-										uUnit2=m_uSubordinate[(nP-1)*200+(i-1)*5+n];
-										uUnit2.CommandMove(nX+Rand(300)-15, nY+Rand(300)-150);					
-										m_nInfantryBuildTimer[(nP-1)*200+i]=-1;
-								}
-							}
-						}
+	string UnitIDName,Console2;
+	unit uUnit,uUnit2;
+	int nX,nY,nZ,nPrice;
+	player P;
+	P=GetPlayer(nP);
+	uUnit=m_uLeader[(nP-1)*200+i];
+	nX=uUnit.GetLocationX();
+	nY=uUnit.GetLocationY();
+	nZ=uUnit.GetLocationZ();
+	if (m_uSubordinate[(nP-1)*200+(i-1)*5+n] == null)
+	if (!m_uContainingObject[(nP-1)*200+(i-1)*5+n] == null) 
+	{
+		if(m_nInfantryBuildTimer[(nP-1)*200+i]==-1)
+		{
+			m_nInfantryBuildTimer[(nP-1)*200+i]=1;
+		}
+		else
+		{
+			uUnit2=m_uContainingObject[(nP-1)*200+(i-1)*5+n];
+			UnitIDName=uUnit2.GetObjectIDName();
+			UnitIDName=GetSubordinateUnitID(UnitIDName,P.GetRace());
+			nPrice=PriceIfGoodTimeAndRace(UnitIDName,P.GetRace(),m_nInfantryBuildTimer[(nP-1)*200+i],uUnit2.IsInfantry());
+			if(nPrice)
+			{
+				if(nPrice<P.GetResource(1, 1, 1) && P.GetCurrUnitLimitSize()<P.GetPlayerMaxUnitLimitSize())
+				{	 
+					m_uContainingObject[(nP-1)*200+(i-1)*5+n]=P.CreateObject(UnitIDName,nX,nY,40,uUnit.GetDirectionAlpha());	 P.AddResource(1, -nPrice);
+					uUnit2=m_uContainingObject[(nP-1)*200+(i-1)*5+n];
+					CreateFxToCreatedUnit(uUnit2,P);
+					Console2="translate";
+					Console2.Append(UnitIDName);
+					Console2.Translate(Console2);
+					Console2.Append(AddedToSquad);
+					P.SetConsole2Text(Console2,90);
+					uUnit2.SetGroupNum(uUnit.GetGroupNum());
+					if(uUnit2.HaveCrew())
+					{
+						m_uSubordinate[(nP-1)*200+(i-1)*5+n]=uUnit2.GetCrew();
+					}
+					else
+					{
+						m_uSubordinate[(nP-1)*200+(i-1)*5+n]=uUnit2;
+					}
+					uUnit2=m_uSubordinate[(nP-1)*200+(i-1)*5+n];
+					uUnit2.CommandMove(nX, nY);					
+					m_nInfantryBuildTimer[(nP-1)*200+i]=-1;
+				}
+			}
+		}
+	}
+	else
+	{
+		if(m_nInfantryBuildTimer[(nP-1)*200+i]==-1)
+		{
+			m_nInfantryBuildTimer[(nP-1)*200+i]=1;
+		}
+		else
+		{
+			
+			uUnit2=m_uSubordinate[(nP-1)*200+(i-1)*5+n];
+			UnitIDName=uUnit.GetObjectIDName();
+			UnitIDName=GetSubordinateUnitID(UnitIDName,P.GetRace());
+			nPrice=PriceIfGoodTimeAndRace(UnitIDName,P.GetRace(),m_nInfantryBuildTimer[(nP-1)*200+i],uUnit.IsInfantry());
+			if(nPrice)
+			{
+				
+					if(nPrice<P.GetResource(1, 1, 1))
+					{
+						m_uContainingObject[(nP-1)*200+(i-1)*5+n]=m_uSubordinate[(nP-1)*200+(i-1)*5+n]=P.CreateObject(UnitIDName,nX,nY,40,uUnit.GetDirectionAlpha());
+						uUnit2=m_uSubordinate[(nP-1)*200+(i-1)*5+n];
+						CreateFxToCreatedUnit(uUnit2,P);
+						uUnit2.SetGroupNum(uUnit.GetGroupNum());	
+						P.AddResource(1,  -GetUnitPrice(UnitIDName));
+					}
+					uUnit2=m_uSubordinate[(nP-1)*200+(i-1)*5+n];
+					uUnit2.CommandMove(nX+Rand(300)-15, nY+Rand(300)-150);					
+					m_nInfantryBuildTimer[(nP-1)*200+i]=-1;
+			}
+		}
+	}
 }
 function void ContainigObjectToArray(int nP,int i,int n)
 {
-unit uUnit2;	
-					uUnit2=m_uSubordinate[(nP-1)*200+(i-1)*5+n];
-						if(uUnit2.IsLive() && !uUnit2==null){
-						if(!uUnit2.IsStored())
-						{
-							uUnit2=uUnit2.GetObjectContainingObject();
+	unit uUnit2;	
+	uUnit2=m_uSubordinate[(nP-1)*200+(i-1)*5+n];
+	if(uUnit2.IsLive() && !uUnit2==null)
+	{
+		if(!uUnit2.IsStored())
+		{
+			uUnit2=uUnit2.GetObjectContainingObject();
 
-							if(uUnit2.IsBuilding())
-							{
-								m_uSubordinate[(nP-1)*200+(i-1)*5+n]=null;
-								m_uContainingObject[(nP-1)*200+(i-1)*5+n]=null;
-								uUnit2=null;
-							}
-							else
-							{
-								if (!uUnit2.IsTransporter())
-								{
-									m_uContainingObject[(nP-1)*200+(i-1)*5+n]=uUnit2;
-								}							
-							}
-						}
-						else
-						{
-							m_uContainingObject[(nP-1)*200+(i-1)*5+n]=uUnit2;
-						}}
+			if(uUnit2.IsBuilding())
+			{
+				m_uSubordinate[(nP-1)*200+(i-1)*5+n]=null;
+				m_uContainingObject[(nP-1)*200+(i-1)*5+n]=null;
+				uUnit2=null;
+			}
+			else
+			{
+				if (!uUnit2.IsTransporter())
+				{
+					m_uContainingObject[(nP-1)*200+(i-1)*5+n]=uUnit2;
+				}							
+			}
+		}
+		else
+		{
+			m_uContainingObject[(nP-1)*200+(i-1)*5+n]=uUnit2;
+		}
+	}
 
 }
 function void ChangeDeadLeader(int nP,int i)
 {
 	unit uUnit,uUnit2;
 	int n;
-			uUnit=m_uLeader[(nP-1)*200+i];
-				if(!uUnit.IsLive())
-				{
-					for (n=1;n<=5;++n)
-					{
-						uUnit2=m_uSubordinate[(nP-1)*200+(i-1)*5+n];
-						if(uUnit2.IsLive())
-						{
-							m_uSubordinate[(nP-1)*200+(i-1)*5+n]=null;
-							m_uLeader[(nP-1)*200+i]=uUnit2;
-							uUnit=uUnit2;
-							uUnit2=m_uContainingObject[(nP-1)*200+(i-1)*5+n];
-							m_uContainingObject[(nP-1)*200+(i-1)*5+n]=m_uLeaderContainingObject[(nP-1)*200+i];
-							m_uLeaderContainingObject[(nP-1)*200+i]=uUnit2;
-							
-							break;
-						}
-					}
-				}
+	uUnit=m_uLeader[(nP-1)*200+i];
+	if(!uUnit.IsLive())
+	{
+		for (n=1;n<=5;++n)
+		{
+			uUnit2=m_uSubordinate[(nP-1)*200+(i-1)*5+n];
+			if(uUnit2.IsLive())
+			{
+				m_uSubordinate[(nP-1)*200+(i-1)*5+n]=null;
+				m_uLeader[(nP-1)*200+i]=uUnit2;
+				uUnit=uUnit2;
+				uUnit2=m_uContainingObject[(nP-1)*200+(i-1)*5+n];
+				m_uContainingObject[(nP-1)*200+(i-1)*5+n]=m_uLeaderContainingObject[(nP-1)*200+i];
+				m_uLeaderContainingObject[(nP-1)*200+i]=uUnit2;
+				
+				break;
+			}
+		}
+	}
 }
 function void MoveSubordinateToLeader(int nP,int i,int n)
 {
 	unit uUnit,uUnit2;
 	int nX,nY,nZ;
-						uUnit=m_uLeader[(nP-1)*200+i];
-						nX=uUnit.GetLocationX();
-			 			nY=uUnit.GetLocationY();
-			 			nZ=uUnit.GetLocationZ();
-						uUnit2=m_uSubordinate[(nP-1)*200+(i-1)*5+n];
-						if(!uUnit2.IsMoving() && (uUnit.DistanceToClosestGrid(uUnit2)>(400+1000*!uUnit2.IsStored()) || uUnit.DistanceToClosestGrid(uUnit2)<40) && uUnit.IsLive() && !uUnit.IsSelected() && !uUnit2.IsSelected())
-						{
-							if (!uUnit2.IsStored())
-							{
-								uUnit=uUnit2.GetObjectContainingObject();
-								if (!uUnit.IsTransporter())
-								{
-									uUnit2=uUnit;
-									uUnit=m_uLeader[(nP-1)*200+i];
-									if(!IsHarvesterID(uUnit2.GetObjectIDName()) && !uUnit2.IsSelected())
-									{
-										uUnit2.CommandMoveXYZA(nX+Rand(300)-150, nY+Rand(300)-150, 2, uUnit.GetDirectionAlpha());
-									}
-								}
-							}
-							else
-							{
-								uUnit=m_uLeader[(nP-1)*200+i];
-								uUnit2.CommandMoveXYZA(nX+Rand(160)-80, nY+Rand(160)-80, 2, uUnit.GetDirectionAlpha());
-							}
-						}
+	uUnit=m_uLeader[(nP-1)*200+i];
+	nX=uUnit.GetLocationX();
+	nY=uUnit.GetLocationY();
+	nZ=uUnit.GetLocationZ();
+	uUnit2=m_uSubordinate[(nP-1)*200+(i-1)*5+n];
+	if(!uUnit2.IsMoving() && (uUnit.DistanceToClosestGrid(uUnit2)>(400+1000*!uUnit2.IsStored()) || uUnit.DistanceToClosestGrid(uUnit2)<40) && uUnit.IsLive() && !uUnit.IsSelected() && !uUnit2.IsSelected())
+	{
+		if (!uUnit2.IsStored())
+		{
+			uUnit=uUnit2.GetObjectContainingObject();
+			if (!uUnit.IsTransporter())
+			{
+				uUnit2=uUnit;
+				uUnit=m_uLeader[(nP-1)*200+i];
+				if(!IsHarvesterID(uUnit2.GetObjectIDName()) && !uUnit2.IsSelected())
+				{
+					uUnit2.CommandMoveXYZA(nX+Rand(300)-150, nY+Rand(300)-150, 2, uUnit.GetDirectionAlpha());
+				}
+			}
+		}
+		else
+		{
+			uUnit=m_uLeader[(nP-1)*200+i];
+			uUnit2.CommandMoveXYZA(nX+Rand(160)-80, nY+Rand(160)-80, 2, uUnit.GetDirectionAlpha());
+		}
+	}
 }
 function void SetSquadSelection(int nP,int i,int n)
 {
@@ -3884,6 +3890,9 @@ function void SetBuildCommands()
 				nPrice=PriceIfGoodTimeAndRace(sName,P.GetRace(),nFactoryTime[(nP)*20+i],0);
 				if(nPrice)
 				{
+					//decrease player budget
+					//create unit with sName on factory location
+					//check if sqad is full then call it to move to waiting loaction
 				}
 				//P.SetCommandBuildBuilding("ED_MOBILE_RAFINERY", nX+3, nY+3,0,uFactory);
 			}		
@@ -4037,4 +4046,76 @@ function string AIGetUnitName(int Race,int SquadType,int n)
 			if(n==5) return L_T_THUNDER;		
 		}
 	}	
+}
+function int GetSquadType(int Race, string UnitIDName)
+{
+	if(Race==eRaceED)
+	{
+		if(!UnitIDName.Compare(E_R_BTTI) || !UnitIDName.Compare(E_AAR_BTTV))
+		{
+			return eLandAASquad;
+		}
+		if(!UnitIDName.Compare(E_I_BTTI_I) || !UnitIDName.Compare(E_C_PAMIR) || !UnitIDName.Compare(E_C_KAUKAZ))
+		{
+			return eTankSquad;
+		}
+		if(!UnitIDName.Compare(E_R_PAMIR) || !UnitIDName.Compare(E_BR_MBA) || !UnitIDName.Compare(E_NR_MBA))
+		{
+			return eArtSquad;
+		}
+		if(!UnitIDName.Compare(E_R_INTERCEPTOR))
+		{
+			return eAirAASquad;
+		}
+		if(!UnitIDName.Compare(E_HR_INTERCEPTOR) || !UnitIDName.Compare(E_CB_BOMBER) || !UnitIDName.Compare(E_HB_BOMBER) || !UnitIDName.Compare(E_T_BOMBER))
+		{
+			return eBomberSquad;
+		}
+	}
+	if(Race==eRaceUCS)
+	{
+		if(!UnitIDName.Compare(U_R_SPIDER) || !UnitIDName.Compare(U_R_TIGER) || !UnitIDName.Compare(U_R_JAGUAR))
+		{
+			return eLandAASquad;
+		}
+		if(!UnitIDName.Compare(U_P_RAPTOR) || !UnitIDName.Compare(U_P_TIGER) || !UnitIDName.Compare(U_P_PANTHER))
+		{
+			return eTankSquad;
+		}
+		if(!UnitIDName.Compare(U_G_TIGER) || !UnitIDName.Compare(U_G_PANTHER) || !UnitIDName.Compare(U_G_TARANTULA))
+		{
+			return eArtSquad;
+		}
+		if(!UnitIDName.Compare(U_R_HAWK))
+		{
+			return eAirAASquad;
+		}
+		if(!UnitIDName.Compare(U_P_BAT) || !UnitIDName.Compare(U_P_HELLWIND))
+		{
+			return eBomberSquad;
+		}
+	}
+	if(Race==eRaceLC)
+	{
+		if(!UnitIDName.Compare(L_R_MOON) || !UnitIDName.Compare(L_R_CRATER) || !UnitIDName.Compare(L_R_CRUSCHER))
+		{
+			return eLandAASquad;
+		}
+		if(!UnitIDName.Compare(L_I_MOON) || !UnitIDName.Compare(L_G_FANG) || !UnitIDName.Compare(L_G_CRATER) || !UnitIDName.Compare(L_G_CRUSCHER))
+		{
+			return eTankSquad;
+		}
+		if(!UnitIDName.Compare(L_A_FANG) || !UnitIDName.Compare(L_A_CRION))
+		{
+			return eArtSquad;
+		}
+		if(!UnitIDName.Compare(L_R_SFIGHTER))
+		{
+			return eAirAASquad;
+		}
+		if(!UnitIDName.Compare(L_R_THUNDER) || !UnitIDName.Compare(L_B_THUNDER) || !UnitIDName.Compare(L_T_THUNDER))
+		{
+			return eBomberSquad;
+		}
+	}
 }
