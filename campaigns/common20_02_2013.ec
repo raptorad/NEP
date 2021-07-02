@@ -95,20 +95,19 @@ consts
 	eNeutral = 1;
 	InfantrySquad=10;
     eSaveBestInfantyBufferNum = 1108;
-	eLandAASquad=0;
-	eTankSquad=1;
-	eArtSquad=2;
-	eAirAASquad=3;
-	eBomberSquad=4;
+	eLandAASquad = 0;
+	eTankSquad = 1;
+	eArtSquad = 2;
+	eAirAASquad = 3;
+	eBomberSquad = 4;
+	eSquadTypesNum = 5;
 }
-
 #define MAX_PLAYERS 8
 	int m_nC[];//number of player's Carriers
 	unit m_uCarrier[];
 	int m_nL[];
 	int m_nSquadType[];
 	unit m_uLeader[]; 
-
 	int m_nBuildTimer[];
 	int m_nMovingPoints[];
 	unit m_uSubordinate[];
@@ -4055,6 +4054,22 @@ function string AIGetUnitName(int Race,int SquadType,int n)
 			if(n==5) return L_T_THUNDER;		
 		}
 	}	
+}
+function UnitKilledUpdateStatisitcis(unit uKilled, unit uDamageCauser)
+{
+	pPlayer P;
+	int nP;
+	int LostUnitType;
+	int DamagerUnitType;
+	//funkcja do aktualizacji statystyk
+	//trzeba wyciągnąć ai_playera i zauktualizować mu statystyki z jakich squadów ponosi straty i jakimi zadaje straty
+	//
+	P=GetPlayer(uKilled.GetIFFNum());
+	nP=P.GetIFFNum();
+	LostUnitType =GetSquadType(uKilled.GetName());
+	++m_nPlayerLosts[nP*8*eSquadTypesNum+LostUnitType];
+	DamagerUnitType = GetSquadType(uDamageCauser.GetName());
+	++m_nPlayerEnemyDamageCausers[nP*8*eSquadTypesNum+DamagerUnitType];
 }
 function int GetSquadType(int Race, string UnitIDName)
 {
