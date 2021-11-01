@@ -2,7 +2,7 @@
 //#define DEBUG
 
 #include "trace.ech"
-
+#include "squadStats.ech"
 #include "consts.ech"
 
 #define MISSION_GOAL_PREFIX     MISSION_NAME "_Goal_"
@@ -84,7 +84,6 @@
 #define G2AMID(nG) ((nG << 8) + 0x80)
 
 
-
 consts
 {
 	eRaceUCS = 1;
@@ -94,20 +93,30 @@ consts
 	eRaceObserver = 5;
 	eEnemy = 0;
 	eNeutral = 1;
-	InfantrySquad=10;
     eSaveBestInfantyBufferNum = 1108;
 }
+#define MAX_PLAYERS 8
 	int m_nC[];//number of player's Carriers
 	unit m_uCarrier[];
 	int m_nL[];
+	int m_nSquadType[];
 	unit m_uLeader[]; 
-	int m_BuildNumber[];// number of curentyly produced unit in array
 	int m_nBuildTimer[];
+	int m_nMovingPoints[];
 	unit m_uSubordinate[];
 	unit m_uLeaderContainingObject[];
 	unit m_uContainingObject[];
 	unit m_uUnit1[];  
 	int m_nInfantryBuildTimer[];
+	string AddedToSquad;
+	string m_sUnitsToSquad[];
+	unit uFactories[];
+	int  nFactoryTime[]
+	int m_nSquadUnderProduction[];
+
+	int m_nF[];
+	int m_nSquadType[];
+	int m_nAIUnitIndex[];
 
 
 //|
@@ -208,6 +217,7 @@ function int CountUnitInArray(unit auUnits[], unit uUnit);
 
 function void ClearLimitedGameRect();
 
+function void CreateFxToCreatedUnit(unit uUnit,player P);
 function void CreatePlayerObjectsAtMarker(unit auObject[], player pPlayer, string strObject, int nObjects, int nMarker);
 function void CreatePlayerObjectsAtMarker(player pPlayer, string strObject, int nObjects, int nMarker, int nAlpha);
 function void CreatePlayerObjectsAtMarker(player pPlayer, string strObject, int nObjects, int nMarker);
@@ -217,6 +227,31 @@ function void SetExperienceLevel(unit auUnit[], int nExpLvl);
 function void CreateAndAttackFromMarkerToMarker(player pPlayer, string strObject, int nNum, int nMarker1, int nMarker2);
 
 function void MissionDefeat();
+function void addAllResearchUCS(player p);
+function void addAllResearchED(player p);
+function void addAllResearchLC(player p);
+function void addAllResearchAlien(player p);
+
+function void AddSquad(unit uUnit1, unit uUnit2, unit uUnit3, unit uUnit4, unit uUnit5, unit uUnit6);
+function void AddUnitToLeaderArray(unit uUnit);
+function void IncInfantryBuildTimer(int nP,int i);
+function void LeaderContainingObject(int nP,int i);
+function void Replenish(int nP,int i, int n);
+function void ContainigObjectToArray(int nP,int i,int n);
+function void ChangeDeadLeader(int nP,int i);
+function void MoveSubordinateToLeader(int nP,int i,int n);
+function void SetSquadSelection(int nP,int i,int n);
+function void AddUnitsToLeader();
+function void AddUnitToCarrierArray(unit uUnit);
+function void AddUnitsToCarrier();
+function void FreeAddUnitsToCarrier() ;
+function void CreateSquadFromGroup10();
+function void SquadsWork();
+function void InitCarriers();
+function void CheckUCSRafinery(unit Building);
+function void CheckCarrierUnit(unit uUnit);
+function void AddToFactoriesArray(unit uFactory);
+function void SetBuildCommands();
 
 //|
 
@@ -2261,287 +2296,21 @@ function void addAllResearchLC(player p) {
 function void addAllResearchAlien(player p) {
 }
 
-function int GetUnitPrice(string Name)
+
+function void CreateFxToCreatedUnit(unit uUnit,player P)
 {
-	string UnitIDName; int price;
-	price=0;
-	UnitIDName=Name;
-	if(!UnitIDName.Compare("UCS_SILVER_ONE_1")){ price=50; }else
-	if(!UnitIDName.Compare("UCS_SILVER_PLASMA_1")){ price= 200; }else
-	if(!UnitIDName.Compare("UCS_SILVER_RA_1")){ price= 100; }else
-	if(!UnitIDName.Compare("UCS_SILVER_EXP_1")){ price= 200; }else
-	if(!UnitIDName.Compare("UCS_SILVER_MK3")){ price= 200; }else
-	if(!UnitIDName.Compare("UCS_SILVER_MK3_RA")){ price= 200; }else
-	if(!UnitIDName.Compare("UCS_SILVER_MK3_PLASMA_GUN")){ price= 200; }else
-	if(!UnitIDName.Compare("UCS_ATACK_DRONE")){ price= 200; }else
-	if(!UnitIDName.Compare("UCS_ATACK_DRONE_PLASMA_GUN")){ price= 200; }else
-
-	if(!UnitIDName.Compare("ED_TROOPER")){ price= 50; }else
-	if(!UnitIDName.Compare("ED_ROCKETER")){ price= 100;}else
-	if(!UnitIDName.Compare("ED_SNIPER")){ price= 200; }else
-	if(!UnitIDName.Compare("ED_JON_TROOPER")){ price= 200; }else
-	if(!UnitIDName.Compare("ED_HEAVYTROOPER")){ price= 200; }else
-	if(!UnitIDName.Compare("ED_LASER_HEAVYTROOPER")){ price= 200; }else
-	if(!UnitIDName.Compare("ED_PPANC_HEAVYTROOPER")){ price =200; }else
-	if(!UnitIDName.Compare("ED_DUBNA_MGUN")){ price= 200; }else
-	if(!UnitIDName.Compare("ED_ED_DUBNA_RA")){ price=  200; }else
-	if(!UnitIDName.Compare("ED_DUBNA_RA")){ price=  200; }else
-
-	if(!UnitIDName.Compare("LC_GURDIAN_1")){ price=  50; }else
-	if(!UnitIDName.Compare("LC_GUARDIAN_RA_1")){ price=  100; }else
-	if(!UnitIDName.Compare("LC_SCHOCK_GUARDIAN_1")){ price=  200; }else
-	if(!UnitIDName.Compare("LC_CYBER_GUARDIAN")){ price=  200; }else
-	if(!UnitIDName.Compare("LC_CYBER_GUARDIAN_MAGNETIC")){ price=  200; }else
-	if(!UnitIDName.Compare("LC_CYBER_GUARDIAN_ELECTRIC")){ price=  200; }else
-
-	if(!UnitIDName.Compare("UCS_GARGOIL_R")){ price=  550; }else
-	if(!UnitIDName.Compare("UCS_GARGOIL_P")){ price=  650; }else
-	if(!UnitIDName.Compare("UCS_RAPTOR_R")){ price=  350; }else
-	if(!UnitIDName.Compare("UCS_RAPTOR_P")){ price=  450; }else
-	if(!UnitIDName.Compare("UCS_SPIDER_P")){ price=  800; }else
-	if(!UnitIDName.Compare("UCS_SPIDER_AAP")){ price=  800; }else
-	if(!UnitIDName.Compare("UCS_SPIDER_AAR")){ price=  500; }else
-	if(!UnitIDName.Compare("UCS_SPIDER_SDI_C")){ price=  500; }else
-	if(!UnitIDName.Compare("UCS_TIGER_R")){ price=  650; }else
-	if(!UnitIDName.Compare("UCS_TIGER_G")){ price=  650; }else
-	if(!UnitIDName.Compare("UCS_TIGER_P")){ price=  750; }else
-	if(!UnitIDName.Compare("UCS_PANTHER_R")){ price=  1300; }else
-	if(!UnitIDName.Compare("UCS_PANTHER_G")){ price=  1400; }else
-	if(!UnitIDName.Compare("UCS_PANTHER_P")){ price=  1700; }else
-	if(!UnitIDName.Compare("UCS_BAT_R")){ price=  1100; }else
-	if(!UnitIDName.Compare("UCS_BAT_P")){ price=  1300; }else
-	if(!UnitIDName.Compare("UCS_HAWK_AAR")){ price=  1400; }else
-	if(!UnitIDName.Compare("UCS_HAWK_AAP")){ price=  1500; }else
-	if(!UnitIDName.Compare("UCS_HELLWIND_NB")){ price=  2200; }else
-	if(!UnitIDName.Compare("UCS_HELLWIND_PB")){ price=  2900; }else
-	if(!UnitIDName.Compare("UCS_JAGUAR_R")){ price=  1900; }else
-	if(!UnitIDName.Compare("UCS_JAGUAR_P")){ price=  2500; }else
-	if(!UnitIDName.Compare("UCS_TARANTULA_R")){ price=  1800; }else
-	if(!UnitIDName.Compare("UCS_TARANTULA_P")){ price=  2300; }else
-	if(!UnitIDName.Compare("UCS_TARANTULA_PG")){ price=  2500; }else
-	if(!UnitIDName.Compare("UCS_SHADOW")){ price=  2000; } else
-	
-	if(!UnitIDName.Compare("ED_STORM_R")){ price=  400; }else
-	if(!UnitIDName.Compare("ED_STORM_I")){ price=  350; }else
-	if(!UnitIDName.Compare("ED_BTTI_R")){ price=  200; }else
-	if(!UnitIDName.Compare("ED_BTTI_I")){ price=  150; }else
-	if(!UnitIDName.Compare("ED_BTTV_AAR")){ price=  450; }else
-	if(!UnitIDName.Compare("ED_BTTV_HRA")){ price=  450; }else
-	if(!UnitIDName.Compare("ED_BTTV_4XL")){ price=  650; }else
-	if(!UnitIDName.Compare("ED_PAMIR_RA")){ price=  800; }else
-	if(!UnitIDName.Compare("ED_PAMIR_PC")){ price=  650; }else
-	if(!UnitIDName.Compare("ED_PAMIR_J")){ price=  1100; }else
-	if(!UnitIDName.Compare("ED_PAMIR_L")){ price=  1000; }else
-	if(!UnitIDName.Compare("KAUKAZ_2XPC")){ price=  1050; }else
-	if(!UnitIDName.Compare("KAUKAZ_2XL")){ price=  1400; }else
-	if(!UnitIDName.Compare("KAUKAZ_J")){ price=  1450; }else
-	if(!UnitIDName.Compare("ED_HT30_4XL")){ price=  2400; }else
-	if(!UnitIDName.Compare("ED_HT30_2XHRA")){ price=  1700; }else
-	if(!UnitIDName.Compare("ED_HT30_2XJ")){ price=  2600; }else
-	if(!UnitIDName.Compare("ED_INTERCEPTOR_AAR")){ price=  950; }else
-	if(!UnitIDName.Compare("ED_INTERCEPTOR_HRA")){ price=  1100; }else
-	if(!UnitIDName.Compare("ED_BOMBER_CBOMB")){ price=  2050; }else
-	if(!UnitIDName.Compare("ED_BOMBER_HBOMB")){ price=  3050; }else
-	if(!UnitIDName.Compare("ED_BOMBER_TORP")){ price=  1000; }else
-	if(!UnitIDName.Compare("ED_MBA_BRA")){ price=  1800; }else
-	if(!UnitIDName.Compare("ED_MBA_NBRA")){ price=  2000; }else
-	if(!UnitIDName.Compare("ED_PROTECTOR_SDI")){ price=  350; }else
-	if(!UnitIDName.Compare("ED_AFCC")){ price=  1000; }
-	
-	if(!UnitIDName.Compare("LC_METEOR_R")){ price=  400; }else
-	if(!UnitIDName.Compare("LC_METEOR_AAR")){ price=  400; }else
-	if(!UnitIDName.Compare("LC_METEOR_E")){ price=  500; }else
-	if(!UnitIDName.Compare("LC_MOON_I")){ price=  250; }else
-	if(!UnitIDName.Compare("LC_MOON_R")){ price=  300; }else
-	if(!UnitIDName.Compare("LC_MOON_AAR")){ price=  300; }else
-	if(!UnitIDName.Compare("LC_MOON_E")){ price=  400; }else
-	if(!UnitIDName.Compare("LC_FANG_MG")){ price=  500; }else
-	if(!UnitIDName.Compare("LC_FANG_E")){ price=  700; }else
-	if(!UnitIDName.Compare("LC_FANG_ART.")){ price=  800; }else
-	if(!UnitIDName.Compare("LC_THUNDER_HRA")){ price=  1400; }else
-	if(!UnitIDName.Compare("LC_THUNDER_TORP")){ price=  2200; }else
-	if(!UnitIDName.Compare("LC_THUNDER_BOMB")){ price=  2000; }else
-	if(!UnitIDName.Compare("LC_THUNDER_E")){ price=  1800; }else
-	if(!UnitIDName.Compare("LC_CRATER_MG")){ price=  900; }else
-	if(!UnitIDName.Compare("LC_CRATER_E")){ price=  1200; }else
-	if(!UnitIDName.Compare("LC_CRATER_RA")){ price=  700; }else
-	if(!UnitIDName.Compare("LC_CRUSCHER_2XHRA")){ price=  1600; }else
-	if(!UnitIDName.Compare("LC_CRUSCHER_2XE")){ price=  2600; }else
-	if(!UnitIDName.Compare("LC_CRUSCHER_2XS")){ price=  2400; }else
-	if(!UnitIDName.Compare("LC_CRUSCHER_2XMG_2XR")){ price=  2000; }else
-	if(!UnitIDName.Compare("LC_SFIGHTER_2XE")){ price=  1250; }else
-	if(!UnitIDName.Compare("LC_SFIGHTER_2XAAR")){ price=  1050; }else
-	if(!UnitIDName.Compare("LC_SFIGHTER_2XR")){ price=  1050; }else
-	if(!UnitIDName.Compare("LC_CRION_ART.")){ price=  2200; }else
-	if(!UnitIDName.Compare("LC_CRION_HPLASMA")){ price=  2200; }	
-	if(!UnitIDName.Compare("LC_FOBOS")){ price=  1000; }
-
-	return price;
-
-}
-function int GetUnitProductionTime(string Name)
-{
-	string UnitIDName; int time;
-	time=0;
-	UnitIDName=Name;
-	if(!UnitIDName.Compare("UCS_SILVER_ONE_1")){ time=2; }else
-	if(!UnitIDName.Compare("UCS_SILVER_PLASMA_1")){ time= 2; }else
-	if(!UnitIDName.Compare("UCS_SILVER_RA_1")){ time= 2; }else
-	if(!UnitIDName.Compare("UCS_SILVER_EXP_1")){ time= 2; }else
-	if(!UnitIDName.Compare("UCS_SILVER_MK3")){ time= 2; }else
-	if(!UnitIDName.Compare("UCS_SILVER_MK3_RA")){ time= 2; }else
-	if(!UnitIDName.Compare("UCS_SILVER_MK3_PLASMA_GUN")){ time= 2; }else
-	if(!UnitIDName.Compare("UCS_ATACK_DRONE")){ time= 2; }else
-	if(!UnitIDName.Compare("UCS_ATACK_DRONE_PLASMA_GUN")){ time= 2; }else
-
-	if(!UnitIDName.Compare("ED_TROOPER")){ time= 2; }else
-	if(!UnitIDName.Compare("ED_ROCKETER")){ time= 2;}else
-	if(!UnitIDName.Compare("ED_SNIPER")){ time= 2; }else
-	if(!UnitIDName.Compare("ED_JON_TROOPER")){ time= 2; }else
-	if(!UnitIDName.Compare("ED_HEAVYTROOPER")){ time= 2; }else
-	if(!UnitIDName.Compare("ED_LASER_HEAVYTROOPER")){ time= 2; }else
-	if(!UnitIDName.Compare("ED_PPANC_HEAVYTROOPER")){ time =2; }else
-	if(!UnitIDName.Compare("ED_DUBNA_MGUN")){ time= 2; }else
-	if(!UnitIDName.Compare("ED_ED_DUBNA_RA")){ time=  2; }else
-	if(!UnitIDName.Compare("ED_DUBNA_RA")){ time=  2; }else
-
-	if(!UnitIDName.Compare("LC_GURDIAN_1")){ time=  2; }else
-	if(!UnitIDName.Compare("LC_GUARDIAN_RA_1")){ time=  2; }else
-	if(!UnitIDName.Compare("LC_SCHOCK_GUARDIAN_1")){ time=  2; }else
-	if(!UnitIDName.Compare("LC_CYBER_GUARDIAN")){ time=  200; }else
-	if(!UnitIDName.Compare("LC_CYBER_GUARDIAN_MAGNETIC")){ time=  2; }else
-	if(!UnitIDName.Compare("LC_CYBER_GUARDIAN_ELECTRIC")){ time=  2; }else
-
-	if(!UnitIDName.Compare("UCS_GARGOIL_R")){ time=  7; }else
-	if(!UnitIDName.Compare("UCS_GARGOIL_P")){ time=  8; }else
-	if(!UnitIDName.Compare("UCS_RAPTOR_R")){ time=  4; }else
-	if(!UnitIDName.Compare("UCS_RAPTOR_P")){ time=  5; }else
-	if(!UnitIDName.Compare("UCS_SPIDER_P")){ time=  5; }else
-	if(!UnitIDName.Compare("UCS_SPIDER_AAP")){ time=  5; }else
-	if(!UnitIDName.Compare("UCS_SPIDER_AAR")){ time=  4; }else
-	if(!UnitIDName.Compare("UCS_SPIDER_SDI_C")){ time=  5; }else
-	if(!UnitIDName.Compare("UCS_TIGER_R")){ time=  7; }else
-	if(!UnitIDName.Compare("UCS_TIGER_G")){ time=  7; }else
-	if(!UnitIDName.Compare("UCS_TIGER_P")){ time=  9; }else
-	if(!UnitIDName.Compare("UCS_PANTHER_R")){ time=  9; }else
-	if(!UnitIDName.Compare("UCS_PANTHER_G")){ time=  10; }else
-	if(!UnitIDName.Compare("UCS_PANTHER_P")){ time=  11; }else
-	if(!UnitIDName.Compare("UCS_BAT_R")){ time=  9; }else
-	if(!UnitIDName.Compare("UCS_BAT_P")){ time=  10; }else
-	if(!UnitIDName.Compare("UCS_HAWK_AAR")){ time=  9; }else
-	if(!UnitIDName.Compare("UCS_HAWK_AAP")){ time=  11; }else
-	if(!UnitIDName.Compare("UCS_HELLWIND_NB")){ time=  18; }else
-	if(!UnitIDName.Compare("UCS_HELLWIND_PB")){ time=  21; }else
-	if(!UnitIDName.Compare("UCS_JAGUAR_R")){ time=  12; }else
-	if(!UnitIDName.Compare("UCS_JAGUAR_P")){ time=  15; }else
-	if(!UnitIDName.Compare("UCS_TARANTULA_R")){ time=  10; }else
-	if(!UnitIDName.Compare("UCS_TARANTULA_P")){ time=  12; }else
-	if(!UnitIDName.Compare("UCS_TARANTULA_PG")){ time=  14; }else
-	if(!UnitIDName.Compare("UCS_SHADOW")){ time=  5; } else
-	
-	if(!UnitIDName.Compare("ED_STORM_R")){ time=  7; }else
-	if(!UnitIDName.Compare("ED_STORM_I")){ time=  6; }else
-	if(!UnitIDName.Compare("ED_BTTI_R")){ time=  3; }else
-	if(!UnitIDName.Compare("ED_BTTI_I")){ time=  3; }else
-	if(!UnitIDName.Compare("ED_BTTV_AAR")){ time=  5; }else
-	if(!UnitIDName.Compare("ED_BTTV_HRA")){ time=  5; }else
-	if(!UnitIDName.Compare("ED_BTTV_4XL")){ time=  5; }else
-	if(!UnitIDName.Compare("ED_PAMIR_RA")){ time=  7; }else
-	if(!UnitIDName.Compare("ED_PAMIR_PC")){ time=  7; }else
-	if(!UnitIDName.Compare("ED_PAMIR_J")){ time=  12; }else
-	if(!UnitIDName.Compare("ED_PAMIR_L")){ time=  10; }else
-	if(!UnitIDName.Compare("KAUKAZ_2XPC")){ time=  9; }else
-	if(!UnitIDName.Compare("KAUKAZ_2XL")){ time=  11; }else
-	if(!UnitIDName.Compare("KAUKAZ_J")){ time=  13; }else
-	if(!UnitIDName.Compare("ED_HT30_4XL")){ time=  15; }else
-	if(!UnitIDName.Compare("ED_HT30_2XHRA")){ time=  9; }else
-	if(!UnitIDName.Compare("ED_HT30_2XJ")){ time=  15; }else
-	if(!UnitIDName.Compare("ED_INTERCEPTOR_AAR")){ time=  10; }else
-	if(!UnitIDName.Compare("ED_INTERCEPTOR_HRA")){ time=  10; }else
-	if(!UnitIDName.Compare("ED_BOMBER_CBOMB")){ time=  18; }else
-	if(!UnitIDName.Compare("ED_BOMBER_HBOMB")){ time=  8; }else
-	if(!UnitIDName.Compare("ED_BOMBER_TORP")){ time=  26; }else
-	if(!UnitIDName.Compare("ED_MBA_BRA")){ time=  10; }else
-	if(!UnitIDName.Compare("ED_MBA_NBRA")){ time=  12; }else
-	if(!UnitIDName.Compare("ED_PROTECTOR_SDI")){ time=  5; }else
-	if(!UnitIDName.Compare("ED_AFCC")){ time=  5; }else
-	
-	if(!UnitIDName.Compare("LC_METEOR_R")){ time=  7; }else
-	if(!UnitIDName.Compare("LC_METEOR_AAR")){ time=  7; }else
-	if(!UnitIDName.Compare("LC_METEOR_E")){ time=  7; }else
-	if(!UnitIDName.Compare("LC_MOON_I")){ time=  4; }else
-	if(!UnitIDName.Compare("LC_MOON_R")){ time=  4; }else
-	if(!UnitIDName.Compare("LC_MOON_AAR")){ time=  4; }else
-	if(!UnitIDName.Compare("LC_MOON_E")){ time=  4; }else
-	if(!UnitIDName.Compare("LC_FANG_MG")){ time=  4; }else
-	if(!UnitIDName.Compare("LC_FANG_E")){ time=  6; }else
-	if(!UnitIDName.Compare("LC_FANG_ART.")){ time=  4; }else
-	if(!UnitIDName.Compare("LC_THUNDER_HRA")){ time=  12; }else
-	if(!UnitIDName.Compare("LC_THUNDER_TORP")){ time=  16; }else
-	if(!UnitIDName.Compare("LC_THUNDER_BOMB")){ time=  16; }else
-	if(!UnitIDName.Compare("LC_THUNDER_E")){ time=  14; }else
-	if(!UnitIDName.Compare("LC_CRATER_MG")){ time=  8; }else
-	if(!UnitIDName.Compare("LC_CRATER_E")){ time=  10; }else
-	if(!UnitIDName.Compare("LC_CRATER_RA")){ time=  6; }else
-	if(!UnitIDName.Compare("LC_CRUSCHER_2XHRA")){ time=  10; }else
-	if(!UnitIDName.Compare("LC_CRUSCHER_2XE")){ time=  18; }else
-	if(!UnitIDName.Compare("LC_CRUSCHER_2XS")){ time=  14; }else
-	if(!UnitIDName.Compare("LC_CRUSCHER_2XMG_2XR")){ time=  14; }else
-	if(!UnitIDName.Compare("LC_SFIGHTER_2XE")){ time=  12; }else
-	if(!UnitIDName.Compare("LC_SFIGHTER_2XAAR")){ time=  12; }else
-	if(!UnitIDName.Compare("LC_SFIGHTER_2XR")){ time=  12; }else
-	if(!UnitIDName.Compare("LC_CRION_ART.")){ time=  26; }else
-	if(!UnitIDName.Compare("LC_CRION_HPLASMA")){ time=  26; }	
-	if(!UnitIDName.Compare("LC_FOBOS")){ time=  6; }
-
-	return time;
-
-}
-function string GetSubordinateUnitID(string IDName)
-{
-	string Name;
-	int r;
- 	Name=IDName;
-	
- 	if(!Name.Compare("UCS_LEADER_SILVER_ONE_1")){ return "UCS_SILVER_ONE_1"; }else
-	 if(!Name.Compare("UCS_LEADER_SILVER_PLASMA_1")){ return "UCS_SILVER_PLASMA_1"; }else
-	 if(!Name.Compare("UCS_LEADER_SILVER_RA_1")){ return "UCS_SILVER_RA_1"; }else
-	 if(!Name.Compare("UCS_LEADER_SILVER_MK3")){ return "UCS_SILVER_MK3"; }else
-	 if(!Name.Compare("UCS_LEADER_SILVER_MK3_RA")){ return "UCS_SILVER_MK3_RA"; }else 
-	 if(!Name.Compare("UCS_LEADER_SILVER_MK3_PLASMA_GUN")){ return "UCS_SILVER_MK3_PLASMA_GUN"; }else
-	 if(!Name.Compare("UCS_LEADER_ATACK_DRONE")){ return "UCS_ATACK_DRONE"; }else
-	 if(!Name.Compare("UCS_LEADER_ATACK_DRONE_PLASMA_GUN")){ return "UCS_ATACK_DRONE_PLASMA_GUN"; }else
-
-	 if(!Name.Compare("ED_LEADER_TROOPER")){ return "ED_TROOPER"; }else
-	 if(!Name.Compare("ED_LEADER_ROCKETER")){ return "ED_ROCKETER"; }else
-	 if(!Name.Compare("ED_LEADER_SNIPER")){ return "ED_SNIPER"; }else
-	 if(!Name.Compare("ED_LEADER_JON_TROOPER")){ return "ED_JON_TROOPER"; }else
-	 if(!Name.Compare("ED_LEADER_HEAVYTROOPER")){ return "ED_HEAVYTROOPER"; }else
-	 if(!Name.Compare("ED_LEADER_LASER_HEAVYTROOPER")){ return "ED_LASER_HEAVYTROOPER"; }else 
-	 if(!Name.Compare("ED_LEADER_PPANC_HEAVYTROOPER")){ return "ED_PPANC_HEAVYTROOPER"; }else
-	 if(!Name.Compare("ED_LEADER_DUBNA_MGUN")){ return "ED_DUBNA_MGUN"; }else
-	 if(!Name.Compare("ED_LEADER_DUBNA_RA")){ return "ED_ED_DUBNA_RA"; }else///!!!!!!!!!!!!!!!!!!!!!!!!!!
- 
- 	if(!Name.Compare("LC_LEADER_GURDIAN_1")){ return "LC_GURDIAN_1"; }else
- 	if(!Name.Compare("LC_LEADER_GUARDIAN_RA_1")){ return"LC_GUARDIAN_RA_1"; }else
- 	if(!Name.Compare("LC_LEADER_SCHOCK_GUARDIAN_1")){ return "LC_SCHOCK_GUARDIAN_1"; }else
-	if(!Name.Compare("LC_LEADER_CYBER_GUARDIAN")){ return"LC_CYBER_GUARDIAN"; }else
-	if(!Name.Compare("LC_LEADER_CYBER_GUARDIAN_MAGNETIC")){ return"LC_CYBER_GUARDIAN_MAGNETIC"; }else
- 	if(!Name.Compare("LC_LEADER_CYBER_GUARDIAN_ELECTRIC")){ return "LC_CYBER_GUARDIAN_ELECTRIC"; }
-
-		
-	return IDName;
+		P.CreateObject("TELEPORT_OUT", uUnit.GetLocationX(),uUnit.GetLocationY(),uUnit.GetLocationZ(),0);
 }
 
 
 
 
-int nEscort; int nEscortTimer; int nLeaderEscortTimer;int nLeaderEscort;
 function void AddSquad(unit uUnit1, unit uUnit2, unit uUnit3, unit uUnit4, unit uUnit5, unit uUnit6)
 {
 	int nP,i,n;
 	player pPlayer;
 	unit uUnit;
+	string Console2;
 	pPlayer=GetPlayer(uUnit1.GetIFFNum());
 	nP=pPlayer.GetIFFNum();
 	for(n=1; n<=m_nL[nP];++n)
@@ -2567,202 +2336,294 @@ function void AddSquad(unit uUnit1, unit uUnit2, unit uUnit3, unit uUnit4, unit 
 		 	++m_nL[nP];
 			n=m_nL[nP];
 	}
+	m_uLeaderContainingObject[(nP-1)*200+n]=uUnit1;
     if (uUnit1.HaveCrew())
 	{
 		m_uLeader[(nP-1)*200+n]=uUnit1.GetCrew();
-		m_uLeaderContainingObject[(nP-1)*200+n]=uUnit1;
 	} else m_uLeader[(nP-1)*200+n]=uUnit1;
+
+	m_uContainingObject[(nP-1)*200+(n-1)*5+1]=uUnit2;
 	if (uUnit2.HaveCrew())
 	{
 		m_uSubordinate[(nP-1)*200+(n-1)*5+1]=uUnit2.GetCrew();
-		m_uContainingObject[(nP-1)*200+(n-1)*5+1]=uUnit2;
 	}else m_uSubordinate[(nP-1)*200+(n-1)*5+1]=uUnit2;
+
+	m_uContainingObject[(nP-1)*200+(n-1)*5+2]=uUnit3;
 	if (uUnit3.HaveCrew())
 	{
 		m_uSubordinate[(nP-1)*200+(n-1)*5+2]=uUnit3.GetCrew();
-		m_uContainingObject[(nP-1)*200+(n-1)*5+2]=uUnit3;
 	}else m_uSubordinate[(nP-1)*200+(n-1)*5+2]=uUnit3;	
+
+	m_uContainingObject[(nP-1)*200+(n-1)*5+3]=uUnit4;
 	if (uUnit4.HaveCrew())
 	{
 		m_uSubordinate[(nP-1)*200+(n-1)*5+3]=uUnit4.GetCrew();
-		m_uContainingObject[(nP-1)*200+(n-1)*5+3]=uUnit4;
 	}else m_uSubordinate[(nP-1)*200+(n-1)*5+3]=uUnit4;
+	
+	m_uContainingObject[(nP-1)*200+(n-1)*5+4]=uUnit5;	
 	if (uUnit5.HaveCrew())
 	{
 		m_uSubordinate[(nP-1)*200+(n-1)*5+4]=uUnit5.GetCrew();
-		m_uContainingObject[(nP-1)*200+(n-1)*5+4]=uUnit5;
 	}else m_uSubordinate[(nP-1)*200+(n-1)*5+4]=uUnit5;
+	
+	m_uContainingObject[(nP-1)*200+(n-1)*5+5]=uUnit6;
 	if (uUnit6.HaveCrew())
 	{
 		m_uSubordinate[(nP-1)*200+(n-1)*5+5]=uUnit6.GetCrew();
-		m_uContainingObject[(nP-1)*200+(n-1)*5+5]=uUnit6;
 	}else m_uSubordinate[(nP-1)*200+(n-1)*5+5]=uUnit6;  
+	Console2.Translate("translateSquadAddedToArray");
+	SetConsole2Text(Console2,90);
+
 }
 function void AddUnitToLeaderArray(unit uUnit)
 {
-	AddSquad(uUnit, null, null, null, null, null); 
-}
-function void AddUnitsToLeader()
-{
-	player P;
-	int nP;
-	int nX,nY,nZ, nX2, nY2;
-	int i,n,m;
-	unit uUnit, uUnit2;
-	int nTr,nExist;
-	string UnitIDName,Name;
-
-	for(nP=1;nP<=8;++nP)
+	int nP,i,n;
+	player pPlayer;
+	unit uUnit1;
+	pPlayer=GetPlayer(uUnit.GetIFFNum());
+	nP=pPlayer.GetIFFNum();
+	for(n=1; n<=m_nL[nP];++n)
+    {
+		uUnit1=m_uLeader[(nP-1)*200+n];
+       	if(!uUnit1.IsLive())
+		{
+			uUnit1=null;
+		}
+		if(uUnit1==null)
+        {
+			break;
+         }
+		 if(n==m_nL[nP])
+		 {
+		 	++m_nL[nP];
+			n=m_nL[nP];
+			break;
+		 }
+      }
+	if(m_nL[nP]==0)
 	{
-		P=GetPlayer(nP);
-		if (m_BuildNumber[nP]!=5000)
+		 	++m_nL[nP];
+			n=m_nL[nP];
+	}
+    if (uUnit.HaveCrew())
+	{
+		m_uLeader[(nP-1)*200+n]=uUnit.GetCrew();
+	} else m_uLeader[(nP-1)*200+n]=uUnit;
+	m_uLeaderContainingObject[(nP-1)*200+n]=uUnit;
+	for(i=1; i<6; ++i)
+	{
+		m_uContainingObject[(nP-1)*200+(n-1)*5+i]=uUnit;
+	}
+}
+function void IncInfantryBuildTimer(int nP,int i)
+{
+	if (m_nInfantryBuildTimer[(nP-1)*200+i]>0)
+	{
+		++ m_nInfantryBuildTimer[(nP-1)*200+i];
+	}	
+}
+function void LeaderContainingObject(int nP,int i)
+{
+	unit uUnit;
+	uUnit=m_uLeader[(nP-1)*200+i];
+	if(uUnit.IsLive() && !uUnit==null)
+	{			
+		if(!uUnit.IsStored())
 		{
-			++ m_nInfantryBuildTimer[nP];
-		}	
-		for(i=1;i<=m_nL[nP];++i)
-		{
-				uUnit=m_uLeader[(nP-1)*200+i];
-				if(!uUnit.IsLive())
+			uUnit=uUnit.GetObjectContainingObject();
+			if(uUnit.IsBuilding())
+			{
+				m_uLeader[(nP-1)*200+i]=null;
+				uUnit=null;
+				m_uLeaderContainingObject[(nP-1)*200+i]=null;
+			}
+			else
+			{
+				if(!uUnit.IsTransporter())
 				{
-					for (n=1;n<=5;++n)
+					m_uLeaderContainingObject[(nP-1)*200+i]=uUnit;
+				}							
+			}
+		}
+		else
+		{
+			m_uLeaderContainingObject[(nP-1)*200+i]=uUnit;
+		}
+	}	
+}
+function void Replenish(int nP,int i, int n)
+{
+	string UnitIDName,Console2;
+	unit uUnit,uUnit2;
+	int nX,nY,nZ,nPrice;
+	player P;
+	P=GetPlayer(nP);
+	uUnit=m_uLeader[(nP-1)*200+i];
+	nX=uUnit.GetLocationX();
+	nY=uUnit.GetLocationY();
+	nZ=uUnit.GetLocationZ();
+	if (m_uSubordinate[(nP-1)*200+(i-1)*5+n] == null)
+	if (!m_uContainingObject[(nP-1)*200+(i-1)*5+n] == null) 
+	{
+		if(m_nInfantryBuildTimer[(nP-1)*200+i]==-1)
+		{
+			m_nInfantryBuildTimer[(nP-1)*200+i]=1;
+		}
+		else
+		{
+			uUnit2=m_uContainingObject[(nP-1)*200+(i-1)*5+n];
+			UnitIDName=uUnit2.GetObjectIDName();
+			UnitIDName=GetSubordinateUnitID(UnitIDName,P.GetRace());
+			nPrice=PriceIfGoodTimeAndRace(UnitIDName,P.GetRace(),m_nInfantryBuildTimer[(nP-1)*200+i],uUnit2.IsInfantry());
+			if(nPrice)
+			{
+				if(nPrice<P.GetResource(1, 1, 1) && P.GetCurrUnitLimitSize()<P.GetPlayerMaxUnitLimitSize())
+				{	 
+					m_uContainingObject[(nP-1)*200+(i-1)*5+n]=P.CreateObject(UnitIDName,nX,nY,40,uUnit.GetDirectionAlpha());	 P.AddResource(1, -nPrice);
+					uUnit2=m_uContainingObject[(nP-1)*200+(i-1)*5+n];
+					CreateFxToCreatedUnit(uUnit2,P);
+					Console2="translate";
+					Console2.Append(UnitIDName);
+					Console2.Translate(Console2);
+					Console2.Append(AddedToSquad);
+					P.SetConsole2Text(Console2,90);
+					uUnit2.SetGroupNum(uUnit.GetGroupNum());
+					if(uUnit2.HaveCrew())
 					{
-						uUnit2=m_uSubordinate[(nP-1)*200+(i-1)*5+n];
-						if(uUnit2.IsLive())
-						{
-							m_uSubordinate[(nP-1)*200+(i-1)*5+n]=null;
-							m_uLeader[(nP-1)*200+i]=uUnit2;
-							
-							uUnit2=m_uContainingObject[(nP-1)*200+(i-1)*5+n];
-							m_uContainingObject[(nP-1)*200+(i-1)*5+n]=m_uLeaderContainingObject[(nP-1)*200+i];
-							m_uLeaderContainingObject[(nP-1)*200+i]=uUnit2;
-							
-							break;
-						}
+						m_uSubordinate[(nP-1)*200+(i-1)*5+n]=uUnit2.GetCrew();
 					}
-				}
-				nX=uUnit.GetLocationX();
-			 	nY=uUnit.GetLocationY();
-			 	nZ=uUnit.GetLocationZ();
-				for(n=1;n<=5;++n)
-				{
-					uUnit=m_uLeader[(nP-1)*200+i];
-					UnitIDName=uUnit.GetObjectIDName();
-					if(!uUnit==null && uUnit.IsLive())
+					else
 					{
+						m_uSubordinate[(nP-1)*200+(i-1)*5+n]=uUnit2;
+					}
+					uUnit2=m_uSubordinate[(nP-1)*200+(i-1)*5+n];
+					uUnit2.CommandMove(nX, nY);					
+					m_nInfantryBuildTimer[(nP-1)*200+i]=-1;
+				}
+			}
+		}
+	}
+	else
+	{
+		if(m_nInfantryBuildTimer[(nP-1)*200+i]==-1)
+		{
+			m_nInfantryBuildTimer[(nP-1)*200+i]=1;
+		}
+		else
+		{
+			
+			uUnit2=m_uSubordinate[(nP-1)*200+(i-1)*5+n];
+			UnitIDName=uUnit.GetObjectIDName();
+			UnitIDName=GetSubordinateUnitID(UnitIDName,P.GetRace());
+			nPrice=PriceIfGoodTimeAndRace(UnitIDName,P.GetRace(),m_nInfantryBuildTimer[(nP-1)*200+i],uUnit.IsInfantry());
+			if(nPrice)
+			{
+				
+					if(nPrice<P.GetResource(1, 1, 1))
+					{
+						m_uContainingObject[(nP-1)*200+(i-1)*5+n]=m_uSubordinate[(nP-1)*200+(i-1)*5+n]=P.CreateObject(UnitIDName,nX,nY,40,uUnit.GetDirectionAlpha());
 						uUnit2=m_uSubordinate[(nP-1)*200+(i-1)*5+n];
+						CreateFxToCreatedUnit(uUnit2,P);
+						uUnit2.SetGroupNum(uUnit.GetGroupNum());	
+						P.AddResource(1,  -GetUnitPrice(UnitIDName));
+					}
+					uUnit2=m_uSubordinate[(nP-1)*200+(i-1)*5+n];
+					uUnit2.CommandMove(nX+Rand(300)-15, nY+Rand(300)-150);					
+					m_nInfantryBuildTimer[(nP-1)*200+i]=-1;
+			}
+		}
+	}
+}
+function void ContainigObjectToArray(int nP,int i,int n)
+{
+	unit uUnit2;	
+	uUnit2=m_uSubordinate[(nP-1)*200+(i-1)*5+n];
+	if(uUnit2.IsLive() && !uUnit2==null)
+	{
+		if(!uUnit2.IsStored())
+		{
+			uUnit2=uUnit2.GetObjectContainingObject();
 
-						if(!uUnit2.IsLive())     
-						{	
-							m_uSubordinate[(nP-1)*200+(i-1)*5+n]=null;
-						}
-						if (!m_uContainingObject[(nP-1)*200+(i-1)*5+n] == null && m_uSubordinate[(nP-1)*200+(i-1)*5+n] == null)
-						{
-							if(m_BuildNumber[nP]==5000)
-							{
-								m_BuildNumber[nP]=i;
-							}
-							else
-							if (m_BuildNumber[nP]==i)
-							{
-								uUnit2=m_uContainingObject[(nP-1)*200+(i-1)*5+n];
-								if(m_nInfantryBuildTimer[nP]*(P.GetNumberOfBuildings(eBuildingObjectsFactory )+1)>3*GetUnitProductionTime(uUnit2.GetObjectIDName()))
-								{
-									if(GetUnitPrice(uUnit2.GetObjectIDName())<P.GetResource(1, 1, 1) && P.GetCurrUnitLimitSize()<P.GetPlayerMaxUnitLimitSize())
-									{
-										m_uContainingObject[(nP-1)*200+(i-1)*5+n]=P.CreateObject(uUnit2.GetObjectIDName(),nX,nY,0,uUnit.GetDirectionAlpha());	 P.AddResource(1, -GetUnitPrice(uUnit2.GetObjectIDName()));
-										uUnit2=m_uContainingObject[(nP-1)*200+(i-1)*5+n];
-										m_uSubordinate[(nP-1)*200+(i-1)*5+n]=uUnit2.GetCrew();
-										uUnit2=m_uSubordinate[(nP-1)*200+(i-1)*5+n];
-										uUnit2.CommandMove(nX, nY);					
-										m_nInfantryBuildTimer[nP]=0;
-										m_BuildNumber[nP]=5000;
-									}
-								}
-							}
-						}
-						else
-						if (m_uSubordinate[(nP-1)*200+(i-1)*5+n] == null)
-						{
-							if(m_BuildNumber[nP]==5000)
-							{
-								m_BuildNumber[nP]=i;
-							}
-							else
-							if (m_BuildNumber[nP]==i)
-							{
-								UnitIDName=GetSubordinateUnitID(UnitIDName);
-								if(m_nInfantryBuildTimer[nP]*(P.GetNumberOfBuildings(eBuildingObjectsFactory )+1)>3*GetUnitProductionTime(UnitIDName))
-								{
-									
-										if(GetUnitPrice(UnitIDName)<P.GetResource(1, 1, 1))
-										{
-											m_uSubordinate[(nP-1)*200+(i-1)*5+n]=P.CreateObject(UnitIDName,nX,nY,0,uUnit.GetDirectionAlpha());	
-										 	P.AddResource(1, -50);
-										}
-										uUnit2=m_uSubordinate[(nP-1)*200+(i-1)*5+n];
-										uUnit2.CommandMove(nX+Rand(300)-15, nY+Rand(300)-150);					
-										m_nInfantryBuildTimer[nP]=0;
-										m_BuildNumber[nP]=5000;
-								}
-							}
-						}
-						
-						uUnit=m_uLeader[(nP-1)*200+i];
-						if(!uUnit.IsStored())
-						{
-							uUnit=uUnit.GetObjectContainingObject();
-							if(uUnit.IsBuilding())
-							{
-								m_uLeader[(nP-1)*200+i]=null;
-								uUnit=null;
-								m_uLeaderContainingObject[(nP-1)*200+i]=null;
-							}
-							else
-							{
-								if(!uUnit.IsTransporter())
-								{
-									m_uLeaderContainingObject[(nP-1)*200+i]=uUnit;
-								}							
-							}
-						}
-						uUnit2=m_uSubordinate[(nP-1)*200+(i-1)*5+n];
-						if(!uUnit2.IsStored() && uUnit2.IsLive() && !uUnit2==null)
-						{
-							uUnit2=uUnit2.GetObjectContainingObject();
+			if(uUnit2.IsBuilding())
+			{
+				m_uSubordinate[(nP-1)*200+(i-1)*5+n]=null;
+				m_uContainingObject[(nP-1)*200+(i-1)*5+n]=null;
+				uUnit2=null;
+			}
+			else
+			{
+				if (!uUnit2.IsTransporter())
+				{
+					m_uContainingObject[(nP-1)*200+(i-1)*5+n]=uUnit2;
+				}							
+			}
+		}
+		else
+		{
+			m_uContainingObject[(nP-1)*200+(i-1)*5+n]=uUnit2;
+		}
+	}
 
-							if(uUnit2.IsBuilding())
-							{
-								m_uSubordinate[(nP-1)*200+(i-1)*5+n]=null;
-								m_uContainingObject[(nP-1)*200+(i-1)*5+n]=null;
-								uUnit2=null;
-							}
-							else
-							{
-								if (!uUnit2.IsTransporter())
-								{
-									m_uContainingObject[(nP-1)*200+(i-1)*5+n]=uUnit2;
-								}							
-							}
-						}
-						uUnit=m_uLeader[(nP-1)*200+i];
-						uUnit2=m_uSubordinate[(nP-1)*200+(i-1)*5+n];
-						if(!uUnit2.IsMoving() &&  (uUnit.DistanceToClosestGrid(uUnit2)>(400+1000*!uUnit2.IsStored()) || uUnit.DistanceToClosestGrid(uUnit2)<(40+80*!uUnit2.IsStored())) && uUnit.IsLive() && !uUnit.IsSelected() && !uUnit2.IsSelected())
-						{
-							if (!uUnit2.IsStored())
-							{
-								uUnit=uUnit2.GetObjectContainingObject();
-								if (!uUnit.IsTransporter())
-								{
-									uUnit=m_uLeader[(nP-1)*200+i];
-									uUnit2.CommandMoveXYZA(nX+Rand(300)-150, nY+Rand(300)-150, 2, uUnit.GetDirectionAlpha());
-								}
-							}
-							else
-							{
-								uUnit=m_uLeader[(nP-1)*200+i];
-								uUnit2.CommandMoveXYZA(nX+Rand(160)-80, nY+Rand(160)-80, 2, uUnit.GetDirectionAlpha());
-							}
-						}
+}
+function void ChangeDeadLeader(int nP,int i)
+{
+	unit uUnit,uUnit2;
+	int n;
+	uUnit=m_uLeader[(nP-1)*200+i];
+	if(!uUnit.IsLive())
+	{
+		for (n=1;n<=5;++n)
+		{
+			uUnit2=m_uSubordinate[(nP-1)*200+(i-1)*5+n];
+			if(uUnit2.IsLive())
+			{
+				m_uSubordinate[(nP-1)*200+(i-1)*5+n]=null;
+				m_uLeader[(nP-1)*200+i]=uUnit2;
+				uUnit=uUnit2;
+				uUnit2=m_uContainingObject[(nP-1)*200+(i-1)*5+n];
+				m_uContainingObject[(nP-1)*200+(i-1)*5+n]=m_uLeaderContainingObject[(nP-1)*200+i];
+				m_uLeaderContainingObject[(nP-1)*200+i]=uUnit2;
+				
+				break;
+			}
+		}
+	}
+}
+function void MoveSubordinateToLeader(int nP,int i,int n)
+{
+	unit uUnit,uUnit2;
+	int nX,nY,nZ;
+	uUnit=m_uLeader[(nP-1)*200+i];
+	nX=uUnit.GetLocationX();
+	nY=uUnit.GetLocationY();
+	nZ=uUnit.GetLocationZ();
+	uUnit2=m_uSubordinate[(nP-1)*200+(i-1)*5+n];
+	if(!uUnit2.IsMoving() && (uUnit.DistanceToClosestGrid(uUnit2)>(400+1000*!uUnit2.IsStored()) || uUnit.DistanceToClosestGrid(uUnit2)<40) && uUnit.IsLive() && !uUnit.IsSelected() && !uUnit2.IsSelected())
+	{
+		if (!uUnit2.IsStored())
+		{
+			uUnit=uUnit2.GetObjectContainingObject();
+			if (!uUnit.IsTransporter())
+			{
+				uUnit2=uUnit;
+				uUnit=m_uLeader[(nP-1)*200+i];
+				if(!IsHarvesterID(uUnit2.GetObjectIDName()) && !uUnit2.IsSelected())
+				{
+					uUnit2.CommandMoveXYZA(nX+Rand(300)-150, nY+Rand(300)-150, 2, uUnit.GetDirectionAlpha());
+				}
+			}
+		}
+		else
+		{
+			uUnit=m_uLeader[(nP-1)*200+i];
+			uUnit2.CommandMoveXYZA(nX+Rand(160)-80, nY+Rand(160)-80, 2, uUnit.GetDirectionAlpha());
+		}
+	}
+}
+function void SetSquadSelection(int nP,int i,int n)
+{
+	unit uUnit,uUnit2;
+	int m;
 						uUnit=m_uLeader[(nP-1)*200+i];
 						uUnit2=m_uSubordinate[(nP-1)*200+(i-1)*5+n];
 						if(!uUnit.IsStored())
@@ -2793,12 +2654,51 @@ function void AddUnitsToLeader()
 								}
 							}
 						}
-					}
-					else//if leader is not live
+}
+function void AddUnitsToLeader()
+{
+	player P;
+	int nP;
+	int nX,nY,nZ, nX2, nY2;
+	int i,n,m;
+	unit uUnit, uUnit2;
+	int nTr,nExist;
+	string UnitIDName,Name;
+	for(nP=1;nP<=8;++nP)
+	{
+		P=GetPlayer(nP);
+		for(i=1;i<=m_nL[nP];++i)
+		{
+				IncInfantryBuildTimer(nP,i);
+				ChangeDeadLeader(nP,i);
+				uUnit=m_uLeader[(nP-1)*200+i];
+				if (uUnit.GetGroupNum()==9)
+				{
+					uUnit.SetGroupNum(8);
+				}
+				LeaderContainingObject(nP,i);
+				uUnit=m_uLeader[(nP-1)*200+i];
+				for(n=1;n<=5;++n)
+				{
+					if(!uUnit==null && uUnit.IsLive())
 					{
-						if (m_BuildNumber[nP]==i)
+						uUnit2=m_uSubordinate[(nP-1)*200+(i-1)*5+n];
+						if (uUnit2.GetGroupNum()==9)
 						{
-							m_BuildNumber[nP]=5000;
+							uUnit2.SetGroupNum(8);
+						}
+
+						if(!uUnit2.IsLive())     
+						{	
+							m_uSubordinate[(nP-1)*200+(i-1)*5+n]=null;
+							Replenish(nP,i,n);
+						}						
+						uUnit2=m_uSubordinate[(nP-1)*200+(i-1)*5+n];
+						if(uUnit2.IsLive())
+						{
+							ContainigObjectToArray(nP,i,n);
+							MoveSubordinateToLeader(nP,i,n);
+							SetSquadSelection(nP,i,n);
 						}
 					}
 				}
@@ -2848,95 +2748,181 @@ function void AddUnitsToCarrier()
 	unit uUnit, uUnit2;
 	int nTr,nExist;
 	string sName;
-
+	int nMinMovingPoints;
+	int nUnitWithMinMovingPoints;
+	string LowConsole;
+	string Console2;
+	string AddedToCarrier;
+	AddedToCarrier.Translate("translateAddedToCarrier");
 	for(nP=1;nP<=8;++nP)
 	{
 		P=GetPlayer(nP);
+		nMinMovingPoints=9000;
+		nUnitWithMinMovingPoints=9000;
 		for(i=1;i<=m_nC[nP];++i)
 		{
 				++ m_nBuildTimer[(nP-1)*20+i];	
 				uUnit=m_uCarrier[(nP-1)*20+i];
+
 				nX=uUnit.GetLocationX();
 			 	nY=uUnit.GetLocationY();
 			 	nZ=uUnit.GetLocationZ();
-				for(n=1;n<=8;++n)
+				sName=uUnit.GetObjectIDName();
+				if (!sName.Compare("UCSSF_HBATLE") || !sName.Compare("UCSSF_BATLE") || !sName.Compare("EDSF_HBATLE") || !sName.Compare("EDSF_BATLE") || !sName.Compare("LCSF_HBATLE") || !sName.Compare("LCSF_BATLE"))
 				{
-					uUnit=m_uCarrier[(nP-1)*20+i];
-					if(!uUnit==null && uUnit.IsLive())
+					if(uUnit.IsMoving())
+					{  
+						if(m_nMovingPoints[(nP-1)*20+i]>0) --m_nMovingPoints[(nP-1)*20+i];
+						if(m_nMovingPoints[(nP-1)*20+i]<1) 	uUnit.CommandStop();
+					}	
+					else 
 					{
-						uUnit=m_uUnit1[(nP-1)*20+(i-1)*8+n];
-						if(!uUnit.IsLive())     
+						if(m_nMovingPoints[(nP-1)*20+i]<10) ++m_nMovingPoints[(nP-1)*20+i];
+					}
+					if(m_nMovingPoints[(nP-1)*20+i]<nMinMovingPoints) nMinMovingPoints=m_nMovingPoints[(nP-1)*20+i];
+					if(uUnit.IsSelected() && m_nMovingPoints[(nP-1)*20+i]==nMinMovingPoints)
+					{
+				 		nMinMovingPoints=m_nMovingPoints[(nP-1)*20+i];
+						nUnitWithMinMovingPoints=i;
+					}
+				}
+
+				if (uUnit.GetGroupNum()==9)
+				{	
+					uUnit.SetGroupNum(8);
+				}
+			if(uUnit.IsLive() && !uUnit==null && sName.Compare("LCSF_BATLE") && sName.Compare("EDSF_BATLE") && sName.Compare("UCSSF_BATLE"))	
+			for(n=1;n<=8;++n)
+			{
+					uUnit=m_uUnit1[(nP-1)*20+(i-1)*8+n];
+					if (uUnit.GetGroupNum()==9)
+					{	
+						uUnit.SetGroupNum(8);
+					}
+					if(!uUnit.IsLive())     
+					{
+						m_uUnit1[(nP-1)*20+(i-1)*8+n]=null;
+					}
+					if (m_uUnit1[(nP-1)*20+(i-1)*8+n] == null && m_nBuildTimer[(nP-1)*20+i]>10)
+					{
+						if (n==7 || n==8)
 						{
-							m_uUnit1[(nP-1)*20+(i-1)*8+n]=null;
+							if(!sName.Compare("EDSF_BS")) if(GetUnitPrice(E_T_BOMBER)<P.GetResource(1, 1, 1) && P.GetCurrUnitLimitSize()<P.GetPlayerMaxUnitLimitSize())
+							{
+								Console2.Translate("translateED_BOMBER_TORP"); Console2.Append(AddedToCarrier); P.SetConsole2Text(Console2,90);
+								m_uUnit1[(nP-1)*20+(i-1)*8+n]=P.CreateObject(E_T_BOMBER,nX,nY,2,uUnit.GetDirectionAlpha());P.AddResource(1, -GetUnitPrice(E_T_BOMBER));							
+							}
+							if(!sName.Compare("LCSF_BS")) if(GetUnitPrice(L_T_THUNDER)<P.GetResource(1, 1, 1) && P.GetCurrUnitLimitSize()<P.GetPlayerMaxUnitLimitSize())
+							{
+								Console2.Translate("translateLC_THUNDER_TORP"); Console2.Append(AddedToCarrier); P.SetConsole2Text(Console2,90);
+								m_uUnit1[(nP-1)*20+(i-1)*8+n]=P.CreateObject(L_T_THUNDER,nX,nY,2,uUnit.GetDirectionAlpha());P.AddResource(1, -GetUnitPrice(L_T_THUNDER));							
+							}
+							if(!sName.Compare("UCSSF_BS")) if(GetUnitPrice(U_T_HELLWIND)<P.GetResource(1, 1, 1) && P.GetCurrUnitLimitSize()<P.GetPlayerMaxUnitLimitSize())
+							{
+								Console2.Translate("translateUCS_HELLWIND_TORP"); Console2.Append(AddedToCarrier); P.SetConsole2Text(Console2,90);
+								m_uUnit1[(nP-1)*20+(i-1)*8+n]=P.CreateObject(U_T_HELLWIND,nX,nY,2,uUnit.GetDirectionAlpha());P.AddResource(1, -GetUnitPrice(U_T_HELLWIND));														
+							}
 						}
-						if (m_uUnit1[(nP-1)*20+(i-1)*8+n] == null && m_nBuildTimer[(nP-1)*20+i]>10)
+						if(n==3 || n==6)
 						{
-							if(n==4 || n==8)
+							if(P.GetRace()==eRaceUCS) if(GetUnitPrice(U_R_BAT)<P.GetResource(1, 1, 1) && P.GetCurrUnitLimitSize()<P.GetPlayerMaxUnitLimitSize())
 							{
-								if(P.GetRace()==eRaceUCS) if(GetUnitPrice("UCS_BAT_R")<P.GetResource(1, 1, 1) && P.GetCurrUnitLimitSize()<P.GetPlayerMaxUnitLimitSize())
-								{
-									m_uUnit1[(nP-1)*20+(i-1)*8+n]=P.CreateObject("UCS_BAT_R",nX,nY,2,uUnit.GetDirectionAlpha()); P.AddResource(1, -GetUnitPrice("UCS_BAT_R"));
-								}
-								if(P.GetRace()==eRaceED) if(GetUnitPrice("ED_INTERCEPTOR_HRA")<P.GetResource(1, 1, 1) && P.GetCurrUnitLimitSize()<P.GetPlayerMaxUnitLimitSize())
-								{
-									m_uUnit1[(nP-1)*20+(i-1)*8+n]=P.CreateObject("ED_INTERCEPTOR_HRA",nX,nY,2,uUnit.GetDirectionAlpha()); P.AddResource(1, -GetUnitPrice("ED_INTERCEPTOR_HRA"));					
-								}
-								if(P.GetRace()==eRaceLC) if(GetUnitPrice("LC_THUNDER_HRA")<P.GetResource(1, 1, 1) && P.GetCurrUnitLimitSize()<P.GetPlayerMaxUnitLimitSize())
-								{
-									m_uUnit1[(nP-1)*20+(i-1)*8+n]=P.CreateObject("LC_THUNDER_HRA",nX,nY,2,uUnit.GetDirectionAlpha()); P.AddResource(1, -GetUnitPrice("LC_THUNDER_HRA"));				
-								}
-								if(P.GetRace()==eRaceAlien)
-								{
-									m_uUnit1[(nP-1)*20+(i-1)*8+n]=P.CreateObject("MORPHOID_FIGHTER",nX,nY,2,uUnit.GetDirectionAlpha());			
-								}							
+								Console2.Translate("translateUCS_BAT_R"); Console2.Append(AddedToCarrier); P.SetConsole2Text(Console2,90);
+								m_uUnit1[(nP-1)*20+(i-1)*8+n]=P.CreateObject(U_R_BAT,nX,nY,2,uUnit.GetDirectionAlpha()); P.AddResource(1, -GetUnitPrice(U_R_BAT));
 							}
-							else
+							if(P.GetRace()==eRaceED) if(GetUnitPrice(E_HR_INTERCEPTOR)<P.GetResource(1, 1, 1) && P.GetCurrUnitLimitSize()<P.GetPlayerMaxUnitLimitSize())
 							{
-								if(P.GetRace()==eRaceUCS) if(GetUnitPrice("UCS_HAWK_AAR")<P.GetResource(1, 1, 1) && P.GetCurrUnitLimitSize()<P.GetPlayerMaxUnitLimitSize())
-								{
-									m_uUnit1[(nP-1)*20+(i-1)*8+n]=P.CreateObject("UCS_HAWK_AAR",nX,nY,2,uUnit.GetDirectionAlpha());P.AddResource(1, -GetUnitPrice("UCS_HAWK_AAR"));
-								}
-								if(P.GetRace()==eRaceED) if(GetUnitPrice("ED_INTERCEPTOR_AAR")<P.GetResource(1, 1, 1) && P.GetCurrUnitLimitSize()<P.GetPlayerMaxUnitLimitSize())
-								{
-									m_uUnit1[(nP-1)*20+(i-1)*8+n]=P.CreateObject("ED_INTERCEPTOR_AAR",nX,nY,2,uUnit.GetDirectionAlpha()); P.AddResource(1, -GetUnitPrice("ED_INTERCEPTOR_AAR"));										
-								}
-								if(P.GetRace()==eRaceLC) if(GetUnitPrice("LC_SFIGHTER_2XAAR")<P.GetResource(1, 1, 1) && P.GetCurrUnitLimitSize()<P.GetPlayerMaxUnitLimitSize())
-								{
-									m_uUnit1[(nP-1)*20+(i-1)*8+n]=P.CreateObject("LC_SFIGHTER_2XAAR",nX,nY,2,uUnit.GetDirectionAlpha()); P.AddResource(1, -GetUnitPrice("LC_SFIGHTER_2XAAR"));									
-								}
-								if(P.GetRace()==eRaceAlien)
-								{
-									m_uUnit1[(nP-1)*20+(i-1)*8+n]=P.CreateObject("MORPHOID_FIGHTER",nX,nY,2,uUnit.GetDirectionAlpha());					
-								}
+								Console2.Translate("translateE_HR_INTERCEPTOR"); Console2.Append(AddedToCarrier); P.SetConsole2Text(Console2,90);
+								m_uUnit1[(nP-1)*20+(i-1)*8+n]=P.CreateObject(E_HR_INTERCEPTOR,nX,nY,2,uUnit.GetDirectionAlpha()); P.AddResource(1, -GetUnitPrice(E_HR_INTERCEPTOR));					
 							}
-							m_nBuildTimer[(nP-1)*20+i]=0;
+							if(P.GetRace()==eRaceLC) if(GetUnitPrice(L_R_THUNDER)<P.GetResource(1, 1, 1) && P.GetCurrUnitLimitSize()<P.GetPlayerMaxUnitLimitSize())
+							{
+								Console2.Translate("translateLC_THUNDER_HRA"); Console2.Append(AddedToCarrier); P.SetConsole2Text(Console2,90);
+								m_uUnit1[(nP-1)*20+(i-1)*8+n]=P.CreateObject(L_R_THUNDER,nX,nY,2,uUnit.GetDirectionAlpha()); P.AddResource(1, -GetUnitPrice(L_R_THUNDER));				
+							}
+							if(P.GetRace()==eRaceAlien)
+							{
+								Console2.Translate("translateMORPHOID_FIGHTER"); Console2.Append(AddedToCarrier); P.SetConsole2Text(Console2,90);
+								m_uUnit1[(nP-1)*20+(i-1)*8+n]=P.CreateObject("MORPHOID_FIGHTER",nX,nY,2,uUnit.GetDirectionAlpha());			
+							}							
 						}
-						uUnit=m_uCarrier[(nP-1)*20+i];
+						else
+						if (n<7)
+						{
+							if(P.GetRace()==eRaceUCS) if(GetUnitPrice(U_R_HAWK)<P.GetResource(1, 1, 1) && P.GetCurrUnitLimitSize()<P.GetPlayerMaxUnitLimitSize())
+							{
+								Console2.Translate("translateUCS_HAWK_AAR"); Console2.Append(AddedToCarrier); P.SetConsole2Text(Console2,90);
+								m_uUnit1[(nP-1)*20+(i-1)*8+n]=P.CreateObject(U_R_HAWK,nX,nY,2,uUnit.GetDirectionAlpha());P.AddResource(1, -GetUnitPrice(U_R_HAWK));
+							}
+							if(P.GetRace()==eRaceED) if(GetUnitPrice(E_R_INTERCEPTOR)<P.GetResource(1, 1, 1) && P.GetCurrUnitLimitSize()<P.GetPlayerMaxUnitLimitSize())
+							{
+								Console2.Translate("translateE_R_INTERCEPTOR"); Console2.Append(AddedToCarrier); P.SetConsole2Text(Console2,90);
+								m_uUnit1[(nP-1)*20+(i-1)*8+n]=P.CreateObject(E_R_INTERCEPTOR,nX,nY,2,uUnit.GetDirectionAlpha()); P.AddResource(1, -GetUnitPrice(E_R_INTERCEPTOR));										
+							}
+							if(P.GetRace()==eRaceLC) if(GetUnitPrice(L_R_SFIGHTER)<P.GetResource(1, 1, 1) && P.GetCurrUnitLimitSize()<P.GetPlayerMaxUnitLimitSize())
+							{
+								Console2.Translate("translateLC_SFIGHTER_2XAAR"); Console2.Append(AddedToCarrier); P.SetConsole2Text(Console2,90);
+								m_uUnit1[(nP-1)*20+(i-1)*8+n]=P.CreateObject(L_R_SFIGHTER,nX,nY,2,uUnit.GetDirectionAlpha()); P.AddResource(1, -GetUnitPrice(L_R_SFIGHTER));									
+							}
+							if(P.GetRace()==eRaceAlien)
+							{
+								Console2.Translate("translateMORPHOID_FIGHTER"); Console2.Append(AddedToCarrier); P.SetConsole2Text(Console2,90);
+								m_uUnit1[(nP-1)*20+(i-1)*8+n]=P.CreateObject("MORPHOID_FIGHTER",nX,nY,2,uUnit.GetDirectionAlpha());					
+							}
+						}
 						uUnit2=m_uUnit1[(nP-1)*20+(i-1)*8+n];
-						
+						CreateFxToCreatedUnit(uUnit2,P);
+						m_nBuildTimer[(nP-1)*20+i]=0;
+					}
+					uUnit2=m_uUnit1[(nP-1)*20+(i-1)*8+n];
+					if(n==1 || n==4 || n==7) 
+					{
+						uUnit=m_uCarrier[(nP-1)*20+i];
 						if( uUnit.DistanceToClosestGrid(uUnit2)>(3000) && uUnit.IsLive() && !uUnit.IsSelected() && !uUnit2.IsSelected())
+						uUnit2.CommandMoveXYZA(nX+Rand(500)-250, nY+Rand(500)-250, Rand(4)+3, uUnit.GetDirectionAlpha());
+					}
+					else
+					if(n<4)
+					{
+						uUnit=m_uUnit1[(nP-1)*20+(i-1)*8+1];
+						if( uUnit.DistanceToClosestGrid(uUnit2)>(300) && uUnit.IsLive() && !uUnit.IsSelected() && !uUnit2.IsSelected())
+						uUnit2.CommandMoveXYZA(uUnit.GetLocationX()+Rand(150)-75, uUnit.GetLocationY()+Rand(150)-75,uUnit.GetLocationZ(), uUnit.GetDirectionAlpha());
+					}
+					else
+					if(n<7)
+					{
+						uUnit=m_uUnit1[(nP-1)*20+(i-1)*8+4];
+						if( uUnit.DistanceToClosestGrid(uUnit2)>(300) && uUnit.IsLive() && !uUnit.IsSelected() && !uUnit2.IsSelected())
+						uUnit2.CommandMoveXYZA(uUnit.GetLocationX()+Rand(150)-75, uUnit.GetLocationY()+Rand(150)-75,uUnit.GetLocationZ(), uUnit.GetDirectionAlpha());							
+					}
+					else
+					if(n<9)
+					{
+						uUnit=m_uUnit1[(nP-1)*20+(i-1)*8+7];
+						if( uUnit.DistanceToClosestGrid(uUnit2)>(300) && uUnit.IsLive() && !uUnit.IsSelected() && !uUnit2.IsSelected())
+						uUnit2.CommandMoveXYZA(uUnit.GetLocationX()+Rand(150)-75, uUnit.GetLocationY()+Rand(150)-75,uUnit.GetLocationZ(), uUnit.GetDirectionAlpha());									
+					}
+					uUnit=m_uCarrier[(nP-1)*20+i];
+					if(uUnit.IsSelected() && !uUnit2.IsSelected() && uUnit.IsLive())
+					{
+					 uUnit2.SetSelected(true);
+					}
+					if(uUnit2.IsSelected() && !uUnit.IsSelected() && uUnit.IsLive())
+					{
+						if (n<4)
 						{
-							uUnit2.CommandMoveXYZA(nX+Rand(500)-250, nY+Rand(500)-250, Rand(4)+3, uUnit.GetDirectionAlpha());
-						}
-						if(uUnit.IsSelected() && !uUnit2.IsSelected() && uUnit.IsLive())
-						{
-						 uUnit2.SetSelected(true);
-						}
-						if(uUnit2.IsSelected() && !uUnit.IsSelected() && uUnit.IsLive())
-						{
-							if (n<5)
-							{
-								for(m=1;m<5;++m)
-								{ 
-									uUnit=m_uUnit1[(nP-1)*20+(i-1)*8+m];
-									if(!uUnit.IsSelected())
-									{
-										uUnit.SetSelected(true);
-									}
+							for(m=1;m<4;++m)
+							{ 
+								uUnit=m_uUnit1[(nP-1)*20+(i-1)*8+m];
+								if(!uUnit.IsSelected())
+								{
+								uUnit.SetSelected(true);
 								}
 							}
-							else
-							for(m=5;m<9;++m)
+						}
+						if (n<7 && n>3) 
+						{
+							for(m=4;m<7;++m)
 							{ 
 								uUnit=m_uUnit1[(nP-1)*20+(i-1)*8+m];
 								if(!uUnit.IsSelected())
@@ -2944,36 +2930,183 @@ function void AddUnitsToCarrier()
 									uUnit.SetSelected(true);
 								}
 							}
+						}	
+						if (n>6)
+						{
+								if (n==7)  uUnit=m_uUnit1[(nP-1)*20+(i-1)*8+8];
+								if (n==8) uUnit=m_uUnit1[(nP-1)*20+(i-1)*8+7];
+								if(!uUnit.IsSelected())
+								{
+									uUnit.SetSelected(true);
+								}
+						}//if (n>6)
+					}//if (uUnit2.IsSelected() && !uUnit.IsSelected() && uUnit.IsLive())
+				}//for(n=1;n<=8;++n)
+				
+
+				
+				if (nUnitWithMinMovingPoints<900)
+				{
+					LowConsole.Format("MovingPoints:%d",m_nMovingPoints[(nP-1)*20+nUnitWithMinMovingPoints]);
+					P.SetLowConsoleText(LowConsole,30);
+				}
+				
+		}//for(i=1;i<=m_nC[nP];++i)
+	}//for(nP=1;nP<=8;++nP)
+}
+function void FreeAddUnitsToCarrier() //Funkcja  bazuje na AddUnitsToCarrier(), ale nie uwzględnia opłat oraz czasu i limitu jednostek
+{
+	player P;
+	int nP;
+	int nX,nY,nZ;
+	int i,n,m;
+	unit uUnit, uUnit2;
+	int nTr,nExist;
+	int CurrUnitIndex;
+	string sName;
+
+	for(nP=1;nP<=8;++nP)
+	{
+		P=GetPlayer(nP);
+		for(i=1;i<=m_nC[nP];++i)
+		{
+				uUnit=m_uCarrier[(nP-1)*20+i];
+				nX=uUnit.GetLocationX();
+			 	nY=uUnit.GetLocationY();
+			 	nZ=uUnit.GetLocationZ();
+				uUnit=m_uCarrier[(nP-1)*20+i];
+			if(uUnit.IsLive() && !uUnit==null && sName.Compare("LCSF_BATLE") && sName.Compare("EDSF_BATLE") && sName.Compare("UCSSF_BATLE"))		
+			for(n=1;n<=8;++n)
+			{
+					CurrUnitIndex = (nP-1)*20+(i-1)*8+n;
+					if(n==3 || n==6)
+						{
+							if(P.GetRace()==eRaceUCS)
+							{
+								m_uUnit1[CurrUnitIndex]=P.CreateObject(U_R_BAT,nX,nY,nZ,uUnit.GetDirectionAlpha());
+							}
+							if(P.GetRace()==eRaceED)
+							{
+								m_uUnit1[CurrUnitIndex]=P.CreateObject(E_HR_INTERCEPTOR,nX,nY,nZ,uUnit.GetDirectionAlpha());	
+							}
+							if(P.GetRace()==eRaceLC) 
+							{
+								m_uUnit1[CurrUnitIndex]=P.CreateObject(L_R_THUNDER,nX,nY,nZ,uUnit.GetDirectionAlpha()); 			
+							}
+							if(P.GetRace()==eRaceAlien)
+							{
+								m_uUnit1[CurrUnitIndex]=P.CreateObject("MORPHOID_FIGHTER",nX,nY,nZ,uUnit.GetDirectionAlpha());			
+							}							
+						}
+						else
+						if (n<7)
+						{
+							if(P.GetRace()==eRaceUCS)
+							{
+								m_uUnit1[CurrUnitIndex]=P.CreateObject(U_R_HAWK,nX,nY,nZ,uUnit.GetDirectionAlpha());
+							}
+							if(P.GetRace()==eRaceED)
+							{
+								m_uUnit1[CurrUnitIndex]=P.CreateObject(E_R_INTERCEPTOR,nX,nY,nZ,uUnit.GetDirectionAlpha()); 									
+							}
+							if(P.GetRace()==eRaceLC)
+							{
+								m_uUnit1[CurrUnitIndex]=P.CreateObject(L_R_SFIGHTER,nX,nY,nZ,uUnit.GetDirectionAlpha()); 								
+							}
+							if(P.GetRace()==eRaceAlien)
+							{
+								m_uUnit1[CurrUnitIndex]=P.CreateObject("MORPHOID_FIGHTER",nX,nY,nZ,uUnit.GetDirectionAlpha());					
+							}
+						}
+						if (n==7 || n==8)
+						{
+							if(!sName.Compare("EDSF_BS"))
+							{
+								m_uUnit1[CurrUnitIndex]=P.CreateObject(E_T_BOMBER,nX,nY,nZ,uUnit.GetDirectionAlpha());						
+							}
+							if(!sName.Compare("LCSF_BS"))
+							{
+								m_uUnit1[CurrUnitIndex]=P.CreateObject(L_T_THUNDER,nX,nY,nZ,uUnit.GetDirectionAlpha());						
+							}
+							if(!sName.Compare("UCSSF_BS"))
+							{
+								m_uUnit1[CurrUnitIndex]=P.CreateObject(U_T_HELLWIND,nX,nY,nZ,uUnit.GetDirectionAlpha());										
+							}
 						}
 					}
-				}
+		}
+	}
+}
+function void CreateSquadFromGroup10()
+{
+	int i,n;
+	unit uUnit;
+	player P;
+	int nUnits;
+	unit mUnit[];
+	mUnit.Create(7);
+	for(i=1;i<=8;++i)
+	{
+		
+		P=GetPlayer(i);
+		nUnits=0;
+		for (n=1;n<=P.GetNumberOfUnits(); ++n)
+		{
+			uUnit=P.GetUnit(n);
+			if (uUnit.GetGroupNum()==9)
+			{
+				++nUnits;
+				mUnit[nUnits]=uUnit;
+			}
+			if(nUnits>5)
+			{
+			 break;
+			}
+		}
+		if (nUnits>5)
+		{
+			AddSquad(mUnit[1], mUnit[2], mUnit[3], mUnit[4], mUnit[5],  mUnit[6]);
+			for (n=1; n<=6; ++n)
+			{
+				uUnit=mUnit[n];
+				uUnit.SetGroupNum(8);
+			}
 		}
 	}
 }
 function void SquadsWork()
 {
 	AddUnitsToCarrier();
+	SetBuildCommands();
 	AddUnitsToLeader();
+	CreateSquadFromGroup10();
 }
+
 function void InitCarriers()
 {
 	int i,n;
 	unit uUnit;
 	player P;
 	string UnitIDName;
-	m_nC.Create(8); m_nL.Create(8);
+	AddedToSquad.Translate("translateAddedToSquad");
+	m_nC.Create(8); m_nL.Create(8); m_nF.Create(8); m_nSquadType.Create(8);
+	m_sUnitsToSquad.Create(8*6);
+	
+	m_AIUnitIndex.Create(8);
 	m_uLeader.Create(8*200);
 	m_uLeaderContainingObject.Create(8*200);
 	m_uCarrier.Create(20*8);
+	uFactories.Create(20*8);
+	nFactoryTime.Craete(8*20);
+	m_nMovingPoints.Create(20*8);
 	m_nBuildTimer.Create(20*8);
-	m_nInfantryBuildTimer.Create(8);
-	m_BuildNumber.Create(8);
+	m_nInfantryBuildTimer.Create(8*200);
 	m_uUnit1.Create(20*8*8);
 	m_uSubordinate.Create(200*8*5);
 	m_uContainingObject.Create(200*8*5);
-	for (i=1;i<=8;++i)
+	for (i=1;i<=1600;++i)//1600=8*200
 	{
-		m_BuildNumber[i]=5000; //it is not leader with 5000 number so it means that no unit is producing
+		m_nInfantryBuildTimer[i]=-1; //
 	}
 
 	for(i=1;i<=8;++i)
@@ -2988,16 +3121,7 @@ function void InitCarriers()
 			{
 				AddUnitToCarrierArray(uUnit);
 			}
-			if(!UnitIDName.Compare("ED_LEADER_TROOPER") || !UnitIDName.Compare("ED_LEADER_ROCKETER") || !UnitIDName.Compare("ED_LEADER_SNIPER") || !UnitIDName.Compare("ED_LEADER_JON_TROOPER") ||
-			!UnitIDName.Compare("ED_LEADER_HEAVYTROOPER") || !UnitIDName.Compare("ED_LEADER_LASER_HEAVYTROOPER") || !UnitIDName.Compare("ED_LEADER_PPANC_HEAVYTROOPER") || 
-			!UnitIDName.Compare("ED_LEADER_DUBNA_MGUN") || !UnitIDName.Compare("ED_LEADER_DUBNA_RA") ||
-				
-			!UnitIDName.Compare("UCS_LEADER_SILVER_ONE_1") || !UnitIDName.Compare("UCS_LEADER_SILVER_RA_1") || !UnitIDName.Compare("UCS_LEADER_SILVER_PLASMA_1") ||
-			!UnitIDName.Compare("UCS_LEADER_SILVER_MK3") || !UnitIDName.Compare("UCS_LEADER_SILVER_MK3_PLASMA_GUN") || !UnitIDName.Compare("ED_LEADER_PPANC_HEAVYTROOPER") ||
-			!UnitIDName.Compare("UCS_LEADER_ATACK_DRONE") || !UnitIDName.Compare("UCS_LEADER_ATACK_DRONE_PLASMA_GUN")||
-				
-			!UnitIDName.Compare("LC_LEADER_GURDIAN_1") || !UnitIDName.Compare("LC_LEADER_GUARDIAN_RA_1") || !UnitIDName.Compare("LC_LEADER_SCHOCK_GUARDIAN_1") ||
-			!UnitIDName.Compare("LC_LEADER_CYBER_GUARDIAN") || !UnitIDName.Compare("LC_LEADER_CYBER_GUARDIAN_MAGNETIC") || !UnitIDName.Compare("LC_LEADER_CYBER_GUARDIAN_ELECTRIC")  )
+			if(IsLeaderName(UnitIDName)) 
 			{
 				AddUnitToLeaderArray(uUnit);
 			}			
@@ -3011,18 +3135,29 @@ function void CheckUCSRafinery(unit Building)
 	int nX,nY;
 	player P;
 	string BuildingName;
+	unit uUnit;
 	P=GetPlayer(Building.GetIFFNum());
 	nX=Building.GetLocationX();
 	nY=Building.GetLocationY();
 	BuildingName=Building.GetObjectIDName();
+	if(P.IsAIPlayer())
+	{
+		if(!BuildingName.Compare("ED_MOLOCH"))
+		{
+			AddToFactoriesArray(Building);
+		}
+	}
 	 if(!BuildingName.Compare("UCS_RAFINERY_POD"))
 	 {
-		 P.CreateObject("UCS_TERMIT",nX,nY,0,0);
+	 	P.CreateObject("UCS_TERMIT",nX,nY,0,0);
+		CreateFxToCreatedUnit(uUnit,P);
 	 } 
 	if(!BuildingName.Compare("UCS_RAFINERY"))
 	 {
 		 P.CreateObject("UCS_TERMIT",nX+1,nY+1,0,0);
+		CreateFxToCreatedUnit(uUnit,P);
 	 }
+	 
 }
 
 function void CheckCarrierUnit(unit uUnit)
@@ -3036,59 +3171,135 @@ function void CheckCarrierUnit(unit uUnit)
 	{
 		AddUnitToCarrierArray(uUnit);
 	}
-	if(!UnitIDName.Compare("ED_LEADER_TROOPER") || !UnitIDName.Compare("ED_LEADER_ROCKETER") || !UnitIDName.Compare("ED_LEADER_SNIPER") || !UnitIDName.Compare("ED_LEADER_JON_TROOPER") ||
-	!UnitIDName.Compare("ED_LEADER_HEAVYTROOPER") || !UnitIDName.Compare("ED_LEADER_LASER_HEAVYTROOPER") || !UnitIDName.Compare("ED_LEADER_PPANC_HEAVYTROOPER") || 
-	!UnitIDName.Compare("ED_LEADER_DUBNA_MGUN") || !UnitIDName.Compare("ED_LEADER_DUBNA_RA") ||
-	
-	!UnitIDName.Compare("UCS_LEADER_SILVER_ONE_1") || !UnitIDName.Compare("UCS_LEADER_SILVER_RA_1") || !UnitIDName.Compare("UCS_LEADER_SILVER_PLASMA_1") ||
-	!UnitIDName.Compare("UCS_LEADER_SILVER_MK3") || !UnitIDName.Compare("UCS_LEADER_SILVER_MK3_PLASMA_GUN") || !UnitIDName.Compare("ED_LEADER_PPANC_HEAVYTROOPER") ||
-	!UnitIDName.Compare("UCS_LEADER_ATACK_DRONE") || !UnitIDName.Compare("UCS_LEADER_ATACK_DRONE_PLASMA_GUN")||
-	
-	!UnitIDName.Compare("LC_LEADER_GURDIAN_1") || !UnitIDName.Compare("LC_LEADER_GUARDIAN_RA_1") || !UnitIDName.Compare("LC_LEADER_SCHOCK_GUARDIAN_1") ||
-	!UnitIDName.Compare("LC_LEADER_CYBER_GUARDIAN") || !UnitIDName.Compare("LC_LEADER_CYBER_GUARDIAN_MAGNETIC") || !UnitIDName.Compare("LC_LEADER_CYBER_GUARDIAN_ELECTRIC")  )
-	
+	if(IsLeaderName(UnitIDName)) 
 	{
 		AddUnitToLeaderArray(uUnit);
 	}	
 	/*if(!UnitIDName.Compare("UCS_TARNSPORTER_I"))
 	{
-		for(i=1;i<7;++i){uUnit.CreateTransportedCrew("UCS_SILVER_ONE_1");}
+		for(i=1;i<7;++i){uUnit.CreateTransportedCrew(U_I_SILVER_ONE_1);}
 	}
 	if(!UnitIDName.Compare("UCS_TARNSPORTER_R"))
 	{
-		for(i=1;i<7;++i){uUnit.CreateTransportedCrew("UCS_SILVER_RA_1");}
+		for(i=1;i<7;++i){uUnit.CreateTransportedCrew(U_R_SILVER);}
 	}
 	if(!UnitIDName.Compare("UCS_TARNSPORTER_P"))
 	{
-		for(i=1;i<7;++i){uUnit.CreateTransportedCrew("UCS_SILVER_PLASMA_1");}
+		for(i=1;i<7;++i){uUnit.CreateTransportedCrew(U_P_SILVER);}
 	}
 	//ED
 	if(!UnitIDName.Compare("ED_BTVA_I"))
 	{
-		for(i=1;i<9;++i){uUnit.CreateTransportedCrew("ED_TROOPER");}
+		for(i=1;i<9;++i){uUnit.CreateTransportedCrew(E_TROOPER);}
 	}
 	if(!UnitIDName.Compare("ED_BTVA_R"))
 	{
-		for(i=1;i<9;++i){uUnit.CreateTransportedCrew("ED_ROCKETER");}
+		for(i=1;i<9;++i){uUnit.CreateTransportedCrew(E_ROCKETER);}
 	}
 	//LC
 	if(!UnitIDName.Compare("LC_FATGIRL_2AAR"))
 	{
-		for(i=1;i<7;++i){uUnit.CreateTransportedCrew("LC_GUARDIAN_RA_1");}
+		for(i=1;i<7;++i){uUnit.CreateTransportedCrew(L_R_GUARDIAN);}
 	}
 	if(!UnitIDName.Compare("LC_FATGIRL_2E"))
 	{
-		for(i=1;i<7;++i){uUnit.CreateTransportedCrew("LC_SCHOCK_GUARDIAN_1");}
+		for(i=1;i<7;++i){uUnit.CreateTransportedCrew(L_E_GUARDIAN);}
 	}
 	if(!UnitIDName.Compare("LC_FATGIRL_2I"))
 	{
-		for(i=1;i<7;++i){uUnit.CreateTransportedCrew("LC_GURDIAN_1");}
+		for(i=1;i<7;++i){uUnit.CreateTransportedCrew(L_GURDIAN_1);}
 	}
 	if(!UnitIDName.Compare("LC_FATGIRL_2S"))
 	{
-		for(i=1;i<7;++i){uUnit.CreateTransportedCrew("LC_CYBER_GUARDIAN_MAGNETIC");}
+		for(i=1;i<7;++i){uUnit.CreateTransportedCrew(L_M_CYBER_GUARDIAN);}
 	}
 	*/
 	
 }
+function void AddToFactoriesArray(unit uFactory)
+{
+	player P;
+	int i,nP,n;
+	unit uUnit;
+	P=GetPlayer(uFactory.GetIFFNum());
+	nP=P.GetIFFNum();
+	for(n=1;n<=m_nF[nP];++n)
+	{
+	 uUnit=uFactories[(nP-1)*20+n];
+	 if(!uUnit.IsLive())
+	 {
+	 	uUnit=null;
+	 }
+	 if(uUnit==null)
+	 {
+	 	uFactories[(nP-1)*20+n]=uFactory;
+		break;
+	 }
+	 if(n==m_nF[nP])
+	 {
+	 	++m_nF[nP];
+		n=m_nF[nP];
+		uFactories[(nP-1)*20+n]=uFactory;
+		break;
+	 }
+	}
+	if(m_nF[nP]==0)
+	{
+		 	++m_nF[nP];
+			n=m_nF[nP];
+			m_uCarrier[(nP-1)*20+n]=uFactory;	
+	}	 
+}
+function void SetBuildCommands()
+{
+	player P;
+	int nP;
+	int nX,nY,nZ;
+	int i,n,m,nPrice;
+	unit uFactory;
+	int nTr,nExist;
+	string sName;
 
+	for(nP=1;nP<=8;++nP)
+	{
+		P=GetPlayer(nP);
+		for(i=1;i<=m_nC[nP];++i)
+		{
+				uFactory=uFactories[(nP-1)*20+i];
+				nX=uFactory.GetLocationX();
+			 	nY=uFactory.GetLocationY();
+			 	nZ=uFactory.GetLocationZ();
+			if(uFactory.IsLive() && !uFactory==null)
+			{	
+				sName=AIGetUnitName(P.GetRace(),m_nSquadType[nP],m_AIUnitIndex[nP]);
+				nPrice=PriceIfGoodTimeAndRace(sName,P.GetRace(),nFactoryTime[(nP)*20+i],0);
+				if(nPrice)
+				{
+						m_uContainingObject[(nP-1)*200+(i-1)*5+n]=m_uSubordinate[(nP-1)*200+(i-1)*5+n]=P.CreateObject(sName,nX,nY,40,uFactory.GetDirectionAlpha());
+						CreateFxToCreatedUnit(uUnit2,P);
+						P.AddResource(1,  -nPrice);
+					//create unit with sName on factory location
+					//check if sqad is full then call it to move to waiting loaction
+				}
+				//P.SetCommandBuildBuilding("ED_MOBILE_RAFINERY", nX+3, nY+3,0,uFactory);
+			}		
+		}
+	}
+}
+
+function UnitKilledUpdateStatisitcis(unit uKilled, unit uDamageCauser)
+{
+	pPlayer P;
+	int nP;
+	int LostUnitType;
+	int DamagerUnitType;
+	//funkcja do aktualizacji statystyk
+	//trzeba wyciągnąć ai_playera i zauktualizować mu statystyki z jakich squadów ponosi straty i jakimi zadaje straty
+	//
+	P=GetPlayer(uKilled.GetIFFNum());
+	nP=P.GetIFFNum();
+	LostUnitType =GetSquadType(uKilled.GetName());
+	++m_nPlayerLosts[nP*8*eSquadTypesNum+LostUnitType];
+	DamagerUnitType = GetSquadType(uDamageCauser.GetName());
+	++m_nPlayerEnemyDamageCausers[nP*8*eSquadTypesNum+DamagerUnitType];
+}
