@@ -1,4 +1,3 @@
-
 consts
 {
 	signMoveTo  = 20;
@@ -55,5 +54,5 @@ consts
 	eFadeTime = 60;
 	
 	eNoRideAttack=1;
-	
 }
+

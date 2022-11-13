@@ -3,7 +3,7 @@
 
 #include "trace.ech"
 #include "squadStats.ech"
-#include "consts.ech"
+#include "commonConsts.ech"
 
 #define MISSION_GOAL_PREFIX     MISSION_NAME "_Goal_"
 #define MISSION_BRIEFING_PREFIX MISSION_NAME "_Brief_"
@@ -86,11 +86,7 @@
 
 consts
 {
-	eRaceUCS = 1;
-	eRaceED = 2;
-	eRaceLC = 3;
-	eRaceAlien = 4;
-	eRaceObserver = 5;
+
 	eEnemy = 0;
 	eNeutral = 1;
     eSaveBestInfantyBufferNum = 1108;
@@ -111,11 +107,11 @@ consts
 	string AddedToSquad;
 	string m_sUnitsToSquad[];
 	unit uFactories[];
-	int  nFactoryTime[]
+	int  nFactoryTime[];
 	int m_nSquadUnderProduction[];
 
 	int m_nF[];
-	int m_nSquadType[];
+	int m_nFactorySquadType[];
 	int m_nAIUnitIndex[];
 
 

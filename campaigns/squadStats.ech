@@ -10,6 +10,15 @@ consts
 	eBomberSquad = 4;
 	eSquadTypesNum = 5;
 }
+
+consts
+{
+	eRaceUCS = 1;
+	eRaceED = 2;
+	eRaceLC = 3;
+	eRaceAlien = 4;
+	eRaceObserver = 5;
+}
 function int IsHarvesterID(string Name);
 function int GetUnitPrice(string Name);
 
@@ -104,7 +113,7 @@ function int GetUnitPrice(string Name)
 	if(!UnitIDName.Compare(U_G_PANTHER)){ price=  1400; }else
 	if(!UnitIDName.Compare(U_P_PANTHER)){ price=  1700; }else
 	if(!UnitIDName.Compare(U_R_BAT)){ price=  1100; }else
-	if(!UnitIDName.Compare(U_P_BAT_P)){ price=  1300; }else
+	if(!UnitIDName.Compare(U_P_BAT)){ price=  1300; }else
 	if(!UnitIDName.Compare(U_R_HAWK)){ price=  1400; }else
 	if(!UnitIDName.Compare(U_P_HAWK)){ price=  1500; }else
 	if(!UnitIDName.Compare(U_N_HELLWIND)){ price=  2200; }else
@@ -175,19 +184,22 @@ function int GetUnitPrice(string Name)
 }
 function int IsLeaderName(string UnitIDName)
 {
-	if(!UnitIDName.Compare(E_L_TROOPER) || !UnitIDName.Compare(E_L_ROCKETER) || !UnitIDName.Compare(E_L_SNIPER) || !UnitIDName.Compare(E_L_J_TROOPER) ||
-	!UnitIDName.Compare(E_L_HEAVYTROOPER) || !UnitIDName.Compare(E_L_LL_HEAVYTROOPER) || !UnitIDName.Compare(E_L_PP_HEAVYTROOPER) || 
-	!UnitIDName.Compare(E_L_I_DUBNA) || !UnitIDName.Compare(E_L_R_DUBNA) ||
+	string sName;
+	sName = UnitIDName;
 	
-	!UnitIDName.Compare(U_A_I_SILVER_ONE_1) || !UnitIDName.Compare(U_A_R_SILVER) || !UnitIDName.Compare(U_A_P_SILVER) ||
-	!UnitIDName.Compare(U_A_I3_SILVER_MK3) || !UnitIDName.Compare(U_A_P3_SILVER_MK3) || !UnitIDName.Compare(U_A_R3_SILVER_MK3) ||
-	!UnitIDName.Compare(U_A_I_ATACK_DRONE) || !UnitIDName.Compare(U_A_P_ATACK_DRONE)||
+	if(!sName.Compare(E_L_TROOPER) || !sName.Compare(E_L_ROCKETER) || !sName.Compare(E_L_SNIPER) || !sName.Compare(E_L_J_TROOPER) ||
+	!sName.Compare(E_L_HEAVYTROOPER) || !sName.Compare(E_L_LL_HEAVYTROOPER) || !sName.Compare(E_L_PP_HEAVYTROOPER) || 
+	!sName.Compare(E_L_I_DUBNA) || !sName.Compare(E_L_R_DUBNA) ||
 	
-	!UnitIDName.Compare(L_I_GURDIAN_1) || !UnitIDName.Compare(L_L_R_GUARDIAN) || !UnitIDName.Compare(L_L_E_GUARDIAN) ||
-	!UnitIDName.Compare(L_L_CYBER_GUARDIAN) || !UnitIDName.Compare(L_L_M_CYBER_GUARDIAN) || !UnitIDName.Compare(L_L_E_CYBER_GUARDIAN) || 
+	!sName.Compare(U_A_I_SILVER_ONE_1) || !sName.Compare(U_A_R_SILVER) || !sName.Compare(U_A_P_SILVER) ||
+	!sName.Compare(U_A_I3_SILVER_MK3) || !sName.Compare(U_A_P3_SILVER_MK3) || !sName.Compare(U_A_R3_SILVER_MK3) ||
+	!sName.Compare(U_A_I_ATACK_DRONE) || !sName.Compare(U_A_P_ATACK_DRONE)||
+	
+	!sName.Compare(L_I_GURDIAN_1) || !sName.Compare(L_L_R_GUARDIAN) || !sName.Compare(L_L_E_GUARDIAN) ||
+	!sName.Compare(L_L_CYBER_GUARDIAN) || !sName.Compare(L_L_M_CYBER_GUARDIAN) || !sName.Compare(L_L_E_CYBER_GUARDIAN) || 
 
-	!UnitIDName.Compare("E_CH_AH_12")  || !UnitIDName.Compare("E_CH_AH_12_2") || !UnitIDName.Compare("E_CH_AH_12_3") || !UnitIDName.Compare("E_CH_AH_12_4") ||  
-	!UnitIDName.Compare("U_CH_AH_10_1"))
+	!sName.Compare("E_CH_AH_12")  || !sName.Compare("E_CH_AH_12_2") || !sName.Compare("E_CH_AH_12_3") || !sName.Compare("E_CH_AH_12_4") ||  
+	!sName.Compare("U_CH_AH_10_1"))
 		return 1;
 
 	return 0;
@@ -621,11 +633,11 @@ function string GetSubordinateUnitID(string IDName,int Race)
 	if(Race==eRaceLC)
 	{
 	 	if(!Name.Compare(L_I_GURDIAN_1)){ return L_GURDIAN_1; }else
- 		if(!Name.Compare(L_L_R_GUARDIAN)){ returnL_R_GUARDIAN; }else
+ 		if(!Name.Compare(L_L_R_GUARDIAN)){ return L_R_GUARDIAN; }else
  		if(!Name.Compare(L_L_E_GUARDIAN)){ return L_E_GUARDIAN; }else
-		if(!Name.Compare(L_L_CYBER_GUARDIAN)){ returnL_CYBER_GUARDIAN; }else
-		if(!Name.Compare(L_L_M_CYBER_GUARDIAN)){ returnL_M_CYBER_GUARDIAN; }else
- 		if(!Name.Compare(L_L_E_CYBER_GUARDIAN)){ return L_E_CYBER_GUARDIAN; }
+		if(!Name.Compare(L_L_CYBER_GUARDIAN)){ return L_CYBER_GUARDIAN; }else
+		if(!Name.Compare(L_L_M_CYBER_GUARDIAN)){ return L_M_CYBER_GUARDIAN; }else
+ 		if(!Name.Compare(L_L_E_CYBER_GUARDIAN)){ return  L_E_CYBER_GUARDIAN; }
 	}
 		
 	return IDName;
@@ -640,15 +652,15 @@ function string AIGetUnitName(int Race,int SquadType,int n)
 		{
 			if(n==0) return E_R_BTTI;
 			if(n==1) return E_R_BTTI;
-			if(n==2) return E_AAR_BTTV;
-			if(n==3) return E_AAR_BTTV;
-			if(n==4) return E_AAR_BTTV;
-			if(n==5) return E_AAR_BTTV;
+			if(n==2) return E_R_BTTV;
+			if(n==3) return E_R_BTTV;
+			if(n==4) return E_R_BTTV;
+			if(n==5) return E_R_BTTV;
 		}
 		if(SquadType==eTankSquad)
 		{
-			if(n==0) return E_I_BTTI_I;
-			if(n==1) return E_I_BTTI_I;
+			if(n==0) return E_I_BTTI;
+			if(n==1) return E_I_BTTI;
 			if(n==2) return E_C_PAMIR;
 			if(n==3) return E_C_PAMIR;
 			if(n==4) return E_C_KAUKAZ;
@@ -777,77 +789,82 @@ function string AIGetUnitName(int Race,int SquadType,int n)
 			if(n==4) return L_T_THUNDER;
 			if(n==5) return L_T_THUNDER;		
 		}
-	}	
+	}
+	return NO_NAME;
 }
 function int GetSquadType(int Race, string UnitIDName)
 {
+	string sName;
+	sName = UnitIDName;
+	
 	if(Race==eRaceED)
 	{
-		if(!UnitIDName.Compare(E_R_BTTI) || !UnitIDName.Compare(E_AAR_BTTV))
+		if(!sName.Compare( E_R_BTTI) || !sName.Compare(E_R_BTTV))
 		{
 			return eLandAASquad;
 		}
-		if(!UnitIDName.Compare(E_I_BTTI_I) || !UnitIDName.Compare(E_C_PAMIR) || !UnitIDName.Compare(E_C_KAUKAZ))
+		if(!sName.Compare(E_I_BTTI) || !sName.Compare(E_C_PAMIR) || !sName.Compare(E_C_KAUKAZ))
 		{
 			return eTankSquad;
 		}
-		if(!UnitIDName.Compare(E_R_PAMIR) || !UnitIDName.Compare(E_BR_MBA) || !UnitIDName.Compare(E_NR_MBA))
+		if(!sName.Compare(E_R_PAMIR) || !sName.Compare(E_BR_MBA) || !sName.Compare(E_NR_MBA))
 		{
 			return eArtSquad;
 		}
-		if(!UnitIDName.Compare(E_R_INTERCEPTOR))
+		if(!sName.Compare(E_R_INTERCEPTOR))
 		{
 			return eAirAASquad;
 		}
-		if(!UnitIDName.Compare(E_HR_INTERCEPTOR) || !UnitIDName.Compare(E_CB_BOMBER) || !UnitIDName.Compare(E_HB_BOMBER) || !UnitIDName.Compare(E_T_BOMBER))
+		if(!sName.Compare(E_HR_INTERCEPTOR) || !sName.Compare(E_CB_BOMBER) || !sName.Compare(E_HB_BOMBER) || !sName.Compare(E_T_BOMBER))
 		{
 			return eBomberSquad;
 		}
 	}
 	if(Race==eRaceUCS)
 	{
-		if(!UnitIDName.Compare(U_R_SPIDER) || !UnitIDName.Compare(U_R_TIGER) || !UnitIDName.Compare(U_R_JAGUAR))
+		if(!sName.Compare(U_R_SPIDER) || !sName.Compare(U_R_TIGER) || !sName.Compare(U_R_JAGUAR))
 		{
 			return eLandAASquad;
 		}
-		if(!UnitIDName.Compare(U_P_RAPTOR) || !UnitIDName.Compare(U_P_TIGER) || !UnitIDName.Compare(U_P_PANTHER))
+		if(!sName.Compare(U_P_RAPTOR) || !sName.Compare(U_P_TIGER) || !sName.Compare(U_P_PANTHER))
 		{
 			return eTankSquad;
 		}
-		if(!UnitIDName.Compare(U_G_TIGER) || !UnitIDName.Compare(U_G_PANTHER) || !UnitIDName.Compare(U_G_TARANTULA))
+		if(!sName.Compare(U_G_TIGER) || !sName.Compare(U_G_PANTHER) || !sName.Compare(U_G_TARANTULA))
 		{
 			return eArtSquad;
 		}
-		if(!UnitIDName.Compare(U_R_HAWK))
+		if(!sName.Compare(U_R_HAWK))
 		{
 			return eAirAASquad;
 		}
-		if(!UnitIDName.Compare(U_P_BAT) || !UnitIDName.Compare(U_P_HELLWIND))
+		if(!sName.Compare(U_P_BAT) || !sName.Compare(U_P_HELLWIND))
 		{
 			return eBomberSquad;
 		}
 	}
 	if(Race==eRaceLC)
 	{
-		if(!UnitIDName.Compare(L_R_MOON) || !UnitIDName.Compare(L_R_CRATER) || !UnitIDName.Compare(L_R_CRUSCHER))
+		if(!sName.Compare(L_R_MOON) || !sName.Compare(L_R_CRATER) || !sName.Compare(L_R_CRUSCHER))
 		{
 			return eLandAASquad;
 		}
-		if(!UnitIDName.Compare(L_I_MOON) || !UnitIDName.Compare(L_G_FANG) || !UnitIDName.Compare(L_G_CRATER) || !UnitIDName.Compare(L_G_CRUSCHER))
+		if(!sName.Compare(L_I_MOON) || !sName.Compare(L_G_FANG) || !sName.Compare(L_G_CRATER) || !sName.Compare(L_G_CRUSCHER))
 		{
 			return eTankSquad;
 		}
-		if(!UnitIDName.Compare(L_A_FANG) || !UnitIDName.Compare(L_A_CRION))
+		if(!sName.Compare(L_A_FANG) || !sName.Compare(L_A_CRION))
 		{
 			return eArtSquad;
 		}
-		if(!UnitIDName.Compare(L_R_SFIGHTER))
+		if(!sName.Compare(L_R_SFIGHTER))
 		{
 			return eAirAASquad;
 		}
-		if(!UnitIDName.Compare(L_R_THUNDER) || !UnitIDName.Compare(L_B_THUNDER) || !UnitIDName.Compare(L_T_THUNDER))
+		if(!sName.Compare(L_R_THUNDER) || !sName.Compare(L_B_THUNDER) || !sName.Compare(L_T_THUNDER))
 		{
 			return eBomberSquad;
 		}
 	}
+	return eTankSquad;
 }

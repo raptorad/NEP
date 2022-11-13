@@ -45,16 +45,16 @@ mission MISSION_NAME
 	unit uHero,uTank,uFleet,uSubordinate1,uSubordinate2;
 	string Console,Console2,Console3;
 	function void MoveToMarker(int nMarker,unit uUnit, player Player)
-{
-		if(IsUnitNearMarker(uUnit, nMarker,6))
-		{
-			for (i=0;i<Player.GetNumberOfUnits();++i)
+	{
+			if(IsUnitNearMarker(uUnit, nMarker,6))
 			{
-				CommandMoveUnitToMarker(Player.GetUnit(i),nMarker+10);
+				for (i=0;i<Player.GetNumberOfUnits();++i)
+				{
+					CommandMoveUnitToMarker(Player.GetUnit(i),nMarker+10);
+				}
+				
 			}
-			
-		}
-}
+	}
 	state fight;
 
 	state Initialize
@@ -178,23 +178,23 @@ mission MISSION_NAME
         FadeInCutscene(100, 0, 0, 0);
         return MissionFailed2, 120;
     }
-event RemovedUnit(unit uKilled, unit uAttacker, int nNotifyType)
-{
-	
-	AIKillStatictics(uKilled,uAttacker);
-	if (uKilled==uHero)
+	event RemovedUnit(unit uKilled, unit uAttacker, int nNotifyType)
 	{
-		state MissionFailed;
+		
+		AIKillStatictics(uKilled,uAttacker);
+		if (uKilled==uHero)
+		{
+			state MissionFailed;
+		}
 	}
-}
-event AddedBuilding(unit Building,  int nNotifyType)
-{
-	CheckUCSRafinery(Building);
-}
-
-event AddedUnit(unit uUnit,  int nNotifyType)
-{
-	CheckCarrierUnit(uUnit);
-}
+	event AddedBuilding(unit Building,  int nNotifyType)
+	{
+		CheckUCSRafinery(Building);
+	}
+	
+	event AddedUnit(unit uUnit,  int nNotifyType)
+	{
+		CheckCarrierUnit(uUnit);
+	}
 }
 
